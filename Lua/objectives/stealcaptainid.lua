@@ -1,4 +1,4 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "StealCaptainID"
 objective.RoleFilter = {["captain"] = true}
@@ -10,7 +10,7 @@ function objective:Start(target)
         return false
     end
 
-    self.Text = Traitormod.Language.ObjectiveStealCaptainID
+    self.Text = Neurologics.Language.ObjectiveStealCaptainID
 
     return true
 end

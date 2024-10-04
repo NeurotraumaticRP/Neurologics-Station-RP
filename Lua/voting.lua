@@ -50,7 +50,7 @@ vt.StartVote = function (text, options, time, completed, clients)
     end
 end
 
-Hook.Add("think", "Traitormod.Voting.Think", function ()
+Hook.Add("think", "Neurologics.Voting.Think", function ()
     for key, voteData in pairs(vt.Votes) do
         if Timer.GetTime() > voteData.Time then
             voteData.Completed = true
@@ -61,22 +61,22 @@ Hook.Add("think", "Traitormod.Voting.Think", function ()
     end
 end)
 
-Traitormod.AddCommand("!vote", function (client, args)
+Neurologics.AddCommand("!vote", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
     if not client.InGame then
-        Traitormod.SendMessage(client, "You must be in game to use this command.")
+        Neurologics.SendMessage(client, "You must be in game to use this command.")
         return true
     end
 
     if #args < 3 then
-        Traitormod.SendMessage(client, "Usage: !vote \"Text Here\" \"Option 1\" \"Option 2\" ... \"Option N\"")
+        Neurologics.SendMessage(client, "Usage: !vote \"Text Here\" \"Option 1\" \"Option 2\" ... \"Option N\"")
         return true
     end
 
     local text = table.remove(args, 1)
 
     vt.StartVote(text, args, 25, function (results)
-        local message = Traitormod.StringBuilder:new()
+        local message = Neurologics.StringBuilder:new()
         message("Vote results: %s\n\n", text)
         for key, value in pairs(results) do
             message("%s: %s Votes\n", args[key], value)

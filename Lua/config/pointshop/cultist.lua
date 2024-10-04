@@ -5,7 +5,7 @@ category.Decoration = "cultist"
 category.FadeToBlack = true
 
 category.CanAccess = function(client)
-    return client.Character and not client.Character.IsDead and Traitormod.RoleManager.HasRole(client.Character, "Cultist")
+    return client.Character and not client.Character.IsDead and Neurologics.RoleManager.HasRole(client.Character, "Cultist")
 end
 
 LuaUserData.MakeMethodAccessible(Descriptors["Barotrauma.StatusEffect"], "set_Afflictions")
@@ -39,8 +39,8 @@ category.Init = function ()
 
     local husk = ItemPrefab.GetItemPrefab("huskeggs")
     local element = husk.ConfigElement.Element.Element("MeleeWeapon")
-    Traitormod.Patching.RemoveAll(element, "StatusEffect")
-    Traitormod.Patching.Add(element, replacement)
+    Neurologics.Patching.RemoveAll(element, "StatusEffect")
+    Neurologics.Patching.Add(element, replacement)
 
     Hook.Add("Cultist.Injected", "Cultist.Injected", function (effect, deltaTime, item, targets, worldPosition)
         if item.HasTag("active") then
@@ -115,7 +115,7 @@ category.Products = {
                 interface.customInterfaceElementList[2].Signal = "Husk Beacon"
                 item.CreateServerEvent(interface, interface)
 
-                Traitormod.AddHuskBeacon(item, 30)
+                Neurologics.AddHuskBeacon(item, 30)
             end)
         end
     },
@@ -196,7 +196,7 @@ category.Products = {
             local revolver = ItemPrefab.GetItemPrefab("ironhelmet")
             Entity.Spawner.AddItemToSpawnQueue(revolver, client.Character.Inventory, nil, nil, function (item)
                 item.Tags = "chocker"
-                item.Description = Traitormod.Language.Pointshop.choke_desc
+                item.Description = Neurologics.Language.Pointshop.choke_desc
 
                 item.set_InventoryIconColor(Color(255, 0, 0, 50))
                 item.SpriteColor = Color(255, 0, 0, 50)
@@ -220,7 +220,7 @@ category.Products = {
             local handcuffs = ItemPrefab.GetItemPrefab("handcuffs")
             Entity.Spawner.AddItemToSpawnQueue(handcuffs, client.Character.Inventory, nil, nil, function (item)
                 item.Tags = "fakehandcuffs"
-                Traitormod.SendChatMessage(client, Traitormod.Language.FakeHandcuffsUsage , Color.Aqua)
+                Neurologics.SendChatMessage(client, Neurologics.Language.FakeHandcuffsUsage , Color.Aqua)
             end)
         end
     },
@@ -337,11 +337,11 @@ category.Products = {
         IsLimitGlobal = true,
 
         CanBuy = function (client, product)
-            return not Traitormod.RoundEvents.IsEventActive("OxygenGeneratorHusk")
+            return not Neurologics.RoundEvents.IsEventActive("OxygenGeneratorHusk")
         end,
 
         Action = function ()
-            Traitormod.RoundEvents.TriggerEvent("OxygenGeneratorHusk")
+            Neurologics.RoundEvents.TriggerEvent("OxygenGeneratorHusk")
         end
     },
 }

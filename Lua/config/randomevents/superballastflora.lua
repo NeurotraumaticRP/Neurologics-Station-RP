@@ -29,8 +29,8 @@ event.Start = function ()
         end
     end
 
-    local text = Traitormod.Language.SuperBallastFlora
-    Traitormod.RoundEvents.SendEventMessage(text, "EndRoundButton")
+    local text = Neurologics.Language.SuperBallastFlora
+    Neurologics.RoundEvents.SendEventMessage(text, "EndRoundButton")
 
     event.End()
 end

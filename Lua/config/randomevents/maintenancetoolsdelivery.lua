@@ -34,8 +34,8 @@ event.Start = function ()
         end
     end)
 
-    local text = Traitormod.Language.MaintenanceToolsDelivery
-    Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
+    local text = Neurologics.Language.MaintenanceToolsDelivery
+    Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
 
     event.End()
 end

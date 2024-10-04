@@ -1,4 +1,4 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "Kidnap"
 objective.AmountPoints = 2500
@@ -10,9 +10,9 @@ function objective:Start(target)
         return false
     end
 
-    self.TargetName = Traitormod.GetJobString(target) .. " " .. target.Name
+    self.TargetName = Neurologics.GetJobString(target) .. " " .. target.Name
 
-    self.Text = string.format(Traitormod.Language.ObjectiveKidnap, self.TargetName,
+    self.Text = string.format(Neurologics.Language.ObjectiveKidnap, self.TargetName,
     self.Seconds)
 
     self.SecondsLeft = self.Seconds
@@ -22,7 +22,7 @@ end
 
 function objective:IsCompleted()
     if self.SecondsLeft <= 0 then
-        self.Text = string.format(Traitormod.Language.ObjectiveKidnap, self.TargetName,
+        self.Text = string.format(Neurologics.Language.ObjectiveKidnap, self.TargetName,
         self.Seconds)
 
         return true
@@ -41,7 +41,7 @@ function objective:IsCompleted()
 
         self.SecondsLeft = math.max(0, self.SecondsLeft - (Timer.GetTime() - self.lastTimer))
 
-        self.Text = string.format(Traitormod.Language.ObjectiveKidnap, self.TargetName, math.floor(self.SecondsLeft))
+        self.Text = string.format(Neurologics.Language.ObjectiveKidnap, self.TargetName, math.floor(self.SecondsLeft))
 
         self.lastTimer = Timer.GetTime()
 

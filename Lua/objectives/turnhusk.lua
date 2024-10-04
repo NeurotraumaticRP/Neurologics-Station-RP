@@ -1,4 +1,4 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "TurnHusk"
 objective.AmountPoints = 500
@@ -7,7 +7,7 @@ objective.AlwaysActive = true
 objective.DontLooseLives = true
 
 function objective:Start()
-    self.Text = Traitormod.Language.ObjectiveTurnHusk
+    self.Text = Neurologics.Language.ObjectiveTurnHusk
 
     self.OldCharacter = self.Character
 

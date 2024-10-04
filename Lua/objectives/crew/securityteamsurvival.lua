@@ -1,11 +1,11 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "SecurityTeamSurvival"
 objective.AmountPoints = 400
 objective.EndRoundObjective = true
 
 function objective:Start(target)
-    self.Text = Traitormod.Language.SecurityTeamSurvival
+    self.Text = Neurologics.Language.SecurityTeamSurvival
 
     return true
 end

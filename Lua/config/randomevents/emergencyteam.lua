@@ -58,8 +58,8 @@ event.Start = function()
         character.SetOrder(leakOrder, true, false, true)
     end
 
-    local text = Traitormod.Language.EmergencyTeam
-    Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
+    local text = Neurologics.Language.EmergencyTeam
+    Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
 
     event.End()
 end

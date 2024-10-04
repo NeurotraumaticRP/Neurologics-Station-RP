@@ -1,4 +1,4 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "BananaSlip"
 objective.AmountPoints = 850
@@ -35,11 +35,11 @@ objective.Static = function ()
 
     local bananaPeel = ItemPrefab.GetItemPrefab("bananapeel")
     local element = bananaPeel.ConfigElement.Element.Element("MotionSensor")
-    Traitormod.Patching.RemoveAll(element, "StatusEffect")
-    Traitormod.Patching.Add(element, replacement)
+    Neurologics.Patching.RemoveAll(element, "StatusEffect")
+    Neurologics.Patching.Add(element, replacement)
 
     Hook.Add("bananaslip", "test", function(effect, deltaTime, item, targets, worldPosition)
-        Traitormod.RoleManager.CallObjectiveFunction("BananaSlip", targets[1])
+        Neurologics.RoleManager.CallObjectiveFunction("BananaSlip", targets[1])
     end)
 end
 
@@ -49,7 +49,7 @@ function objective:Start(target)
 
     if self.Target == nil then return false end
 
-    self.Text = string.format(Traitormod.Language.ObjectiveBananaSlip, self.Target.Name, self.Progress, self.Times)
+    self.Text = string.format(Neurologics.Language.ObjectiveBananaSlip, self.Target.Name, self.Progress, self.Times)
 
     return true
 end
@@ -57,7 +57,7 @@ end
 function objective:BananaSlip(character)
     if character == self.Target then
         self.Progress = self.Progress + 1
-        self.Text = string.format(Traitormod.Language.ObjectiveBananaSlip, self.Target.Name, self.Progress, self.Times)
+        self.Text = string.format(Neurologics.Language.ObjectiveBananaSlip, self.Target.Name, self.Progress, self.Times)
     end
 end
 

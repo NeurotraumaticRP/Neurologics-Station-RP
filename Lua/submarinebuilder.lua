@@ -72,7 +72,7 @@ sb.ResetSubmarineSteering = function (submarine)
 end
 
 sb.BuildSubmarines = function()
-    local submarineInjector = File.Read(Traitormod.Path .. "/Submarines/submarineinjector.xml")
+    local submarineInjector = File.Read(Neurologics.Path .. "/Submarines/submarineinjector.xml")
     local result = ""
 
     for k, v in pairs(sb.Submarines) do
@@ -81,11 +81,11 @@ sb.BuildSubmarines = function()
 
     local submarineText = string.format(submarineInjector, result)
 
-    File.Write(Traitormod.Path .. "/Submarines/temp.xml", submarineText)
-    local submarineInfoXML = SubmarineInfo(Traitormod.Path .. "/Submarines/temp.xml")
-    submarineInfoXML.SaveAs(Traitormod.Path .. "/Submarines/temp.sub")
+    File.Write(Neurologics.Path .. "/Submarines/temp.xml", submarineText)
+    local submarineInfoXML = SubmarineInfo(Neurologics.Path .. "/Submarines/temp.xml")
+    submarineInfoXML.SaveAs(Neurologics.Path .. "/Submarines/temp.sub")
 
-    local submarineInfo = SubmarineInfo(Traitormod.Path .. "/Submarines/temp.sub")
+    local submarineInfo = SubmarineInfo(Neurologics.Path .. "/Submarines/temp.sub")
 
     sb.UpdateLobby(submarineInfo)
     return submarineInfo

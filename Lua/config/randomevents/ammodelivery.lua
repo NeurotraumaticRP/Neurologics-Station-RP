@@ -28,8 +28,8 @@ event.Start = function ()
         Entity.Spawner.AddItemToSpawnQueue(ItemPrefab.GetItemPrefab(value), position)
     end
 
-    local text = Traitormod.Language.AmmoDelivery
-    Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
+    local text = Neurologics.Language.AmmoDelivery
+    Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
 
     event.End()
 end

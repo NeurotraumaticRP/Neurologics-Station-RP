@@ -44,7 +44,7 @@ event.Start = function ()
     end)
 
     --local text = "An enemy pirate has been detected near the pumps."
-    --Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
+    --Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox")
 
     event.End()
 end

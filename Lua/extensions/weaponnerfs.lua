@@ -16,8 +16,8 @@ extension.Init = function ()
 
         local itemPrefab = ItemPrefab.GetItemPrefab("ceremonialsword")
         local element = itemPrefab.ConfigElement.Element.Element("MeleeWeapon")
-        Traitormod.Patching.RemoveAll(element, "Attack")
-        Traitormod.Patching.Add(element, replacement)
+        Neurologics.Patching.RemoveAll(element, "Attack")
+        Neurologics.Patching.Add(element, replacement)
     end
 
     do -- Hardened Crowbar
@@ -33,8 +33,8 @@ extension.Init = function ()
 
         local itemPrefab = ItemPrefab.GetItemPrefab("crowbarhardened")
         local element = itemPrefab.ConfigElement.Element.Element("MeleeWeapon")
-        Traitormod.Patching.RemoveAll(element, "Attack")
-        Traitormod.Patching.Add(element, replacement)
+        Neurologics.Patching.RemoveAll(element, "Attack")
+        Neurologics.Patching.Add(element, replacement)
     end
 end
 

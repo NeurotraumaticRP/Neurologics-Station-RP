@@ -1,6 +1,6 @@
--- Originally by MassCraxx, ported to Traitormod.
+-- Originally by MassCraxx, ported to Neurologics.
 
-Traitormod.DisableMidRoundSpawn = false
+Neurologics.DisableMidRoundSpawn = false
 
 local textPromptUtils = require("textpromptutils")
 
@@ -59,7 +59,7 @@ m.TryCreateClientCharacter = function(submarine, client)
     elseif preventMultiCaptain and jobPreference.Prefab.Identifier == "captain" then
         -- if crew has a captain, spawn as security
         if m.CrewHasJob("captain") then
-            Traitormod.Log(client.Name .. " tried to mid-round spawn as second captain - assigning security instead.")
+            Neurologics.Log(client.Name .. " tried to mid-round spawn as second captain - assigning security instead.")
             -- set jobPreference = security
             jobPreference = m.GetJobVariant("securityofficer")
         end
@@ -93,16 +93,16 @@ m.TryCreateClientCharacter = function(submarine, client)
 
     -- none found, go random
     if waypoint == nil then 
-        Traitormod.Log("WARN: No valid job waypoint found for " .. client.CharacterInfo.Job.Name.Value .. " - using random")
+        Neurologics.Log("WARN: No valid job waypoint found for " .. client.CharacterInfo.Job.Name.Value .. " - using random")
         waypoint = WayPoint.GetRandom(SpawnType.Human, nil, submarine)
     end
 
     if waypoint == nil then 
-        Traitormod.Log("ERROR: Could not spawn player - no valid waypoint found")
+        Neurologics.Log("ERROR: Could not spawn player - no valid waypoint found")
         return false 
     end
 
-    Traitormod.Log("Spawning " .. client.Name .. " as " .. client.CharacterInfo.Job.Name.Value)
+    Neurologics.Log("Spawning " .. client.Name .. " as " .. client.CharacterInfo.Job.Name.Value)
 
     Timer.Wait(function () 
         -- spawn character
@@ -115,7 +115,7 @@ m.TryCreateClientCharacter = function(submarine, client)
         char.GiveJobItems(waypoint)
         char.LoadTalents()
 
-        Hook.Call("traitormod.midroundspawn", client, char)
+        Hook.Call("Neurologics.midroundspawn", client, char)
     end, spawnDelaySeconds * 1000)
 
     return true
@@ -123,36 +123,36 @@ end
 
 m.ShowSpawnDialog = function(client, force)
     if not force and client.Character and not client.Character.IsDead then
-        Traitormod.Log(client.Name .. " was prevented to midroundspawn due to having an alive character.")
+        Neurologics.Log(client.Name .. " was prevented to midroundspawn due to having an alive character.")
         return
     end
 
     if LuaUserData.IsTargetType(Game.GameSession.GameMode, "Barotrauma.PvPMode") then
-        textPromptUtils.Prompt(Traitormod.Language.MidRoundSpawn, {Traitormod.Language.MidRoundSpawnCoalition, Traitormod.Language.MidRoundSpawnSeparatists, Traitormod.Language.MidRoundSpawnWait}, client, function(option, client) 
+        textPromptUtils.Prompt(Neurologics.Language.MidRoundSpawn, {Neurologics.Language.MidRoundSpawnCoalition, Neurologics.Language.MidRoundSpawnSeparatists, Neurologics.Language.MidRoundSpawnWait}, client, function(option, client) 
             if option == 1 or option == 2 then
                 if force or not client.Character or client.Character.IsDead then
                     m.SpawnClientCharacterOnSub(Submarine.MainSubs[option], client)
                 else
-                    Traitormod.Log(client.Name .. " attempted midroundspawn while having alive character.")
+                    Neurologics.Log(client.Name .. " attempted midroundspawn while having alive character.")
                 end
             end
         end)
     else
-        textPromptUtils.Prompt(Traitormod.Language.MidRoundSpawn, {Traitormod.Language.MidRoundSpawnMission, Traitormod.Language.MidRoundSpawnWait}, client, function(option, client) 
+        textPromptUtils.Prompt(Neurologics.Language.MidRoundSpawn, {Neurologics.Language.MidRoundSpawnMission, Neurologics.Language.MidRoundSpawnWait}, client, function(option, client) 
             if option == 1 then
                 if force or not client.Character or client.Character.IsDead then
                     m.SpawnClientCharacterOnSub(Submarine.MainSub, client)
                 else
-                    Traitormod.Log(client.Name .. " attempted midroundspawn while having alive character.")
+                    Neurologics.Log(client.Name .. " attempted midroundspawn while having alive character.")
                 end
             end
         end)
     end
 end
 
-Hook.Add("roundStart", "Traitormod.MidRoundSpawn.RoundStart", function ()
-    if not Traitormod.Config.MidRoundSpawn then return end
-    if Traitormod.DisableMidRoundSpawn then return end
+Hook.Add("roundStart", "Neurologics.MidRoundSpawn.RoundStart", function ()
+    if not Neurologics.Config.MidRoundSpawn then return end
+    if Neurologics.DisableMidRoundSpawn then return end
 
     -- Reset tables
     hasBeenSpawned = {}
@@ -163,18 +163,18 @@ Hook.Add("roundStart", "Traitormod.MidRoundSpawn.RoundStart", function ()
         if not client.SpectateOnly then
             hasBeenSpawned[client.SteamID] = true
         else
-            Traitormod.Log(client.Name .. " is spectating.")
+            Neurologics.Log(client.Name .. " is spectating.")
         end
     end
 end)
 
-Hook.Add("roundEnd", "Traitormod.MidRoundSpawn.RoundEnd", function ()
-    Traitormod.DisableMidRoundSpawn = false
+Hook.Add("roundEnd", "Neurologics.MidRoundSpawn.RoundEnd", function ()
+    Neurologics.DisableMidRoundSpawn = false
 end)
 
-Hook.Add("client.connected", "Traitormod.MidRoundSpawn.ClientConnected", function (newClient)
-    if not Traitormod.Config.MidRoundSpawn then return end
-    if Traitormod.DisableMidRoundSpawn then return end
+Hook.Add("client.connected", "Neurologics.MidRoundSpawn.ClientConnected", function (newClient)
+    if not Neurologics.Config.MidRoundSpawn then return end
+    if Neurologics.DisableMidRoundSpawn then return end
 
     -- client connects, round has started and client has not been considered for spawning yet
     if not Game.RoundStarted or hasBeenSpawned[newClient.SteamID] then return end
@@ -184,17 +184,17 @@ Hook.Add("client.connected", "Traitormod.MidRoundSpawn.ClientConnected", functio
         m.SpawnClientCharacterOnSub(newClient)
     else
         -- else store for later spawn 
-        Traitormod.Log("Adding new player to spawn list: " .. newClient.Name)
+        Neurologics.Log("Adding new player to spawn list: " .. newClient.Name)
         table.insert(newPlayers, newClient)
 
         -- inform player about his luck
-        Game.SendDirectChatMessage("", Traitormod.Language.MidRoundSpawnWelcome, nil, ChatMessageType.Private, newClient)
+        Game.SendDirectChatMessage("", Neurologics.Language.MidRoundSpawnWelcome, nil, ChatMessageType.Private, newClient)
     end
 end)
 
-Hook.Add("think", "Traitormod.MidRoundSpawn.Think", function ()
-    if not Traitormod.Config.MidRoundSpawn then return end
-    if Traitormod.DisableMidRoundSpawn then return end
+Hook.Add("think", "Neurologics.MidRoundSpawn.Think", function ()
+    if not Neurologics.Config.MidRoundSpawn then return end
+    if Neurologics.DisableMidRoundSpawn then return end
 
     if Game.RoundStarted and checkTime and Timer.GetTime() > checkTime then
         checkTime = Timer.GetTime() + checkDelaySeconds
@@ -212,9 +212,9 @@ Hook.Add("think", "Traitormod.MidRoundSpawn.Think", function ()
                 end
             else
                 if (not giveSpectatorsSpawnOption and newClient.SpectateOnly) then
-                    Traitormod.Log("Removing spectator from spawn list: " .. newClient.Name)
+                    Neurologics.Log("Removing spectator from spawn list: " .. newClient.Name)
                 else
-                    Traitormod.Log("Removing invalid player from spawn list: " .. newClient.Name)
+                    Neurologics.Log("Removing invalid player from spawn list: " .. newClient.Name)
                 end
                 table.remove(newPlayers, i)
             end
@@ -222,9 +222,9 @@ Hook.Add("think", "Traitormod.MidRoundSpawn.Think", function ()
     end
 end)
 
-Traitormod.AddCommand("!midroundspawn", function (client, args)
-    if not Traitormod.Config.MidRoundSpawn then return end
-    if Traitormod.DisableMidRoundSpawn then return end
+Neurologics.AddCommand("!midroundspawn", function (client, args)
+    if not Neurologics.Config.MidRoundSpawn then return end
+    if Neurologics.DisableMidRoundSpawn then return end
 
     if client.InGame then
         if (not hasBeenSpawned[client.SteamID] or client.HasPermission(ClientPermissions.ConsoleCommands)) and (not client.Character or client.Character.IsDead) then

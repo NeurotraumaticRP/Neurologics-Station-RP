@@ -25,8 +25,8 @@ event.Start = function ()
     end
 
     Timer.Wait(function ()
-        local text = Traitormod.Language.LightsOff
-        Traitormod.RoundEvents.SendEventMessage(text, "EyeButton")     
+        local text = Neurologics.Language.LightsOff
+        Neurologics.RoundEvents.SendEventMessage(text, "EyeButton")     
     end, 6000)
 
     Timer.Wait(event.End, event.Time * 60000)

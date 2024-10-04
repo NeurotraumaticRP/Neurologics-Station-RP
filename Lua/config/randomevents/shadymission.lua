@@ -18,7 +18,7 @@ event.Start = function ()
     for key, value in pairs(Client.ClientList) do
         local character = value.Character
         if character and not character.IsDead and character.Vitality > 50 then
-            if not Traitormod.RoleManager.IsAntagonist(character) then
+            if not Neurologics.RoleManager.IsAntagonist(character) then
                 table.insert(possibleTargets, value)
             end
         end
@@ -34,37 +34,37 @@ event.Start = function ()
 
     -- mountain
     textPromptUtils.Prompt(
-    Traitormod.Language.ShadyMissionPart1,
-    {Traitormod.Language.Answer, Traitormod.Language.Ignore}, target, function (option)
+    Neurologics.Language.ShadyMissionPart1,
+    {Neurologics.Language.Answer, Neurologics.Language.Ignore}, target, function (option)
         if option == 2 then
             event.End()
             return
         end
 
         textPromptUtils.Prompt(
-            Traitormod.Language.ShadyMissionPart2,
-            {Traitormod.Language.ShadyMissionPart2Answer}, target, function ()
+            Neurologics.Language.ShadyMissionPart2,
+            {Neurologics.Language.ShadyMissionPart2Answer}, target, function ()
 
                 textPromptUtils.Prompt(
-                    Traitormod.Language.ShadyMissionPart3,
-                    {Traitormod.Language.ShadyMissionPart3Answer}, target, function (option)
+                    Neurologics.Language.ShadyMissionPart3,
+                    {Neurologics.Language.ShadyMissionPart3Answer}, target, function (option)
                         textPromptUtils.Prompt(
-                            Traitormod.Language.ShadyMissionPart4,
-                            {Traitormod.Language.ShadyMissionPart4AnswerAccept, Traitormod.Language.ShadyMissionPart4AnswerDeny}, target, function (option2)
+                            Neurologics.Language.ShadyMissionPart4,
+                            {Neurologics.Language.ShadyMissionPart4AnswerAccept, Neurologics.Language.ShadyMissionPart4AnswerDeny}, target, function (option2)
                                 if option2 == 2 then
                                     event.End()
                                     return
                                 end
 
                                 textPromptUtils.Prompt(
-                                    Traitormod.Language.ShadyMissionPart5,
-                                    {Traitormod.Language.ShadyMissionPart5Answer}, target, function (option2)
+                                    Neurologics.Language.ShadyMissionPart5,
+                                    {Neurologics.Language.ShadyMissionPart5Answer}, target, function (option2)
                                 end)
 
                                 Entity.Spawner.AddItemToSpawnQueue(ItemPrefab.GetItemPrefab("sonarbeacon"), target.Character.Inventory, nil, nil, function (item)
                                     specialBeacon = item
 
-                                    item.Description = Traitormod.Language.ShadyMissionBeacon
+                                    item.Description = Neurologics.Language.ShadyMissionBeacon
                                     item.set_InventoryIconColor(Color(255, 0, 0))
                                     item.SpriteColor = Color(255, 0, 0, 255)
                                     local color = item.SerializableProperties[Identifier("SpriteColor")]
@@ -86,7 +86,7 @@ event.Start = function ()
     local completed = false
 
     local timer = 0
-    Hook.Add("think", "Traitormod.RandomEvents.ShadyMission", function ()
+    Hook.Add("think", "Neurologics.RandomEvents.ShadyMission", function ()
         if Timer.GetTime() < timer then return end
         timer = Timer.GetTime() + 1
         if completed then return end
@@ -135,8 +135,8 @@ event.Start = function ()
 
             completed = true
 
-            Traitormod.AwardPoints(target, baseAmount)
-            Traitormod.SendMessage(target, string.format(Traitormod.Language.ReceivedPoints, baseAmount), "InfoFrameTabButton.Mission")
+            Neurologics.AwardPoints(target, baseAmount)
+            Neurologics.SendMessage(target, string.format(Neurologics.Language.ReceivedPoints, baseAmount), "InfoFrameTabButton.Mission")
 
 
             local newSet = {}
@@ -161,9 +161,9 @@ event.Start = function ()
                 table.insert(newSet.Items, itemData)
             end
 
-            local data = Traitormod.GetMasterData("TraitorItemSets") or {}
+            local data = Neurologics.GetMasterData("TraitorItemSets") or {}
             table.insert(data, newSet)
-            Traitormod.SetMasterData("TraitorItemSets", data)
+            Neurologics.SetMasterData("TraitorItemSets", data)
 
             --parent.Owner.NonInteractable = true
         end
@@ -172,7 +172,7 @@ end
 
 
 event.End = function ()
-    Hook.Remove("think", "Traitormod.RandomEvents.ShadyMission")
+    Hook.Remove("think", "Neurologics.RandomEvents.ShadyMission")
 end
 
 return event

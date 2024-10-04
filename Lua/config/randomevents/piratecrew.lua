@@ -12,16 +12,16 @@ event.OnlyOncePerRound = true
 event.AmountPoints = 900
 
 event.Init = function ()
-    if Traitormod.SubmarineBuilder == nil then return end
+    if Neurologics.SubmarineBuilder == nil then return end
 
-    event.SubmarineID = Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/DugongPirate.sub", "Pirate Submarine")
+    event.SubmarineID = Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/DugongPirate.sub", "Pirate Submarine")
 end
 
 event.Start = function ()
     if event.SubmarineID == nil then return end
-    if not Traitormod.SubmarineBuilder.IsActive then return end
+    if not Neurologics.SubmarineBuilder.IsActive then return end
 
-    local submarine = Traitormod.SubmarineBuilder.FindSubmarine(event.SubmarineID)
+    local submarine = Neurologics.SubmarineBuilder.FindSubmarine(event.SubmarineID)
     event.Submarine = submarine
 
     submarine.GodMode = false
@@ -63,7 +63,7 @@ event.Start = function ()
     end
 
     submarine.SetPosition(closestToOutpost)
-    Traitormod.SubmarineBuilder.ResetSubmarineSteering(submarine)
+    Neurologics.SubmarineBuilder.ResetSubmarineSteering(submarine)
 
     event.Pirates = {}
 
@@ -116,16 +116,16 @@ event.Start = function ()
             character.Inventory.TryPutItem(item, character.Inventory.FindLimbSlot(InvSlotType.InnerClothes), true, false, character)
         end)
 
-        Traitormod.GhostRoles.Ask("Pirate Crew " .. k, function (client)
-            Traitormod.LostLivesThisRound[client.SteamID] = false
+        Neurologics.GhostRoles.Ask("Pirate Crew " .. k, function (client)
+            Neurologics.LostLivesThisRound[client.SteamID] = false
             client.SetClientCharacter(character)
 
-            Traitormod.SendMessageCharacter(character, Traitormod.Language.PirateCrewYou, "InfoFrameTabButton.Mission")
+            Neurologics.SendMessageCharacter(character, Neurologics.Language.PirateCrewYou, "InfoFrameTabButton.Mission")
         end, character)
     end
 
-    local text = string.format(Traitormod.Language.PirateCrew, event.AmountPoints)
-    Traitormod.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
+    local text = string.format(Neurologics.Language.PirateCrew, event.AmountPoints)
+    Neurologics.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
 
     Hook.Add("think", "PirateCrew.Think", function ()
         local allDead = true
@@ -148,14 +148,14 @@ event.End = function (isEndRound)
         return
     end
 
-    local text = string.format(Traitormod.Language.PirateCrewSuccess, event.AmountPoints)
+    local text = string.format(Neurologics.Language.PirateCrewSuccess, event.AmountPoints)
 
-    Traitormod.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
+    Neurologics.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
 
     for _, client in pairs(Client.ClientList) do
         if client.Character and not client.Character.IsDead and client.Character.TeamID == CharacterTeamType.Team1 then
-            Traitormod.AwardPoints(client, event.AmountPoints)
-            Traitormod.SendMessage(client, string.format(Traitormod.Language.ReceivedPoints, event.AmountPoints), "InfoFrameTabButton.Mission")
+            Neurologics.AwardPoints(client, event.AmountPoints)
+            Neurologics.SendMessage(client, string.format(Neurologics.Language.ReceivedPoints, event.AmountPoints), "InfoFrameTabButton.Mission")
         end
     end
 end

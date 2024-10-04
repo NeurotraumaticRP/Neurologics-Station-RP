@@ -1,4 +1,4 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "Husk"
 objective.AmountPoints = 800
@@ -10,9 +10,9 @@ function objective:Start(target)
         return false
     end
 
-    self.TargetName = Traitormod.GetJobString(self.Target) .. " " .. self.Target.Name
+    self.TargetName = Neurologics.GetJobString(self.Target) .. " " .. self.Target.Name
 
-    self.Text = string.format(Traitormod.Language.ObjectiveHusk, self.TargetName)
+    self.Text = string.format(Neurologics.Language.ObjectiveHusk, self.TargetName)
 
     return true
 end

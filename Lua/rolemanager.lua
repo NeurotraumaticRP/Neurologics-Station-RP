@@ -32,8 +32,8 @@ end
 rm.AddObjective = function(objective)
     rm.Objectives[objective.Name] = objective
 
-    if Traitormod.Config.ObjectiveConfig[objective.Name] ~= nil then
-        for key, value in pairs(Traitormod.Config.ObjectiveConfig[objective.Name]) do
+    if Neurologics.Config.ObjectiveConfig[objective.Name] ~= nil then
+        for key, value in pairs(Neurologics.Config.ObjectiveConfig[objective.Name]) do
             objective[key] = value
         end
     end
@@ -64,8 +64,8 @@ end
 rm.AddRole = function(role)
     rm.Roles[role.Name] = role
 
-    if Traitormod.Config.RoleConfig[role.Name] ~= nil then
-        for key, value in pairs(Traitormod.Config.RoleConfig[role.Name]) do
+    if Neurologics.Config.RoleConfig[role.Name] ~= nil then
+        for key, value in pairs(Neurologics.Config.RoleConfig[role.Name]) do
             role[key] = value
         end
     end
@@ -76,7 +76,7 @@ rm.AssignRole = function(character, newRole)
         error("character" .. character.Name .. " already has a role.", 2)
     end
 
-    Traitormod.Log("Assigned role " .. newRole.Name .. " to " .. character.Name .. ".")
+    Neurologics.Log("Assigned role " .. newRole.Name .. " to " .. character.Name .. ".")
 
     for key, role in pairs(rm.RoundRoles) do
         if role.Name == newRole.Name then
@@ -104,7 +104,7 @@ rm.RemoveRole = function (character)
     role:End()
     rm.RoundRoles[character] = nil
 
-    Traitormod.Log("Removed role " .. role.Name .. " from " .. character.Name .. ".")
+    Neurologics.Log("Removed role " .. role.Name .. " from " .. character.Name .. ".")
 end
 
 rm.AssignRoles = function(characters, newRoles)
@@ -206,12 +206,12 @@ rm.CallObjectiveFunction = function (functionName, ...)
     end
 end
 
-Hook.Add("think", "Traitormod.RoleManager.Think", function()
+Hook.Add("think", "Neurologics.RoleManager.Think", function()
     if not Game.RoundStarted then return end
     rm.CheckObjectives(false)
 end)
 
-Hook.Add("characterDeath", "Traitormod.RoleManager.CharacterDeath", function(deadCharacter)
+Hook.Add("characterDeath", "Neurologics.RoleManager.CharacterDeath", function(deadCharacter)
     rm.CallObjectiveFunction("CharacterDeath", deadCharacter)
 
     local role = rm.GetRole(deadCharacter)

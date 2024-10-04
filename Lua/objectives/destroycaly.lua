@@ -1,4 +1,4 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "DestroyCaly"
 objective.AmountPoints = 500
@@ -16,7 +16,7 @@ function objective:Start(target)
 
     if self.Amount == 0 then return false end
 
-    self.Text = string.format(Traitormod.Language.ObjectiveDestroyCaly, self.Amount)
+    self.Text = string.format(Neurologics.Language.ObjectiveDestroyCaly, self.Amount)
 
     return true
 end

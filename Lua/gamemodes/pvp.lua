@@ -1,11 +1,11 @@
-local weightedRandom = dofile(Traitormod.Path .. "/Lua/weightedrandom.lua")
-local gm = Traitormod.Gamemodes.Gamemode:new()
+local weightedRandom = dofile(Neurologics.Path .. "/Lua/weightedrandom.lua")
+local gm = Neurologics.Gamemodes.Gamemode:new()
 
 gm.Name = "PvP"
 
 function gm:Start()
     if self.EnableRandomEvents then
-        Traitormod.RoundEvents.Initialize()
+        Neurologics.RoundEvents.Initialize()
     end
 
     if self.ShowSonar then
@@ -69,7 +69,7 @@ function gm:Start()
         end
     end
 
-    Hook.Add("item.created", "Traitormod.PvP.BannedItems", function (item)
+    Hook.Add("item.created", "Neurologics.PvP.BannedItems", function (item)
         for _, bannedItem in pairs(self.BannedItems) do
             if item.Prefab.Identifier.Value == bannedItem then
                 Entity.Spawner.AddEntityToRemoveQueue(item)
@@ -95,8 +95,8 @@ function gm:AwardPoints()
                 amount = self.WinningDeadPoints
             end
 
-            local points = Traitormod.AwardPoints(client, amount)
-            Traitormod.SendMessage(client, string.format(Traitormod.Language.ReceivedPoints, points), "InfoFrameTabButton.Mission")
+            local points = Neurologics.AwardPoints(client, amount)
+            Neurologics.SendMessage(client, string.format(Neurologics.Language.ReceivedPoints, points), "InfoFrameTabButton.Mission")
         end
     end
 end
@@ -106,7 +106,7 @@ function gm:End()
         self:AwardPoints()
     end
 
-    Hook.Remove("item.created", "Traitormod.PvP.BannedItems")
+    Hook.Remove("item.created", "Neurologics.PvP.BannedItems")
 
     -- first arg = mission id, second = message, third = completed, forth = list of characters
     return nil

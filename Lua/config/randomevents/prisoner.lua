@@ -56,14 +56,14 @@ event.Start = function ()
     end)
 
 
-    local text = string.format(Traitormod.Language.PrisonerAboard, event.Award)
-    Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox", Color.Yellow)
+    local text = string.format(Neurologics.Language.PrisonerAboard, event.Award)
+    Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.sandbox", Color.Yellow)
 
-    Traitormod.GhostRoles.Ask("Prisoner", function (client)
-        Traitormod.LostLivesThisRound[client.SteamID] = false
+    Neurologics.GhostRoles.Ask("Prisoner", function (client)
+        Neurologics.LostLivesThisRound[client.SteamID] = false
         client.SetClientCharacter(character)
 
-        Traitormod.SendMessageCharacter(character, string.format(Traitormod.Language.PrisonerYou, event.Award), "InfoFrameTabButton.Mission")
+        Neurologics.SendMessageCharacter(character, string.format(Neurologics.Language.PrisonerYou, event.Award), "InfoFrameTabButton.Mission")
     end, character)
 
     Hook.Add("think", "Prisoner.Think", function ()
@@ -75,10 +75,10 @@ event.Start = function ()
         if event.Character.Submarine == Submarine.MainSub then return end
         if Vector2.Distance(event.Character.WorldPosition, Submarine.MainSub.WorldPosition) < 5000 then return end
 
-        local client = Traitormod.FindClientCharacter(event.Character)
+        local client = Neurologics.FindClientCharacter(event.Character)
         if client then
-            Traitormod.AwardPoints(client, event.Award)
-            Traitormod.SendMessage(client, string.format(Traitormod.Language.ReceivedPoints, event.Award), "InfoFrameTabButton.Mission")
+            Neurologics.AwardPoints(client, event.Award)
+            Neurologics.SendMessage(client, string.format(Neurologics.Language.ReceivedPoints, event.Award), "InfoFrameTabButton.Mission")
             Entity.Spawner.AddEntityToRemoveQueue(event.Character)
         end
 
@@ -94,22 +94,22 @@ event.End = function (isEndRound)
         return
     end
 
-    if isEndRound and Traitormod.EndReached(event.Character, 8000) then
-        local text = string.format(Traitormod.Language.PrisonerSuccess, event.Award)
+    if isEndRound and Neurologics.EndReached(event.Character, 8000) then
+        local text = string.format(Neurologics.Language.PrisonerSuccess, event.Award)
 
-        Traitormod.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
+        Neurologics.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
 
         for _, client in pairs(Client.ClientList) do
             if client.Character and not client.Character.IsDead and client.Character.TeamID == CharacterTeamType.Team1 then
-                if not Traitormod.RoleManager.IsAntagonist(client.Character) then
-                    Traitormod.AwardPoints(client, event.Award)
-                    Traitormod.SendMessage(client, string.format(Traitormod.Language.ReceivedPoints, event.Award), "InfoFrameTabButton.Mission")
+                if not Neurologics.RoleManager.IsAntagonist(client.Character) then
+                    Neurologics.AwardPoints(client, event.Award)
+                    Neurologics.SendMessage(client, string.format(Neurologics.Language.ReceivedPoints, event.Award), "InfoFrameTabButton.Mission")
                 end
             end
         end
     else
-        local text = Traitormod.Language.PrisonerFail
-        Traitormod.RoundEvents.SendEventMessage(text, "InfoFrameTabButton.Mission", Color.Yellow)
+        local text = Neurologics.Language.PrisonerFail
+        Neurologics.RoundEvents.SendEventMessage(text, "InfoFrameTabButton.Mission", Color.Yellow)
     end
 end
 

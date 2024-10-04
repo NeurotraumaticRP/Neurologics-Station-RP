@@ -26,8 +26,8 @@ event.Start = function ()
             value.UpdateTeam()
             value.CanSpeak = false
 
-            Traitormod.GhostRoles.Ask("Beacon Pirate Helper " .. index, function (client)
-                Traitormod.LostLivesThisRound[client.SteamID] = false
+            Neurologics.GhostRoles.Ask("Beacon Pirate Helper " .. index, function (client)
+                Neurologics.LostLivesThisRound[client.SteamID] = false
                 client.SetClientCharacter(value)
             end, value)
             index = index + 1
@@ -136,11 +136,11 @@ event.Start = function ()
 
     event.ItemReward = character.Inventory.GetItemInLimbSlot(InvSlotType.Card)
 
-    local text = string.format(Traitormod.Language.BeaconPirate, event.AmountPoints)
-    Traitormod.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
+    local text = string.format(Neurologics.Language.BeaconPirate, event.AmountPoints)
+    Neurologics.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
 
-    Traitormod.GhostRoles.Ask("Beacon Pirate", function (client)
-        Traitormod.LostLivesThisRound[client.SteamID] = false
+    Neurologics.GhostRoles.Ask("Beacon Pirate", function (client)
+        Neurologics.LostLivesThisRound[client.SteamID] = false
         client.SetClientCharacter(character)
     end, character)
 
@@ -151,7 +151,7 @@ event.Start = function ()
 
         if character.Submarine == Submarine.MainSub and not event.EnteredMainSub then
             event.EnteredMainSub = true
-            Traitormod.RoundEvents.SendEventMessage(Traitormod.Language.PirateInside)
+            Neurologics.RoundEvents.SendEventMessage(Neurologics.Language.PirateInside)
         end
     end)
 end
@@ -162,24 +162,24 @@ event.End = function (isEndRound)
 
     if isEndRound then
         if event.Character and not event.Character.IsDead and event.Character.Submarine == event.Beacon then
-            local client = Traitormod.FindClientCharacter(event.Character)
+            local client = Neurologics.FindClientCharacter(event.Character)
             if client then
-                Traitormod.AwardPoints(client, event.AmountPointsPirate)
-                Traitormod.SendMessage(client, string.format(Traitormod.Language.ReceivedPoints, event.AmountPointsPirate), "InfoFrameTabButton.Mission")
+                Neurologics.AwardPoints(client, event.AmountPointsPirate)
+                Neurologics.SendMessage(client, string.format(Neurologics.Language.ReceivedPoints, event.AmountPointsPirate), "InfoFrameTabButton.Mission")
             end
         end
 
         return
     end
 
-    local text = string.format(Traitormod.Language.PirateKilled, event.AmountPoints)
+    local text = string.format(Neurologics.Language.PirateKilled, event.AmountPoints)
 
-    Traitormod.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
+    Neurologics.RoundEvents.SendEventMessage(text, "CrewWalletIconLarge")
 
     for _, client in pairs(Client.ClientList) do
         if client.Character and not client.Character.IsDead and client.Character.TeamID == CharacterTeamType.Team1 then
-            Traitormod.AwardPoints(client, event.AmountPoints)
-            Traitormod.SendMessage(client, string.format(Traitormod.Language.ReceivedPoints, event.AmountPoints), "InfoFrameTabButton.Mission")
+            Neurologics.AwardPoints(client, event.AmountPoints)
+            Neurologics.SendMessage(client, string.format(Neurologics.Language.ReceivedPoints, event.AmountPoints), "InfoFrameTabButton.Mission")
         end
     end
 end

@@ -1,4 +1,4 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "PoisonCaptain"
 objective.RoleFilter = { ["captain"] = true }
@@ -12,15 +12,15 @@ function objective:Start(target)
     end
 
     if not self.Character.IsMedic then
-        Traitormod.Debug("PoisonCaptain is only available for medics.")
+        Neurologics.Debug("PoisonCaptain is only available for medics.")
         return false
     end
 
-    self.TargetName = Traitormod.GetJobString(self.Target)
+    self.TargetName = Neurologics.GetJobString(self.Target)
 
     self.Poison = "Sufforin"
 
-    self.Text = string.format(Traitormod.Language.ObjectivePoisonCaptain, self.TargetName,
+    self.Text = string.format(Neurologics.Language.ObjectivePoisonCaptain, self.TargetName,
         self.Poison)
 
     return true

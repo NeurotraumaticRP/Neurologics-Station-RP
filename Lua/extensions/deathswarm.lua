@@ -2,14 +2,14 @@ local extension = {}
 
 extension.Identifier = "deathswarm"
 
-local sb = Traitormod.SubmarineBuilder
+local sb = Neurologics.SubmarineBuilder
 local submarineIds = {
-    sb.AddSubmarine(Traitormod.Config.RespawnSubmarineFile),
-    sb.AddSubmarine(Traitormod.Config.RespawnSubmarineFile),
-    sb.AddSubmarine(Traitormod.Config.RespawnSubmarineFile),
-    sb.AddSubmarine(Traitormod.Config.RespawnSubmarineFile),
-    sb.AddSubmarine(Traitormod.Config.RespawnSubmarineFile),
-    sb.AddSubmarine(Traitormod.Config.RespawnSubmarineFile),
+    sb.AddSubmarine(Neurologics.Config.RespawnSubmarineFile),
+    sb.AddSubmarine(Neurologics.Config.RespawnSubmarineFile),
+    sb.AddSubmarine(Neurologics.Config.RespawnSubmarineFile),
+    sb.AddSubmarine(Neurologics.Config.RespawnSubmarineFile),
+    sb.AddSubmarine(Neurologics.Config.RespawnSubmarineFile),
+    sb.AddSubmarine(Neurologics.Config.RespawnSubmarineFile),
 }
 
 local timerActive = false
@@ -26,7 +26,7 @@ local function RespawnMessage(msg)
         Game.SendDirectChatMessage(chatMessage, client)
     end
 
-    Traitormod.Log(msg)
+    Neurologics.Log(msg)
 end
 
 local function GetRespawnClients()
@@ -65,7 +65,7 @@ local function FindSpawnPosition()
     local bestPosition = potentialSpawnPositions[1]
 
     if bestPosition == nil then
-        Traitormod.Error("Couldn't find a good spawn position for the respawn shuttle!")
+        Neurologics.Error("Couldn't find a good spawn position for the respawn shuttle!")
         return Vector2(Level.Loaded.Size.X / 2, Level.Loaded.Size.Y / 2)
     end
 
@@ -98,17 +98,17 @@ local function SpawnCharacter(client, submarine)
 
     local character = Character.Create(client.CharacterInfo, potentialPosition, client.CharacterInfo.Name, 0, true, true)
 
-    character.TeamID = Traitormod.Config.RespawnTeam
+    character.TeamID = Neurologics.Config.RespawnTeam
 
     client.SetClientCharacter(character)
 
     character.GiveJobItems()
     character.LoadTalents()
 
-    Traitormod.RespawnedCharacters[character] = client
+    Neurologics.RespawnedCharacters[character] = client
 
-    if Traitormod.Config.RespawnedPlayersDontLooseLives then
-        Traitormod.LostLivesThisRound[client.SteamID] = true
+    if Neurologics.Config.RespawnedPlayersDontLooseLives then
+        Neurologics.LostLivesThisRound[client.SteamID] = true
     end
 end
 
@@ -149,9 +149,9 @@ local function ResetSubmarine(submarine)
 end
 
 Hook.Add("think", "RespawnShuttle.Think", function ()
-    if Traitormod.DisableRespawnShuttle then return end
+    if Neurologics.DisableRespawnShuttle then return end
     if not Game.RoundStarted then return end
-    if not Traitormod.SubmarineBuilder.IsActive() then return end
+    if not Neurologics.SubmarineBuilder.IsActive() then return end
 
     local ratio = #GetRespawnClients() / #Client.ClientList
 
@@ -164,7 +164,7 @@ Hook.Add("think", "RespawnShuttle.Think", function ()
             timerActive = true
             respawnTimer = Game.ServerSettings.RespawnInterval
             lastTimerDisplay = respawnTimer
-            RespawnMessage(string.format(Traitormod.Config.RespawnText, math.floor(respawnTimer)))
+            RespawnMessage(string.format(Neurologics.Config.RespawnText, math.floor(respawnTimer)))
         end
     else
         timerActive = false
@@ -186,7 +186,7 @@ Hook.Add("think", "RespawnShuttle.Think", function ()
 
     if timerActive and (lastTimerDisplay - respawnTimer) > timerDisplayMax then
         lastTimerDisplay = respawnTimer
-        RespawnMessage(string.format(Traitormod.Config.RespawnText, math.floor(respawnTimer)))
+        RespawnMessage(string.format(Neurologics.Config.RespawnText, math.floor(respawnTimer)))
     end
 
     if transportTimer <= 0 and not timerActive and transporting then
@@ -201,7 +201,7 @@ Hook.Add("think", "RespawnShuttle.Think", function ()
         for key, submarineId in pairs(submarineIds) do
             local submarine = sb.FindSubmarine(submarineId)
             submarine.GodMode = false
-            submarine.TeamID = Traitormod.Config.RespawnTeam
+            submarine.TeamID = Neurologics.Config.RespawnTeam
 
             ResetSubmarine(submarine)
             local position = FindSpawnPosition()

@@ -35,15 +35,15 @@ end
 function objective:Award()
     self.Awarded = true
 
-    local client = Traitormod.FindClientCharacter(self.Character)
+    local client = Neurologics.FindClientCharacter(self.Character)
 
     if client then 
-        local points = Traitormod.AwardPoints(client, self.AmountPoints)
-        local lives = Traitormod.AdjustLives(client, self.AmountLives)
-        Traitormod.SendObjectiveCompleted(client, self.Text, points, lives)
+        local points = Neurologics.AwardPoints(client, self.AmountPoints)
+        local lives = Neurologics.AdjustLives(client, self.AmountLives)
+        Neurologics.SendObjectiveCompleted(client, self.Text, points, lives)
 
         if self.DontLooseLives then
-            Traitormod.LostLivesThisRound[client.SteamID] = true
+            Neurologics.LostLivesThisRound[client.SteamID] = true
         end
     end
 
@@ -55,10 +55,10 @@ end
 function objective:Fail()
     self.Awarded = true
     
-    local client = Traitormod.FindClientCharacter(self.Character)
+    local client = Neurologics.FindClientCharacter(self.Character)
 
     if client then 
-        Traitormod.SendObjectiveFailed(client, self.Text)
+        Neurologics.SendObjectiveFailed(client, self.Text)
     end
 
     if self.OnAwarded ~= nil then

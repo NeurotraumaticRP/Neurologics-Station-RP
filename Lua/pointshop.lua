@@ -1,6 +1,6 @@
 local ps = {}
 
-local config = Traitormod.Config
+local config = Neurologics.Config
 local textPromptUtils = require("textpromptutils")
 
 local defaultLimit = 999
@@ -34,11 +34,11 @@ ps.ValidateConfig = function ()
                     end
 
                     if type(item) ~= "table" then
-                        Traitormod.Error(string.format("PointShop Error: Inside the Category \"%s\" theres a Product with Identifier \"%s\", that is invalid", category.Identifier, product.Identifier))
+                        Neurologics.Error(string.format("PointShop Error: Inside the Category \"%s\" theres a Product with Identifier \"%s\", that is invalid", category.Identifier, product.Identifier))
                     elseif item.Identifier == nil then
-                        Traitormod.Error(string.format("PointShop Error: Inside the Category \"%s\" theres a Product with Identifier \"%s\", that has items without an Identifier", category.Identifier, product.Identifier))
+                        Neurologics.Error(string.format("PointShop Error: Inside the Category \"%s\" theres a Product with Identifier \"%s\", that has items without an Identifier", category.Identifier, product.Identifier))
                     elseif ItemPrefab.GetItemPrefab(item.Identifier) == nil then
-                        Traitormod.Error(string.format("PointShop Error: Inside the Category \"%s\" theres a Product with Identifier \"%s\", that has an invalid item identifier \"%s\"", category.Identifier, product.Identifier or "", item.Identifier or ""))
+                        Neurologics.Error(string.format("PointShop Error: Inside the Category \"%s\" theres a Product with Identifier \"%s\", that has an invalid item identifier \"%s\"", category.Identifier, product.Identifier or "", item.Identifier or ""))
                     end
                 end
             end
@@ -124,7 +124,7 @@ ps.GetProductName = function (product)
         error("GetProductName: argument #1 was nil", 2)
     end
 
-    local name = Traitormod.Language.Pointshop[product.Identifier]
+    local name = Neurologics.Language.Pointshop[product.Identifier]
 
     if name then return name end
 
@@ -142,7 +142,7 @@ ps.GetCategoryName = function (category)
 
     if category.Identifier == nil then return "invalid_category" end
 
-    local name = Traitormod.Language.Pointshop[category.Identifier]
+    local name = Neurologics.Language.Pointshop[category.Identifier]
     if name then return name end
 
     return category.Identifier
@@ -172,12 +172,12 @@ end
 
 ps.ValidateClient = function(client)
     if not config.PointShopConfig.Enabled then
-        Traitormod.SendMessage(client, Traitormod.Language.CommandNotActive)
+        Neurologics.SendMessage(client, Neurologics.Language.CommandNotActive)
         return false
     end
 
     if not client.InGame then
-        Traitormod.SendMessage(client, Traitormod.Language.PointshopInGame)
+        Neurologics.SendMessage(client, Neurologics.Language.PointshopInGame)
         return false
     end
 
@@ -189,8 +189,8 @@ ps.SpawnItem = function(client, item, onSpawned)
     local condition = item.Condition or item.MaxCondition
 
     if prefab == nil then
-        Traitormod.SendMessage(client, "PointShop Error: Could not find item with identifier " .. item.Identifier .. " please report this error.")
-        Traitormod.Error("PointShop Error: Could not find item with identifier " .. item.Identifier)
+        Neurologics.SendMessage(client, "PointShop Error: Could not find item with identifier " .. item.Identifier .. " please report this error.")
+        Neurologics.Error("PointShop Error: Could not find item with identifier " .. item.Identifier)
         return
     end
 
@@ -269,7 +269,7 @@ ps.GetProductPrice = function (client, product)
     local mult = 0
 
     if product.RoundPrice then
-        local time = Traitormod.RoundTime
+        local time = Neurologics.RoundTime
 
         mult = math.remap(time, product.RoundPrice.StartTime * 60, product.RoundPrice.EndTime * 60, 0, product.RoundPrice.PriceReduction)
         mult = math.clamp(mult, 0, product.RoundPrice.PriceReduction)
@@ -281,14 +281,14 @@ end
 
 ps.BuyProduct = function(client, product)
     local price = 0
-    if not Traitormod.Config.TestMode then
-        local points = Traitormod.GetData(client, "Points") or 0
+    if not Neurologics.Config.TestMode then
+        local points = Neurologics.GetData(client, "Points") or 0
         price = ps.GetProductPrice(client, product)
 
         if product.CanBuy then
             local success, result = product.CanBuy(client, product)
             if not success then
-                return result or Traitormod.Language.PointshopCannotBeUsed
+                return result or Neurologics.Language.PointshopCannotBeUsed
             end
         end
 
@@ -299,7 +299,7 @@ ps.BuyProduct = function(client, product)
         if product.Timeout ~= nil then
             if ps.Timeouts[client.SteamID] ~= nil and Timer.GetTime() < ps.Timeouts[client.SteamID] then
                 local time = math.ceil(ps.Timeouts[client.SteamID] - Timer.GetTime())
-                return string.format(Traitormod.Language.PointshopWait, time)
+                return string.format(Neurologics.Language.PointshopWait, time)
             end
 
             ps.Timeouts[client.SteamID] = Timer.GetTime() + product.Timeout
@@ -309,11 +309,11 @@ ps.BuyProduct = function(client, product)
             return ps.ProductBuyFailureReason.NoStock
         end
 
-        Traitormod.Log(string.format("PointShop: %s bought \"%s\".", Traitormod.ClientLogName(client), product.Identifier))
-        Traitormod.SetData(client, "Points", points - price)
+        Neurologics.Log(string.format("PointShop: %s bought \"%s\".", Neurologics.ClientLogName(client), product.Identifier))
+        Neurologics.SetData(client, "Points", points - price)
 
-        Traitormod.Stats.AddClientStat("CrewBoughtItem", client, 1)
-        Traitormod.Stats.AddListStat("ItemsBought", ps.GetProductName(product), 1)
+        Neurologics.Stats.AddClientStat("CrewBoughtItem", client, 1)
+        Neurologics.Stats.AddListStat("ItemsBought", ps.GetProductName(product), 1)
     end
 
     -- Activate the product
@@ -323,26 +323,26 @@ end
 ps.HandleProductBuy = function (client, product, result, quantity)
     quantity = quantity or 1
     if result == ps.ProductBuyFailureReason.NoPoints then
-        textPromptUtils.Prompt(Traitormod.Language.PointshopNoPoints, {}, client, function (id, client) end, "gambler")
+        textPromptUtils.Prompt(Neurologics.Language.PointshopNoPoints, {}, client, function (id, client) end, "gambler")
     elseif result == ps.ProductBuyFailureReason.NoStock then
-        textPromptUtils.Prompt(Traitormod.Language.PointshopNoStock, {}, client, function (id, client) end, "gambler")
+        textPromptUtils.Prompt(Neurologics.Language.PointshopNoStock, {}, client, function (id, client) end, "gambler")
     elseif result == nil then
-        textPromptUtils.Prompt(string.format(Traitormod.Language.PointshopPurchased, ps.GetProductName(product), ps.GetProductPrice(client, product), math.floor(Traitormod.GetData(client, "Points") or 0)), {}, client, function (id, client) end, "gambler")
+        textPromptUtils.Prompt(string.format(Neurologics.Language.PointshopPurchased, ps.GetProductName(product), ps.GetProductPrice(client, product), math.floor(Neurologics.GetData(client, "Points") or 0)), {}, client, function (id, client) end, "gambler")
 
         if true then return end
         -- Don't let the player rebuy products that need installation or have timelimit
         if ps.GetProductHasInstallation(product) or product.Timeout ~= nil or ps.GetProductLimit(client, product) < 2 then
-            textPromptUtils.Prompt(string.format(Traitormod.Language.PointshopPurchased, ps.GetProductName(product), ps.GetProductPrice(client, product), math.floor(Traitormod.GetData(client, "Points") or 0)), {}, client, function (id, client) end, "gambler")
+            textPromptUtils.Prompt(string.format(Neurologics.Language.PointshopPurchased, ps.GetProductName(product), ps.GetProductPrice(client, product), math.floor(Neurologics.GetData(client, "Points") or 0)), {}, client, function (id, client) end, "gambler")
             return
         end
         -- Buy again menu
         local options = {}
-        table.insert(options, Traitormod.Language.PointshopCancel)
+        table.insert(options, Neurologics.Language.PointshopCancel)
         for i = 1, ps.GetProductLimit(client, product), 1 do
             table.insert(options, " - " .. tostring(i))
         end
         -- Handle rebuying multiple times
-        textPromptUtils.Prompt(string.format("Purchased %sx \"%s\" for %s points\n\nNew point balance is: %s points.\nIf you want to buy again enter the amount:", quantity, ps.GetProductName(product), ps.GetProductPrice(client, product) * quantity, math.floor(Traitormod.GetData(client, "Points") or 0)), options, client, function (id, client)
+        textPromptUtils.Prompt(string.format("Purchased %sx \"%s\" for %s points\n\nNew point balance is: %s points.\nIf you want to buy again enter the amount:", quantity, ps.GetProductName(product), ps.GetProductPrice(client, product) * quantity, math.floor(Neurologics.GetData(client, "Points") or 0)), options, client, function (id, client)
             -- id-1 is the quantity that player chose
             if id > 1 then
                 local successCount = 0 -- If you select more than product has in stock it will handle it
@@ -372,8 +372,8 @@ ps.ShowCategoryItems = function(client, category)
     local options = {}
     local productsLookup = {}
 
-    table.insert(options, Traitormod.Language.PointshopGoBack)
-    table.insert(options, Traitormod.Language.PointshopCancel)
+    table.insert(options, Neurologics.Language.PointshopGoBack)
+    table.insert(options, Neurologics.Language.PointshopCancel)
 
     for key, product in pairs(category.Products) do
         if product.Enabled ~= false then
@@ -390,10 +390,10 @@ ps.ShowCategoryItems = function(client, category)
         table.insert(options, "") -- FIXME: some hud scaling settings will hide list items
     end
 
-    local points = Traitormod.GetData(client, "Points") or 0
+    local points = Neurologics.GetData(client, "Points") or 0
 
     textPromptUtils.Prompt(
-        string.format(Traitormod.Language.PointshopWishBuy, math.floor(points)), 
+        string.format(Neurologics.Language.PointshopWishBuy, math.floor(points)), 
         options, client, function (id, client2)
         if id == 1 then
             ps.ShowCategory(client2)
@@ -405,8 +405,8 @@ ps.ShowCategoryItems = function(client, category)
         -- Check if product needs to be installed
         if ps.GetProductHasInstallation(product) then
             textPromptUtils.Prompt(
-            Traitormod.Language.PointshopInstallation,
-            {Traitormod.Language.Yes, Traitormod.Language.No}, client2, function (id, client3)
+            Neurologics.Language.PointshopInstallation,
+            {Neurologics.Language.Yes, Neurologics.Language.No}, client2, function (id, client3)
                 if id == 1 then
                     if not ps.ValidateClient(client3) or not ps.CanClientAccessCategory(client2, category) then
                         return
@@ -431,7 +431,7 @@ ps.ShowCategory = function(client)
     local options = {}
     local categoryLookup = {}
 
-    table.insert(options, Traitormod.Language.PointshopCancel)
+    table.insert(options, Neurologics.Language.PointshopCancel)
     for key, value in pairs(ps.ActiveCategories) do
         if ps.CanClientAccessCategory(client, value) then
             table.insert(options, ps.GetCategoryName(value))
@@ -440,17 +440,17 @@ ps.ShowCategory = function(client)
     end
 
     if #options == 1 then
-        textPromptUtils.Prompt(Traitormod.Language.PointshopNotAvailable, {}, client, function (id, client) end, "gambler")
+        textPromptUtils.Prompt(Neurologics.Language.PointshopNotAvailable, {}, client, function (id, client) end, "gambler")
         return
     end
 
     table.insert(options, "")
     table.insert(options, "") -- FIXME: for some reason when the bar is full, the last item is never shown?
 
-    local points = Traitormod.GetData(client, "Points") or 0
+    local points = Neurologics.GetData(client, "Points") or 0
 
     -- note: we have two different client variables here to prevent cheating
-    textPromptUtils.Prompt(string.format(Traitormod.Language.PointshopWishCategory, math.floor(points)), options, client, function (id, client2)
+    textPromptUtils.Prompt(string.format(Neurologics.Language.PointshopWishCategory, math.floor(points)), options, client, function (id, client2)
         if categoryLookup[id] == nil then return end
 
         ps.ShowCategoryItems(client2, categoryLookup[id])
@@ -461,9 +461,9 @@ ps.TrackRefund = function (client, product, paidPrice)
     ps.Refunds[client] = { Product = product, Time = Timer.GetTime(), Price = paidPrice }
 end
 
-Traitormod.AddCommand({"!pointshop", "!pointsshop", "!ps", "!shop"}, function (client, args)
+Neurologics.AddCommand({"!pointshop", "!pointsshop", "!ps", "!shop"}, function (client, args)
     if #ps.ActiveCategories == 0 then
-        textPromptUtils.Prompt(Traitormod.Language.PointshopNotAvailable, {}, client, function (id, client) end, "gambler")
+        textPromptUtils.Prompt(Neurologics.Language.PointshopNotAvailable, {}, client, function (id, client) end, "gambler")
         return true    
     end
 
@@ -487,11 +487,11 @@ Traitormod.AddCommand({"!pointshop", "!pointsshop", "!ps", "!shop"}, function (c
                 local result = ps.BuyProduct(client, product)
 
                 if result == ps.ProductBuyFailureReason.NoPoints then
-                    Traitormod.SendMessage(client, Traitormod.Language.PointshopNoPoints)
+                    Neurologics.SendMessage(client, Neurologics.Language.PointshopNoPoints)
                 end
 
                 if result == ps.ProductBuyFailureReason.NoStock then
-                    Traitormod.SendMessage(client, Traitormod.Language.PointshopNoStock)
+                    Neurologics.SendMessage(client, Neurologics.Language.PointshopNoStock)
                 end
             end
 
@@ -517,17 +517,17 @@ local function refundProduct(client, refundTable, increaseProduct)
         ps.UseProductLimit(client, refundTable.Product, increaseProduct)
     end
 
-    Traitormod.AwardPoints(client, refundTable.Price)
-    Traitormod.SendMessage(client, string.format(Traitormod.Language.PointshopRefunded, refundTable.Price, ps.GetProductName(refundTable.Product)))
+    Neurologics.AwardPoints(client, refundTable.Price)
+    Neurologics.SendMessage(client, string.format(Neurologics.Language.PointshopRefunded, refundTable.Price, ps.GetProductName(refundTable.Product)))
 
     ps.Refunds[client] = nil
 end
 
-Hook.Add("roundEnd", "TraitorMod.PointShop.RoundEnd", function ()
+Hook.Add("roundEnd", "Neurologics.PointShop.RoundEnd", function ()
     ps.ResetProductLimits()
     ps.ActiveCategories = {}
 
-    if Traitormod.Config.TestMode then return end
+    if Neurologics.Config.TestMode then return end
     if config.PointShopConfig.DeathSpawnRefundAtEndRound then
         for client, refundTable in pairs(ps.Refunds) do
             if client.Character ~= nil and not client.Character.IsPet then -- client.Character is surely alive
@@ -539,11 +539,11 @@ Hook.Add("roundEnd", "TraitorMod.PointShop.RoundEnd", function ()
     end 
 end)
 
-Hook.Add("characterDeath", "Traitormod.Pointshop.Death", function (character)
+Hook.Add("characterDeath", "Neurologics.Pointshop.Death", function (character)
     if character.IsPet then return end
-    local client = Traitormod.FindClientCharacter(character)
+    local client = Neurologics.FindClientCharacter(character)
     if client == nil then return end
-    if Traitormod.Config.TestMode then return end
+    if Neurologics.Config.TestMode then return end
 
     local refundTable = ps.Refunds[client]
 
@@ -570,7 +570,7 @@ for _, category in pairs(config.PointShopConfig.ItemCategories) do
                     product.Identifier = product.Items[1]
                 end
             else
-                Traitormod.Error("Product has no identifier nor any items, unable to figure out an identifier for the product. Category = %s, Name = %s, Price = %s", tostring(category.Identifier), tostring(product.Name),  tostring(product.Price))
+                Neurologics.Error("Product has no identifier nor any items, unable to figure out an identifier for the product. Category = %s, Name = %s, Price = %s", tostring(category.Identifier), tostring(product.Name),  tostring(product.Price))
 
                 product.Identifier = "unknown_" .. tostring(math.random(1, 100000))
             end

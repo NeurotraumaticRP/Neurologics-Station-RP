@@ -1,7 +1,7 @@
-local objective = Traitormod.RoleManager.Objectives.Objective:new()
+local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "FinishAllObjectives"
-objective.Text = Traitormod.Language.ObjectiveFinishAllObjectives
+objective.Text = Neurologics.Language.ObjectiveFinishAllObjectives
 objective.EndRoundObjective = false
 objective.AmountPoints = 0
 objective.AmountLives = 1
@@ -11,7 +11,7 @@ function objective:Start()
 end
 
 function objective:IsCompleted()
-    local role = Traitormod.RoleManager.GetRole(self.Character)
+    local role = Neurologics.RoleManager.GetRole(self.Character)
 
     if role == nil then return false end
 

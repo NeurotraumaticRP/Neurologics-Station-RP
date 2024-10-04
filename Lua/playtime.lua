@@ -1,13 +1,13 @@
-Hook.Add("think", "Traitormod.Playtime.think", function()
+Hook.Add("think", "Neurologics.Playtime.think", function()
     for index, client in pairs(Client.ClientList) do
-        Traitormod.AddData(client, "Playtime", 1/60)
+        Neurologics.AddData(client, "Playtime", 1/60)
     end
 end)
 
-Traitormod.AddCommand({"!playtime", "!pt"}, function (client, args)
-    Traitormod.SendChatMessage(
+Neurologics.AddCommand({"!playtime", "!pt"}, function (client, args)
+    Neurologics.SendChatMessage(
         client,
-        string.format(Traitormod.Language.CMDPlaytime, Traitormod.FormatTime(math.ceil(Traitormod.GetData(client, "Playtime") or 0))),
+        string.format(Neurologics.Language.CMDPlaytime, Neurologics.FormatTime(math.ceil(Neurologics.GetData(client, "Playtime") or 0))),
         Color.Green
     )
     return true

@@ -3,7 +3,7 @@ local gm = {}
 gm.Name = "Gamemode"
 
 function gm:PreStart()
-    Traitormod.Pointshop.Initialize(self.PointshopCategories or {})
+    Neurologics.Pointshop.Initialize(self.PointshopCategories or {})
 end
 
 function gm:Start()
@@ -23,11 +23,11 @@ function gm:TraitorResults()
 end
 
 function gm:RoundSummary()
-    local sb = Traitormod.StringBuilder:new()
+    local sb = Neurologics.StringBuilder:new()
 
     sb("Gamemode: %s\n", self.Name)
 
-    for character, role in pairs(Traitormod.RoleManager.RoundRoles) do
+    for character, role in pairs(Neurologics.RoleManager.RoundRoles) do
         local text = role:OtherGreet()
         if text then
             sb("\n%s\n", role:OtherGreet())

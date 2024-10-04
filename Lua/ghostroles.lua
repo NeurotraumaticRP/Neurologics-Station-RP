@@ -1,6 +1,6 @@
 local gr = {}
 
-local config = Traitormod.Config.GhostRoleConfig
+local config = Neurologics.Config.GhostRoleConfig
 
 local ghostRolesAnnounceTimer = 0
 
@@ -13,7 +13,7 @@ gr.Ask = function (name, callback, character)
     name = string.lower(name)
     gr.Roles[name] = {Callback = callback, Taken = false, Character = character}
 
-    local text = Traitormod.Language.GhostRoleAvailable
+    local text = Neurologics.Language.GhostRoleAvailable
 
     text = string.format(text, name, name)
 
@@ -54,19 +54,19 @@ gr.ReturnGhostRole = function (character)
     return false
 end
 
-Traitormod.AddCommand({"!ghostrole", "!ghostroles"}, function(client, args)
+Neurologics.AddCommand({"!ghostrole", "!ghostroles"}, function(client, args)
     if not config.Enabled then
-        Traitormod.SendMessage(client, Traitormod.Language.GhostRolesDisabled)
+        Neurologics.SendMessage(client, Neurologics.Language.GhostRolesDisabled)
         return true
     end
 
     if client.Character ~= nil and not client.Character.IsDead then
-        Traitormod.SendMessage(client, Traitormod.Language.GhostRolesSpectator)
+        Neurologics.SendMessage(client, Neurologics.Language.GhostRolesSpectator)
         return true
     end
 
     if not client.InGame then
-        Traitormod.SendMessage(client, Traitormod.Language.GhostRolesInGame)
+        Neurologics.SendMessage(client, Neurologics.Language.GhostRolesInGame)
         return true
     end
 
@@ -77,9 +77,9 @@ Traitormod.AddCommand({"!ghostrole", "!ghostroles"}, function(client, args)
         local roles = ""
         for key, value in pairs(gr.Roles) do
             if value.Character and value.Character.IsDead then
-                roles = roles .. key .. Traitormod.Language.GhostRolesDead .. "\n"
+                roles = roles .. key .. Neurologics.Language.GhostRolesDead .. "\n"
             elseif value.Taken then
-                roles = roles .. key .. Traitormod.Language.GhostRolesTaken .. "\n"
+                roles = roles .. key .. Neurologics.Language.GhostRolesTaken .. "\n"
             else
                 roles = roles .. key .. "\n"
             end
@@ -87,23 +87,23 @@ Traitormod.AddCommand({"!ghostrole", "!ghostroles"}, function(client, args)
 
         if roles == "" then roles = "None" end
 
-        Traitormod.SendMessage(client, Traitormod.Language.GhostRolesNotFound .. roles)
+        Neurologics.SendMessage(client, Neurologics.Language.GhostRolesNotFound .. roles)
         return true
     end
 
     if gr.Roles[name].Taken then
-        Traitormod.SendMessage(client, Traitormod.Language.GhostRolesTook)
+        Neurologics.SendMessage(client, Neurologics.Language.GhostRolesTook)
         return true
     end
 
     if gr.Roles[name].Character and gr.Roles[name].Character.IsDead then
-        Traitormod.SendMessage(client, Traitormod.Language.GhostRolesAlreadyDead)
+        Neurologics.SendMessage(client, Neurologics.Language.GhostRolesAlreadyDead)
         return true
     end
 
-    Traitormod.Log(Traitormod.ClientLogName(client) .. " took the ghost role of " .. name .. ".")
+    Neurologics.Log(Neurologics.ClientLogName(client) .. " took the ghost role of " .. name .. ".")
 
-    Traitormod.MidRoundSpawn.SetSpawnedClient(client, true)
+    Neurologics.MidRoundSpawn.SetSpawnedClient(client, true)
     gr.Roles[name].Callback(client)
     gr.Roles[name].Taken = true
 
@@ -111,7 +111,7 @@ Traitormod.AddCommand({"!ghostrole", "!ghostroles"}, function(client, args)
 end)
 
 
-Hook.Add("think", "Traitormod.GhostRoles.Think", function (...)
+Hook.Add("think", "Neurologics.GhostRoles.Think", function (...)
     if not config.Enabled then return end
     if Timer.GetTime() < ghostRolesAnnounceTimer then return end
     ghostRolesAnnounceTimer = Timer.GetTime() + 200
@@ -127,14 +127,14 @@ Hook.Add("think", "Traitormod.GhostRoles.Think", function (...)
 
     for key, client in pairs(Client.ClientList) do
         if client.Character == nil or client.Character.IsDead then
-            local chatMessage = ChatMessage.Create("Ghost Roles", string.format(Traitormod.Language.GhostRolesReminder, roles), ChatMessageType.Default, nil, nil)
+            local chatMessage = ChatMessage.Create("Ghost Roles", string.format(Neurologics.Language.GhostRolesReminder, roles), ChatMessageType.Default, nil, nil)
             chatMessage.Color = Color(255, 100, 10, 255)
             Game.SendDirectChatMessage(chatMessage, client)
         end
     end
 end)
 
-Hook.Add("roundEnd", "TraitorMod.GhostRoles.RoundEnd", function ()
+Hook.Add("roundEnd", "Neurologics.GhostRoles.RoundEnd", function ()
     gr.Roles = {}
     gr.Characters = {}
 end)

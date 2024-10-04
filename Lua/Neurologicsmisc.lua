@@ -2,14 +2,14 @@ local timer = Timer.GetTime()
 
 local huskBeacons = {}
 
-Traitormod.AddHuskBeacon = function (item, time)
+Neurologics.AddHuskBeacon = function (item, time)
     huskBeacons[item] = time
 end
 
 
 local peopleInOutpost = 0
 local ghostRoleNumber = 1
-Hook.Add("think", "Traitormod.MiscThink", function ()
+Hook.Add("think", "Neurologics.MiscThink", function ()
     if timer > Timer.GetTime() then return end
     if not Game.RoundStarted then return end
 
@@ -31,12 +31,12 @@ Hook.Add("think", "Traitormod.MiscThink", function ()
 
     timer = Timer.GetTime() + 5
 
-    if Traitormod.Config.GhostRoleConfig.Enabled then
+    if Neurologics.Config.GhostRoleConfig.Enabled then
         for key, character in pairs(Character.CharacterList) do
-            local client = Traitormod.FindClientCharacter(character)
-            if not Traitormod.GhostRoles.IsGhostRole(character) and not client then
-                if Traitormod.Config.GhostRoleConfig.MiscGhostRoles[character.SpeciesName.Value] then
-                    Traitormod.GhostRoles.Ask(character.Name .. " " .. ghostRoleNumber, function (client)
+            local client = Neurologics.FindClientCharacter(character)
+            if not Neurologics.GhostRoles.IsGhostRole(character) and not client then
+                if Neurologics.Config.GhostRoleConfig.MiscGhostRoles[character.SpeciesName.Value] then
+                    Neurologics.GhostRoles.Ask(character.Name .. " " .. ghostRoleNumber, function (client)
                         client.SetClientCharacter(character)
                     end, character)
                     ghostRoleNumber = ghostRoleNumber + 1
@@ -45,9 +45,9 @@ Hook.Add("think", "Traitormod.MiscThink", function ()
         end
     end
 
-    if not Traitormod.RoundEvents.EventExists("OutpostPirateAttack") then return end
-    if Traitormod.RoundEvents.IsEventActive("OutpostPirateAttack") then return end
-    if Traitormod.SelectedGamemode == nil or Traitormod.SelectedGamemode.Name ~= "Secret" then return end
+    if not Neurologics.RoundEvents.EventExists("OutpostPirateAttack") then return end
+    if Neurologics.RoundEvents.IsEventActive("OutpostPirateAttack") then return end
+    if Neurologics.SelectedGamemode == nil or Neurologics.SelectedGamemode.Name ~= "Secret" then return end
 
     local targets = {}
     local outpost = Level.Loaded.EndOutpost.WorldPosition
@@ -63,24 +63,24 @@ Hook.Add("think", "Traitormod.MiscThink", function ()
     end
 
     if peopleInOutpost > 30 then
-        Traitormod.RoundEvents.TriggerEvent("OutpostPirateAttack")
+        Neurologics.RoundEvents.TriggerEvent("OutpostPirateAttack")
     end
 end)
 
-Hook.Add("roundEnd", "Traitormod.MiscEnd", function ()
+Hook.Add("roundEnd", "Neurologics.MiscEnd", function ()
     peopleInOutpost = 0
     ghostRoleNumber = 1
     huskBeacons = {}
 end)
 
-if Traitormod.Config.DeathLogBook then
+if Neurologics.Config.DeathLogBook then
     local messages = {}
 
-    Hook.Add("roundEnd", "Traitormod.DeathLogBook", function ()
+    Hook.Add("roundEnd", "Neurologics.DeathLogBook", function ()
         messages = {}
     end)
 
-    Hook.Add("character.death", "Traitormod.DeathLogBook", function (character)
+    Hook.Add("character.death", "Neurologics.DeathLogBook", function (character)
         if messages[character] == nil then return end
 
         Entity.Spawner.AddItemToSpawnQueue(ItemPrefab.GetItemPrefab("logbook"), character.Inventory, nil, nil, function(item)
@@ -97,9 +97,9 @@ if Traitormod.Config.DeathLogBook then
         end)
     end)
 
-    Traitormod.AddCommand("!write", function (client, args)
+    Neurologics.AddCommand("!write", function (client, args)
         if client.Character == nil or client.Character.IsDead or client.Character.SpeechImpediment > 0 or not client.Character.IsHuman then
-            Traitormod.SendChatMessage(client, "You are unable to write to your death logbook.", Color.Red)
+            Neurologics.SendChatMessage(client, "You are unable to write to your death logbook.", Color.Red)
             return true
         end
 
@@ -112,7 +112,7 @@ if Traitormod.Config.DeathLogBook then
         local message = table.concat(args, " ")
         table.insert(messages[client.Character], message)
 
-        Traitormod.SendChatMessage(client, "Wrote \"" .. message .. "\" to the death logbook.", Color.Green)
+        Neurologics.SendChatMessage(client, "Wrote \"" .. message .. "\" to the death logbook.", Color.Green)
 
         return true
     end)

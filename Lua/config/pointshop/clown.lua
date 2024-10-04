@@ -5,7 +5,7 @@ category.Decoration = "cultist"
 category.FadeToBlack = true
 
 category.CanAccess = function(client)
-    return client.Character and not client.Character.IsDead and Traitormod.RoleManager.HasRole(client.Character, "Clown")
+    return client.Character and not client.Character.IsDead and Neurologics.RoleManager.HasRole(client.Character, "Clown")
 end
 
 category.Init = function ()
@@ -17,7 +17,7 @@ category.Init = function ()
         end
     end
 
-    Hook.Add("statusEffect.apply.fixfoamgrenade", "Traitormod.FixFoamGrenadeJail", function (effect, deltaTime, item, targets, worldPosition)
+    Hook.Add("statusEffect.apply.fixfoamgrenade", "Neurologics.FixFoamGrenadeJail", function (effect, deltaTime, item, targets, worldPosition)
         if not item.HasTag("jailgrenade") then return end
 
         if effect.type == ActionType.OnSecondaryUse then
@@ -41,7 +41,7 @@ category.Init = function ()
         end
     end)
 
-    Hook.Add("traitormod.terminalWrite", "Traitormod.Pointshop.IdCardLocator", function (item, client, output)
+    Hook.Add("Neurologics.terminalWrite", "Neurologics.Pointshop.IdCardLocator", function (item, client, output)
         if not item.HasTag("idcardlocator") then return end
         if not client.Character then return end
 
@@ -54,7 +54,7 @@ category.Init = function ()
             local idCard = value.GetComponentString("IdCard")
             local ownerJobName = idCard.OwnerJob and idCard.OwnerJob.Name or "Unknown"
 
-            terminal.ShowMessage = string.format(Traitormod.Language.Pointshop.idcardlocator_result, tostring(ownerJobName), idCard.OwnerName, math.floor(distance))
+            terminal.ShowMessage = string.format(Neurologics.Language.Pointshop.idcardlocator_result, tostring(ownerJobName), idCard.OwnerName, math.floor(distance))
         end
 
         terminal.SyncHistory()
@@ -90,7 +90,7 @@ category.Products = {
             local grenade = ItemPrefab.GetItemPrefab("fixfoamgrenade")
             Entity.Spawner.AddItemToSpawnQueue(grenade, client.Character.Inventory, nil, nil, function (item)
                 item.AddTag("jailgrenade")
-                item.Description = Traitormod.Language.Pointshop.jailgrenade_desc
+                item.Description = Neurologics.Language.Pointshop.jailgrenade_desc
 
                 item.set_InventoryIconColor(Color(255, 0, 0, 255))
                 item.SpriteColor = Color(255, 0, 0, 255)
@@ -113,7 +113,7 @@ category.Products = {
             local handcuffs = ItemPrefab.GetItemPrefab("handcuffs")
             Entity.Spawner.AddItemToSpawnQueue(handcuffs, client.Character.Inventory, nil, nil, function (item)
                 item.Tags = "fakehandcuffs"
-                Traitormod.SendChatMessage(client, Traitormod.Language.FakeHandcuffsUsage , Color.Aqua)
+                Neurologics.SendChatMessage(client, Neurologics.Language.FakeHandcuffsUsage , Color.Aqua)
             end)
         end
     },
@@ -160,7 +160,7 @@ category.Products = {
         Action = function (client)
             local logbook = ItemPrefab.GetItemPrefab("logbook")
             Entity.Spawner.AddItemToSpawnQueue(logbook, client.Character.Inventory, nil, nil, function (item)
-                item.Description = Traitormod.Language.Pointshop.idcardlocator_desc
+                item.Description = Neurologics.Language.Pointshop.idcardlocator_desc
                 item.set_InventoryIconColor(Color(255, 0, 0, 255))
                 item.SpriteColor = Color(255, 0, 0, 255)
                 item.Tags = "idcardlocator"
@@ -300,11 +300,11 @@ category.Products = {
         IsLimitGlobal = true,
 
         CanBuy = function (client, product)
-            return not Traitormod.RoundEvents.IsEventActive("ClownMagic")
+            return not Neurologics.RoundEvents.IsEventActive("ClownMagic")
         end,
 
         Action = function ()
-            Traitormod.RoundEvents.TriggerEvent("ClownMagic")
+            Neurologics.RoundEvents.TriggerEvent("ClownMagic")
         end
     },
 
@@ -315,11 +315,11 @@ category.Products = {
         IsLimitGlobal = true,
 
         CanBuy = function (client, product)
-            return not Traitormod.RoundEvents.IsEventActive("RandomLights")
+            return not Neurologics.RoundEvents.IsEventActive("RandomLights")
         end,
 
         Action = function ()
-            Traitormod.RoundEvents.TriggerEvent("RandomLights")
+            Neurologics.RoundEvents.TriggerEvent("RandomLights")
         end
     },
 }

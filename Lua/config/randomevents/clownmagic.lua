@@ -26,8 +26,8 @@ event.Start = function ()
         value.TeleportTo(positions[math.random(#positions)])
     end
 
-    local text = Traitormod.Language.ClownMagic
-    Traitormod.RoundEvents.SendEventMessage(text)
+    local text = Neurologics.Language.ClownMagic
+    Neurologics.RoundEvents.SendEventMessage(text)
 
     event.End()
 end

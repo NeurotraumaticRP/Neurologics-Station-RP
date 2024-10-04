@@ -2,32 +2,32 @@ local category = {}
 
 category.Identifier = "ships"
 category.CanAccess = function(client)
-    return client.Character and not client.Character.IsDead and client.Character.IsHuman and Traitormod.SubmarineBuilder ~= nil and Traitormod.SubmarineBuilder.IsActive()
+    return client.Character and not client.Character.IsDead and client.Character.IsHuman and Neurologics.SubmarineBuilder ~= nil and Neurologics.SubmarineBuilder.IsActive()
 end
 
 category.Init = function ()
-    if Traitormod.SubmarineBuilder then
-        category.StreamChalkId = Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Stream Chalk.sub", "[P]Stream Chalk")
-        category.BarsukId = Traitormod.SubmarineBuilder.AddSubmarine("Content/Submarines/Barsuk.sub", "[P]Barsuk")
-        category.SeaShark = Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Sea shark Mark II.sub", "[P]Sea shark Mark II")
-        category.Uri = Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Uri.sub", "[P]Uri - Alien Ship")
+    if Neurologics.SubmarineBuilder then
+        category.StreamChalkId = Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Stream Chalk.sub", "[P]Stream Chalk")
+        category.BarsukId = Neurologics.SubmarineBuilder.AddSubmarine("Content/Submarines/Barsuk.sub", "[P]Barsuk")
+        category.SeaShark = Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Sea shark Mark II.sub", "[P]Sea shark Mark II")
+        category.Uri = Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Uri.sub", "[P]Uri - Alien Ship")
     end
 end
 
 local function CanBuy(id, client)
-    local submarine = Traitormod.SubmarineBuilder.FindSubmarine(id)
+    local submarine = Neurologics.SubmarineBuilder.FindSubmarine(id)
     local position = client.Character.WorldPosition + Vector2(0, -submarine.Borders.Height)
 
     local levelWalls = Level.Loaded.GetTooCloseCells(position, submarine.Borders.Width)
     if #levelWalls > 0 then
-        return false, Traitormod.Language.ShipTooCloseToWall
+        return false, Neurologics.Language.ShipTooCloseToWall
     end
 
     for key, value in pairs(Submarine.Loaded) do
         if submarine ~= value then
             local maxDistance = (value.Borders.Width + submarine.Borders.Width) / 2
             if Vector2.Distance(value.WorldPosition, position) < maxDistance then
-                return false, Traitormod.Language.ShipTooCloseToShip
+                return false, Neurologics.Language.ShipTooCloseToShip
             end
         end
     end
@@ -36,7 +36,7 @@ local function CanBuy(id, client)
 end
 
 local function SpawnSubmarine(id, client)
-    local submarine = Traitormod.SubmarineBuilder.FindSubmarine(id)
+    local submarine = Neurologics.SubmarineBuilder.FindSubmarine(id)
     local position = client.Character.WorldPosition + Vector2(0, -submarine.Borders.Height)
 
     submarine.SetPosition(position)
@@ -46,7 +46,7 @@ local function SpawnSubmarine(id, client)
         item.Condition = item.MaxCondition
     end
 
-    Traitormod.SubmarineBuilder.ResetSubmarineSteering(submarine)
+    Neurologics.SubmarineBuilder.ResetSubmarineSteering(submarine)
     return submarine
 end
 

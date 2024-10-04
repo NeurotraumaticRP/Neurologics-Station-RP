@@ -9,22 +9,22 @@ event.ChancePerMinute = 0.01
 event.OnlyOncePerRound = true
 
 event.Init = function ()
-    if Traitormod.SubmarineBuilder == nil then return end
+    if Neurologics.SubmarineBuilder == nil then return end
 
-    event.SubmarineID = Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/BulblitKeras.sub", "???")
+    event.SubmarineID = Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/BulblitKeras.sub", "???")
 end
 
 
 event.Start = function ()
     if event.SubmarineID == nil then return end
-    if not Traitormod.SubmarineBuilder.IsActive then return end
+    if not Neurologics.SubmarineBuilder.IsActive then return end
 
-    local submarine = Traitormod.SubmarineBuilder.FindSubmarine(event.SubmarineID)
+    local submarine = Neurologics.SubmarineBuilder.FindSubmarine(event.SubmarineID)
     submarine.GodMode = false
 
     submarine.SetPosition(Vector2(-5000, Level.Loaded.BottomPos + 10000))
     submarine.RealWorldCrushDepth = 10000
-    Traitormod.SubmarineBuilder.ResetSubmarineSteering(submarine)
+    Neurologics.SubmarineBuilder.ResetSubmarineSteering(submarine)
 
     local boom = Explosion(1000, 15, 20, 40, 20, 0)
     boom.Explode(submarine.WorldPosition)
@@ -55,10 +55,10 @@ event.Start = function ()
 
     local points = math.floor(submarine.RealWorldDepth) * 3
 
-    local text = Traitormod.Language.AbyssHelpPart1
-    Traitormod.RoundEvents.SendEventMessage(text, "UnlockPathIcon")
+    local text = Neurologics.Language.AbyssHelpPart1
+    Neurologics.RoundEvents.SendEventMessage(text, "UnlockPathIcon")
 
-    Traitormod.RoundEvents.SendEventMessage(Traitormod.Language.AbyssHelpPart2, "UnlockPathIcon")
+    Neurologics.RoundEvents.SendEventMessage(Neurologics.Language.AbyssHelpPart2, "UnlockPathIcon")
 
     event.Phase = 1
     event.Timer = Timer.GetTime()
@@ -68,7 +68,7 @@ event.Start = function ()
 
         if character.IsDead then
             local failurePoints = points / 2
-            Traitormod.SpawnPointItem(character.Inventory, failurePoints, Traitormod.Language.AbyssHelpDead)
+            Neurologics.SpawnPointItem(character.Inventory, failurePoints, Neurologics.Language.AbyssHelpDead)
 
             event.End()
             character = nil
@@ -79,10 +79,10 @@ event.Start = function ()
         if event.Phase == 2 and character.WorldPosition.Y > Level.Loaded.AbyssStart - 500 and character.CanSpeak then
             event.Phase = 3
 
-            character.Speak(Traitormod.Language.AbyssHelpPart3, nil, 0, '', 0)
+            character.Speak(Neurologics.Language.AbyssHelpPart3, nil, 0, '', 0)
 
             Entity.Spawner.AddItemToSpawnQueue(ItemPrefab.GetItemPrefab("cargoscooter"), character.Inventory, nil, nil, function (item)
-                Traitormod.SpawnPointItem(item.OwnInventory, points)
+                Neurologics.SpawnPointItem(item.OwnInventory, points)
 
                 local randomLoot = {}
                 for prefab in ItemPrefab.Prefabs do
@@ -112,10 +112,10 @@ event.Start = function ()
             if value.Character ~= nil and not value.Character.IsDead and value.Character.IsHuman and event.Phase == 1 and Vector2.Distance(value.Character.WorldPosition, character.WorldPosition) < 400 and character.CanSpeak then
                 event.Phase = 2
 
-                character.Speak(string.format(Traitormod.Language.AbyssHelpPart4, points), nil, 0, '', 0)
+                character.Speak(string.format(Neurologics.Language.AbyssHelpPart4, points), nil, 0, '', 0)
 
                 Timer.Wait(function ()
-                    character.Speak(Traitormod.Language.AbyssHelpPart5, nil, 0, '', 0)
+                    character.Speak(Neurologics.Language.AbyssHelpPart5, nil, 0, '', 0)
                 end, 4000)
 
                 break

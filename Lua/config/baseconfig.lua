@@ -6,17 +6,17 @@ config.DebugLogs = true
 
 ----- USER FEEDBACK -----
 config.Languages = {
-    dofile(Traitormod.Path .. "/Lua/language/english.lua"), -- If it can't find a specific language key, it will always fallback to the first language on the list.
-    dofile(Traitormod.Path .. "/Lua/language/russian.lua"),
+    dofile(Neurologics.Path .. "/Lua/language/english.lua"), -- If it can't find a specific language key, it will always fallback to the first language on the list.
+    dofile(Neurologics.Path .. "/Lua/language/russian.lua"),
 }
 config.Language = "English" -- English, Russian
 config.SendWelcomeMessage = true
 config.ChatMessageType = ChatMessageType.Private    -- Error = red | Private = green | Dead = blue | Radio = yellow
 
 config.Extensions = {
-    --dofile(Traitormod.Path .. "/Lua/extensions/weaponnerfs.lua"),
-    --dofile(Traitormod.Path .. "/Lua/extensions/paralysisnerf.lua"),
-    --dofile(Traitormod.Path .. "/Lua/extensions/pressuremidjoin.lua"),
+    --dofile(Neurologics.Path .. "/Lua/extensions/weaponnerfs.lua"),
+    --dofile(Neurologics.Path .. "/Lua/extensions/paralysisnerf.lua"),
+    --dofile(Neurologics.Path .. "/Lua/extensions/pressuremidjoin.lua"),
 }
 
 config.ExtensionConfig = {
@@ -141,7 +141,7 @@ config.GamemodeConfig = {
             if amountPlayers > 7 then return 2 end            
             if amountPlayers > 3 then return 1 end
             if amountPlayers == 1 then 
-                Traitormod.SendMessageEveryone(Traitormod.Language.TestingMode)
+                Neurologics.SendMessageEveryone(Neurologics.Language.TestingMode)
                 config.TestMode = true
                 return 1
             end
@@ -300,26 +300,26 @@ config.ObjectiveConfig = {
 ----- EVENTS -----
 config.RandomEventConfig = {
     Events = {
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/communicationsoffline.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/superballastflora.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/maintenancetoolsdelivery.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/medicaldelivery.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/ammodelivery.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/hiddenpirate.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/electricalfixdischarge.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/wreckpirate.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/beaconpirate.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/abysshelp.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/lightsoff.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/emergencyteam.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/piratecrew.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/outpostpirateattack.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/shadymission.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/oxygengenpoison.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/oxygengenhusk.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/prisoner.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/randomlights.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/randomevents/clownmagic.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/communicationsoffline.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/superballastflora.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/maintenancetoolsdelivery.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/medicaldelivery.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/ammodelivery.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/hiddenpirate.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/electricalfixdischarge.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/wreckpirate.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/beaconpirate.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/abysshelp.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/lightsoff.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/emergencyteam.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/piratecrew.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/outpostpirateattack.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/shadymission.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/oxygengenpoison.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/oxygengenhusk.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/prisoner.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/randomlights.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/clownmagic.lua"),
     }
 }
 
@@ -328,18 +328,18 @@ config.PointShopConfig = {
     DeathTimeoutTime = 60,
     DeathSpawnRefundAtEndRound = true,
     ItemCategories = {
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/clown.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/cultist.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/traitor.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/security.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/maintenance.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/materials.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/medical.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/ores.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/other.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/wiring.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/deathspawn.lua"),
-        dofile(Traitormod.Path .. "/Lua/config/pointshop/ships.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/clown.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/cultist.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/traitor.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/security.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/maintenance.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/materials.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/medical.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/ores.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/other.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/wiring.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/deathspawn.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/ships.lua"),
     }
 }
 

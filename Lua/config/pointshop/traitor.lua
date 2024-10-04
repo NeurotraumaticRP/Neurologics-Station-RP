@@ -5,7 +5,7 @@ category.Decoration = "clown"
 category.FadeToBlack = true
 
 category.CanAccess = function(client)
-    return client.Character and not client.Character.IsDead and Traitormod.RoleManager.HasRole(client.Character, "Traitor")
+    return client.Character and not client.Character.IsDead and Neurologics.RoleManager.HasRole(client.Character, "Traitor")
 end
 
 category.Init = function ()
@@ -49,9 +49,9 @@ category.Init = function ()
         end
     end, Hook.HookMethodType.After) 
 
-    Traitormod.AddCommand({"!freehandcuffs", "!freehandcuff", "!fhc"}, function (client, args)
+    Neurologics.AddCommand({"!freehandcuffs", "!freehandcuff", "!fhc"}, function (client, args)
         if client.Character == nil or client.Character.IsDead then
-            Traitormod.SendMessage(client, "You are dead!")
+            Neurologics.SendMessage(client, "You are dead!")
             return true
         end
         if not client.Character.IsHuman then return true end
@@ -60,7 +60,7 @@ category.Init = function ()
 
         if item ~= nil and item.Prefab.Identifier == "handcuffs" then
             if not item.HasTag("fakehandcuffs") then
-                Traitormod.SendMessage(client, "This handcuff is not fake!")
+                Neurologics.SendMessage(client, "This handcuff is not fake!")
                 return true
             end
             item.Drop(client.Character)
@@ -183,7 +183,7 @@ category.Products = {
             local revolver = ItemPrefab.GetItemPrefab("ironhelmet")
             Entity.Spawner.AddItemToSpawnQueue(revolver, client.Character.Inventory, nil, nil, function (item)
                 item.Tags = "chocker"
-                item.Description = Traitormod.Language.Pointshop.choke_desc
+                item.Description = Neurologics.Language.Pointshop.choke_desc
 
                 item.set_InventoryIconColor(Color(255, 0, 0, 50))
                 item.SpriteColor = Color(255, 0, 0, 50)
@@ -207,7 +207,7 @@ category.Products = {
             local handcuffs = ItemPrefab.GetItemPrefab("handcuffs")
             Entity.Spawner.AddItemToSpawnQueue(handcuffs, client.Character.Inventory, nil, nil, function (item)
                 item.Tags = "fakehandcuffs"
-                Traitormod.SendChatMessage(client, Traitormod.Language.FakeHandcuffsUsage , Color.Aqua)
+                Neurologics.SendChatMessage(client, Neurologics.Language.FakeHandcuffsUsage , Color.Aqua)
             end)
         end
     },
@@ -283,11 +283,11 @@ category.Products = {
         IsLimitGlobal = true,
 
         CanBuy = function (client, product)
-            return not Traitormod.RoundEvents.IsEventActive("OxygenGeneratorPoison")
+            return not Neurologics.RoundEvents.IsEventActive("OxygenGeneratorPoison")
         end,
 
         Action = function ()
-            Traitormod.RoundEvents.TriggerEvent("OxygenGeneratorPoison")
+            Neurologics.RoundEvents.TriggerEvent("OxygenGeneratorPoison")
         end
     },
 
@@ -298,11 +298,11 @@ category.Products = {
         IsLimitGlobal = true,
 
         CanBuy = function (client, product)
-            return not Traitormod.RoundEvents.IsEventActive("LightsOff")
+            return not Neurologics.RoundEvents.IsEventActive("LightsOff")
         end,
 
         Action = function ()
-            Traitormod.RoundEvents.TriggerEvent("LightsOff")
+            Neurologics.RoundEvents.TriggerEvent("LightsOff")
         end
     },
 
@@ -313,11 +313,11 @@ category.Products = {
         IsLimitGlobal = true,
 
         CanBuy = function (client, product)
-            return not Traitormod.RoundEvents.IsEventActive("CommunicationsOffline")
+            return not Neurologics.RoundEvents.IsEventActive("CommunicationsOffline")
         end,
 
         Action = function ()
-            Traitormod.RoundEvents.TriggerEvent("CommunicationsOffline")
+            Neurologics.RoundEvents.TriggerEvent("CommunicationsOffline")
         end
     },
 }

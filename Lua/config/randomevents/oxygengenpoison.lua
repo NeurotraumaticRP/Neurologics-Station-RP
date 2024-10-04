@@ -9,8 +9,8 @@ event.ChancePerMinute = 0.001
 event.OnlyOncePerRound = true
 
 event.Start = function ()
-    local text = Traitormod.Language.OxygenPoison
-    Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.pvp", Color.Red)
+    local text = Neurologics.Language.OxygenPoison
+    Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.pvp", Color.Red)
 
     local function GivePoison(character)
         if character.Submarine ~= Submarine.MainSub then return end
@@ -37,9 +37,9 @@ end
 
 event.End = function (isEndRound)
     if not isEndRound then
-        local text = Traitormod.Language.OxygenSafe
+        local text = Neurologics.Language.OxygenSafe
 
-        Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.multiplayercampaign")
+        Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.multiplayercampaign")
     end
 end
 

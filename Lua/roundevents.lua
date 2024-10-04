@@ -5,7 +5,7 @@ LuaUserData.RegisterType("Barotrauma.EventManager") -- temporary
 re.OnGoingEvents = {}
 
 re.ThisRoundEvents = {}
-re.EventConfigs = Traitormod.Config.RandomEventConfig
+re.EventConfigs = Neurologics.Config.RandomEventConfig
 
 re.AllowedEvents = {}
 
@@ -29,12 +29,12 @@ end
 
 re.TriggerEvent = function (eventName)
     if not Game.RoundStarted then
-        Traitormod.Error("Tried to trigger event " .. eventName .. ", but round is not started.")
+        Neurologics.Error("Tried to trigger event " .. eventName .. ", but round is not started.")
         return
     end
 
     if re.OnGoingEvents[eventName] then
-        Traitormod.Error("Event " .. eventName .. " is already running.")
+        Neurologics.Error("Event " .. eventName .. " is already running.")
         return
     end
 
@@ -46,7 +46,7 @@ re.TriggerEvent = function (eventName)
     end
 
     if event == nil then
-        Traitormod.Error("Tried to trigger event " .. eventName .. " but it doesnt exist or is disabled.")
+        Neurologics.Error("Tried to trigger event " .. eventName .. " but it doesnt exist or is disabled.")
         return
     end
 
@@ -56,7 +56,7 @@ re.TriggerEvent = function (eventName)
         originalEnd(isRoundEnd)
     end
 
-    Traitormod.Stats.AddStat("EventTriggered", event.Name, 1)
+    Neurologics.Stats.AddStat("EventTriggered", event.Name, 1)
 
     re.OnGoingEvents[eventName] = event
     event.Start()
@@ -66,15 +66,15 @@ re.TriggerEvent = function (eventName)
     end
     re.ThisRoundEvents[eventName] = re.ThisRoundEvents[eventName] + 1
 
-    Traitormod.Log("Event " .. eventName .. " triggered.")
+    Neurologics.Log("Event " .. eventName .. " triggered.")
 end
 
 re.CheckRandomEvent = function (event)
-    if event.MinRoundTime ~= nil and Traitormod.RoundTime / 60 < event.MinRoundTime then
+    if event.MinRoundTime ~= nil and Neurologics.RoundTime / 60 < event.MinRoundTime then
         return
     end
 
-    if event.MaxRoundTime ~= nil and Traitormod.RoundTime / 60 > event.MaxRoundTime then
+    if event.MaxRoundTime ~= nil and Neurologics.RoundTime / 60 > event.MaxRoundTime then
         return
     end
 
@@ -92,7 +92,7 @@ re.CheckRandomEvent = function (event)
         return
     end
 
-    Traitormod.Log("Selected random event to trigger \"" .. event.Name .. "\" with intensity " .. intensity .. " and round time " .. Traitormod.RoundTime / 60 .. " minutes.")
+    Neurologics.Log("Selected random event to trigger \"" .. event.Name .. "\" with intensity " .. intensity .. " and round time " .. Neurologics.RoundTime / 60 .. " minutes.")
 
     re.TriggerEvent(event.Name)
 end
@@ -111,7 +111,7 @@ re.SendEventMessage = function (text, icon, color)
 end
 
 local lastRandomEventCheck = 0
-Hook.Add("think", "TraitorMod.RoundEvents.Think", function ()
+Hook.Add("think", "Neurologics.RoundEvents.Think", function ()
     if not Game.RoundStarted then return end
 
     if Timer.GetTime() > lastRandomEventCheck then

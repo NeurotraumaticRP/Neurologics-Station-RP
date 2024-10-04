@@ -1,7 +1,7 @@
 -- lmao
 
-local weightedRandom = dofile(Traitormod.Path .. "/Lua/weightedrandom.lua")
-local gm = Traitormod.Gamemodes.Gamemode:new()
+local weightedRandom = dofile(Neurologics.Path .. "/Lua/weightedrandom.lua")
+local gm = Neurologics.Gamemodes.Gamemode:new()
 
 gm.Name = "SubmarineRoyale"
 gm.RequiredGamemode = "sandbox"
@@ -124,31 +124,31 @@ end
 
 
 function gm:PreStart()
-    if Traitormod.SubmarineBuilder == nil then return end
+    if Neurologics.SubmarineBuilder == nil then return end
 
-    Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/SmallLoot.sub", "+Small Loot", true)
+    Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/SmallLoot.sub", "+Small Loot", true)
 
     if math.random() > 0.5 then
-        Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/BigLoot.sub", "+Cargo Ship", true)
+        Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/BigLoot.sub", "+Cargo Ship", true)
     else
-        Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/BigLoot2.sub", "+Attack Ship", true)
+        Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/BigLoot2.sub", "+Attack Ship", true)
     end
 
-    Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/Shuttle_Railgun_Mod.sub", "+Railgun Module", true)
-    Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/Chaingun_Mod.sub", "+Chaingun Module", true)
-    Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/coilgun_mod.sub", "+Coilgun Module", true)
+    Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/Shuttle_Railgun_Mod.sub", "+Railgun Module", true)
+    Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/Chaingun_Mod.sub", "+Chaingun Module", true)
+    Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/coilgun_mod.sub", "+Coilgun Module", true)
 
-    Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/coilgun_mod.sub", "+Coilgun Module", true)
+    Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/coilgun_mod.sub", "+Coilgun Module", true)
 
     for i = 1, #Client.ClientList + 1, 1 do
-        Traitormod.SubmarineBuilder.AddSubmarine(Traitormod.Path .. "/Submarines/Royale/PlayerSubmarine_1.sub", "Player - " .. i, true)
+        Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Royale/PlayerSubmarine_1.sub", "Player - " .. i, true)
     end
 end
 
 function gm:Start()
-    if Traitormod.SubmarineBuilder == nil then return end
+    if Neurologics.SubmarineBuilder == nil then return end
     
-    Traitormod.DisableRespawnShuttle = true
+    Neurologics.DisableRespawnShuttle = true
 
     for key, value in pairs(Client.ClientList) do
         local message = "Welcome to Submarine Royale!\n\nUse the command !players to see in which submarine are the players located."
@@ -243,9 +243,9 @@ function gm:Start()
     end
 
     local this = self
-    local thisRoundID = Traitormod.RoundNumber
+    local thisRoundID = Neurologics.RoundNumber
     Timer.Wait(function ()
-        if thisRoundID ~= Traitormod.RoundNumber then return end
+        if thisRoundID ~= Neurologics.RoundNumber then return end
         this:StartRadiation()
     end, 1000 * 60 * 5)
 
@@ -268,9 +268,9 @@ function gm:Start()
     end)
 
 
-    Traitormod.AddCommand({"!players"}, function (client, args)
+    Neurologics.AddCommand({"!players"}, function (client, args)
         if client.Character == nil or not client.InGame then
-            Traitormod.SendMessage(client, Traitormod.Language.CMDAliveToUse)
+            Neurologics.SendMessage(client, Neurologics.Language.CMDAliveToUse)
             return true
         end
 
@@ -295,7 +295,7 @@ function gm:Start()
 
                 local submarineName = value.Character.Submarine and value.Character.Submarine.Info.Name or "Unknown"
 
-                text = text .. string.format(Traitormod.Language.CMDLocatePlayer, value.Name, math.floor(distance), degreeToOClock(angle), submarineName) .. "\n"
+                text = text .. string.format(Neurologics.Language.CMDLocatePlayer, value.Name, math.floor(distance), degreeToOClock(angle), submarineName) .. "\n"
             end
         end
 
@@ -307,7 +307,7 @@ end
 
 function gm:End()
     Hook.Remove("characterDeath", "SubmarineRoyale.SpawnAntiRad")
-    Traitormod.RemoveCommand("!players")
+    Neurologics.RemoveCommand("!players")
 end
 
 function gm:Think()
@@ -319,7 +319,7 @@ function gm:Think()
     end
 
     if aliveClientCount < 2 and not self.Ending then
-        Traitormod.SendMessageEveryone(Traitormod.Language.SubmarineRoyaleEnd)
+        Neurologics.SendMessageEveryone(Neurologics.Language.SubmarineRoyaleEnd)
         Timer.Wait(function ()
             Game.EndGame()
         end, 5000)

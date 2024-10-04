@@ -18,9 +18,9 @@ event.AmountTime = 2 -- Communications are offline for 5 minutes
 
 event.Start = function ()
 
-    local text = string.format(Traitormod.Language.CommunicationsOffline, event.AmountTime)
+    local text = string.format(Neurologics.Language.CommunicationsOffline, event.AmountTime)
 
-    Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.multiplayercampaign")
+    Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.multiplayercampaign")
 
     for key, item in pairs(Item.ItemList) do
         if item ~= nil and item.Prefab.Identifier == "headset" then
@@ -47,9 +47,9 @@ event.End = function (isEndRound)
     end
 
     if not isEndRound then
-        local text = Traitormod.Language.CommunicationsBack
+        local text = Neurologics.Language.CommunicationsBack
 
-        Traitormod.RoundEvents.SendEventMessage(text, "GameModeIcon.multiplayercampaign")
+        Neurologics.RoundEvents.SendEventMessage(text, "GameModeIcon.multiplayercampaign")
     end
 end
 

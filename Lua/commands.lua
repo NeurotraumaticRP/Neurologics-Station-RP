@@ -1,50 +1,50 @@
 ----- USER COMMANDS -----
-Traitormod.AddCommand("!help", function (client, args)
-    Traitormod.SendMessage(client, Traitormod.Language.Help)
+Neurologics.AddCommand("!help", function (client, args)
+    Neurologics.SendMessage(client, Neurologics.Language.Help)
 
     return true
 end)
 
-Traitormod.AddCommand("!helpadmin", function (client, args)
-    Traitormod.SendMessage(client, Traitormod.Language.HelpAdmin)
+Neurologics.AddCommand("!helpadmin", function (client, args)
+    Neurologics.SendMessage(client, Neurologics.Language.HelpAdmin)
 
     return true
 end)
 
-Traitormod.AddCommand("!helptraitor", function (client, args)
-    Traitormod.SendMessage(client, Traitormod.Language.HelpTraitor)
+Neurologics.AddCommand("!helptraitor", function (client, args)
+    Neurologics.SendMessage(client, Neurologics.Language.HelpTraitor)
 
     return true
 end)
 
-Traitormod.AddCommand("!version", function (client, args)
-    Traitormod.SendMessage(client, "Running Evil Factory's Traitor Mod v" .. Traitormod.VERSION)
+Neurologics.AddCommand("!version", function (client, args)
+    Neurologics.SendMessage(client, "Running Evil Factory's Traitor Mod v" .. Neurologics.Traitormod.VERSION)
 
     return true
 end)
 
-Traitormod.AddCommand({"!role", "!traitor"}, function (client, args)
+Neurologics.AddCommand({"!role", "!traitor"}, function (client, args)
     if client.Character == nil or client.Character.IsDead then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDAliveToUse)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDAliveToUse)
         return true
     end
 
-    local role = Traitormod.RoleManager.GetRole(client.Character)
+    local role = Neurologics.RoleManager.GetRole(client.Character)
     if role == nil then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDNoRole)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDNoRole)
     else
-        Traitormod.SendMessage(client, role:Greet())
+        Neurologics.SendMessage(client, role:Greet())
     end
 
     return true
 end)
 
-Traitormod.AddCommand({"!roles", "!traitors"}, function (client, args)
+Neurologics.AddCommand({"!roles", "!traitors"}, function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     local roles = {}
 
-    for character, role in pairs(Traitormod.RoleManager.RoundRoles) do
+    for character, role in pairs(Neurologics.RoleManager.RoundRoles) do
         if not roles[role.Name] then
             roles[role.Name] = {}
         end
@@ -64,84 +64,84 @@ Traitormod.AddCommand({"!roles", "!traitors"}, function (client, args)
 
     if message == "" then message = "None." end
 
-    Traitormod.SendMessage(client, message)
+    Neurologics.SendMessage(client, message)
 
     return true
 end)
 
-Traitormod.AddCommand("!traitoralive", function (client, args)
+Neurologics.AddCommand("!traitoralive", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
-    for _, character in pairs(Traitormod.RoleManager.FindAntagonists()) do
+    for _, character in pairs(Neurologics.RoleManager.FindAntagonists()) do
         if not character.IsDead then
-            Traitormod.SendMessage(client, Traitormod.Language.TraitorsAlive)
+            Neurologics.SendMessage(client, Neurologics.Language.TraitorsAlive)
             return true
         end
     end
 
-    Traitormod.SendMessage(client, Traitormod.Language.AllTraitorsDead)
+    Neurologics.SendMessage(client, Neurologics.Language.AllTraitorsDead)
     return true
 end)
 
-Traitormod.AddCommand("!toggletraitor", function (client, args)
-    local text = Traitormod.Language.CommandNotActive
+Neurologics.AddCommand("!toggletraitor", function (client, args)
+    local text = Neurologics.Language.CommandNotActive
 
-    if Traitormod.Config.OptionalTraitors then
+    if Neurologics.Config.OptionalTraitors then
         local toggle = false
         if #args > 0 then
             toggle = string.lower(args[1]) == "on"
         else
-            toggle = Traitormod.GetData(client, "NonTraitor") == true
+            toggle = Neurologics.GetData(client, "NonTraitor") == true
         end
     
         if toggle then
-            text = Traitormod.Language.TraitorOn
+            text = Neurologics.Language.TraitorOn
         else
-            text = Traitormod.Language.TraitorOff
+            text = Neurologics.Language.TraitorOff
         end
-        Traitormod.SetData(client, "NonTraitor", not toggle)
-        Traitormod.SaveData() -- move this to player disconnect someday...
+        Neurologics.SetData(client, "NonTraitor", not toggle)
+        Neurologics.SaveData() -- move this to player disconnect someday...
         
-        Traitormod.Log(Traitormod.ClientLogName(client) .. " can become traitor: " .. tostring(toggle))
+        Neurologics.Log(Neurologics.ClientLogName(client) .. " can become traitor: " .. tostring(toggle))
     end
 
-    Traitormod.SendMessage(client, text)
+    Neurologics.SendMessage(client, text)
 
     return true
 end)
 
-Traitormod.AddCommand({"!point", "!points"}, function (client, args)
-    Traitormod.SendMessage(client, Traitormod.GetDataInfo(client, true))
+Neurologics.AddCommand({"!point", "!points"}, function (client, args)
+    Neurologics.SendMessage(client, Neurologics.GetDataInfo(client, true))
 
     return true
 end)
 
-Traitormod.AddCommand("!info", function (client, args)
-    Traitormod.SendWelcome(client)
+Neurologics.AddCommand("!info", function (client, args)
+    Neurologics.SendWelcome(client)
     
     return true
 end)
 
-Traitormod.AddCommand({"!suicide", "!kill", "!death"}, function (client, args)
+Neurologics.AddCommand({"!suicide", "!kill", "!death"}, function (client, args)
     if client.Character == nil or client.Character.IsDead then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDAlreadyDead)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDAlreadyDead)
         return true
     end
 
     if client.Character.IsHuman then
         local item = client.Character.Inventory.GetItemInLimbSlot(InvSlotType.RightHand)
         if item ~= nil and item.Prefab.Identifier == "handcuffs" then
-            Traitormod.SendMessage(client, Traitormod.Language.CMDHandcuffed)
+            Neurologics.SendMessage(client, Neurologics.Language.CMDHandcuffed)
             return true
         end
 
         if client.Character.IsKnockedDown then
-            Traitormod.SendMessage(client, Traitormod.Language.CMDKnockedDown)
+            Neurologics.SendMessage(client, Neurologics.Language.CMDKnockedDown)
             return true
         end
     end
 
-    if Traitormod.GhostRoles.ReturnGhostRole(client.Character) then
+    if Neurologics.GhostRoles.ReturnGhostRole(client.Character) then
         client.SetClientCharacter(nil)
     else
         client.Character.Kill(CauseOfDeathType.Unknown)
@@ -150,11 +150,11 @@ Traitormod.AddCommand({"!suicide", "!kill", "!death"}, function (client, args)
 end)
 
 ----- ADMIN COMMANDS -----
-Traitormod.AddCommand("!alive", function (client, args)
+Neurologics.AddCommand("!alive", function (client, args)
     if not (client.Character == nil or client.Character.IsDead) and not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
-    if not Game.RoundStarted or Traitormod.SelectedGamemode == nil then
-        Traitormod.SendMessage(client, Traitormod.Language.RoundNotStarted)
+    if not Game.RoundStarted or Neurologics.SelectedGamemode == nil then
+        Neurologics.SendMessage(client, Neurologics.Language.RoundNotStarted)
 
         return true
     end
@@ -163,57 +163,57 @@ Traitormod.AddCommand("!alive", function (client, args)
     for index, value in pairs(Character.CharacterList) do
         if value.IsHuman and not value.IsBot then
             if value.IsDead then
-                msg = msg .. value.Name .. " ---- " .. Traitormod.Language.Dead .. "\n"
+                msg = msg .. value.Name .. " ---- " .. Neurologics.Language.Dead .. "\n"
             else
-                msg = msg .. value.Name .. " ++++ " .. Traitormod.Language.Alive .. "\n"
+                msg = msg .. value.Name .. " ++++ " .. Neurologics.Language.Alive .. "\n"
             end
         end
     end
 
-    Traitormod.SendMessage(client, msg)
+    Neurologics.SendMessage(client, msg)
 
     return true
 end)
 
-Traitormod.AddCommand("!roundinfo", function (client, args)
+Neurologics.AddCommand("!roundinfo", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
-    if Game.RoundStarted and Traitormod.SelectedGamemode and Traitormod.SelectedGamemode.RoundSummary then
-        local summary = Traitormod.SelectedGamemode:RoundSummary()
-        Traitormod.SendMessage(client, summary)
-    elseif Game.RoundStarted and not Traitormod.SelectedGamemode then
-        Traitormod.SendMessage(client, Traitormod.Language.GamemodeNone)
-    elseif Traitormod.LastRoundSummary ~= nil then
-        Traitormod.SendMessage(client, Traitormod.LastRoundSummary)
+    if Game.RoundStarted and Neurologics.SelectedGamemode and Neurologics.SelectedGamemode.RoundSummary then
+        local summary = Neurologics.SelectedGamemode:RoundSummary()
+        Neurologics.SendMessage(client, summary)
+    elseif Game.RoundStarted and not Neurologics.SelectedGamemode then
+        Neurologics.SendMessage(client, Neurologics.Language.GamemodeNone)
+    elseif Neurologics.LastRoundSummary ~= nil then
+        Neurologics.SendMessage(client, Neurologics.LastRoundSummary)
     else
-        Traitormod.SendMessage(client, Traitormod.Language.RoundNotStarted)
+        Neurologics.SendMessage(client, Neurologics.Language.RoundNotStarted)
     end
 
     return true
 end)
 
-Traitormod.AddCommand({"!allpoint", "!allpoints"}, function (client, args)
+Neurologics.AddCommand({"!allpoint", "!allpoints"}, function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
     
     local messageToSend = ""
 
     for index, value in pairs(Client.ClientList) do
-        messageToSend = messageToSend .. "\n" .. value.Name .. ": " .. math.floor(Traitormod.GetData(value, "Points") or 0) .. " Points - " .. math.floor(Traitormod.GetData(value, "Weight") or 0) .. " Weight"
+        messageToSend = messageToSend .. "\n" .. value.Name .. ": " .. math.floor(Neurologics.GetData(value, "Points") or 0) .. " Points - " .. math.floor(Neurologics.GetData(value, "Weight") or 0) .. " Weight"
     end
 
-    Traitormod.SendMessage(client, messageToSend)
+    Neurologics.SendMessage(client, messageToSend)
 
     return true
 end)
 
-Traitormod.AddCommand({"!addpoint", "!addpoints"}, function (client, args)
+Neurologics.AddCommand({"!addpoint", "!addpoints"}, function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDPermisionPoints)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDPermisionPoints)
         return
     end
     
     if #args < 2 then
-        Traitormod.SendMessage(client, "Incorrect amount of arguments. usage: !addpoint \"Client Name\" 500")
+        Neurologics.SendMessage(client, "Incorrect amount of arguments. usage: !addpoint \"Client Name\" 500")
 
         return true
     end
@@ -222,49 +222,49 @@ Traitormod.AddCommand({"!addpoint", "!addpoints"}, function (client, args)
     local amount = tonumber(table.remove(args, 1))
 
     if amount == nil or amount ~= amount then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDInvalidNumber)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDInvalidNumber)
         return true
     end
 
     if name == "all" then
         for index, value in pairs(Client.ClientList) do
-            Traitormod.AddData(value, "Points", amount)
+            Neurologics.AddData(value, "Points", amount)
         end
 
-        Traitormod.SendMessage(client, string.format(Traitormod.Language.PointsAwarded, amount), "InfoFrameTabButton.Mission")
+        Neurologics.SendMessage(client, string.format(Neurologics.Language.PointsAwarded, amount), "InfoFrameTabButton.Mission")
 
-        local msg = string.format(Traitormod.Language.CMDAdminAddedPointsEveryone, amount)
-        Traitormod.SendMessageEveryone(msg)
-        msg = Traitormod.ClientLogName(client) .. ": " .. msg
-        Traitormod.Log(msg)
+        local msg = string.format(Neurologics.Language.CMDAdminAddedPointsEveryone, amount)
+        Neurologics.SendMessageEveryone(msg)
+        msg = Neurologics.ClientLogName(client) .. ": " .. msg
+        Neurologics.Log(msg)
 
         return true
     end
 
-    local found = Traitormod.FindClient(name)
+    local found = Neurologics.FindClient(name)
 
     if found == nil then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDClientNotFound .. name)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDClientNotFound .. name)
         return true
     end
 
-    Traitormod.AddData(found, "Points", amount)
+    Neurologics.AddData(found, "Points", amount)
 
-    Traitormod.SendMessage(client, string.format(Traitormod.Language.PointsAwarded, amount), "InfoFrameTabButton.Mission")
+    Neurologics.SendMessage(client, string.format(Neurologics.Language.PointsAwarded, amount), "InfoFrameTabButton.Mission")
 
-    local msg = string.format(Traitormod.Language.CMDAdminAddedPoints, amount, Traitormod.ClientLogName(found))
-    Traitormod.SendMessageEveryone(msg)
-    msg = Traitormod.ClientLogName(client) .. ": " .. msg
-    Traitormod.Log(msg)
+    local msg = string.format(Neurologics.Language.CMDAdminAddedPoints, amount, Neurologics.ClientLogName(found))
+    Neurologics.SendMessageEveryone(msg)
+    msg = Neurologics.ClientLogName(client) .. ": " .. msg
+    Neurologics.Log(msg)
 
     return true
 end)
 
-Traitormod.AddCommand({"!addlife", "!addlive", "!addlifes", "!addlives"}, function (client, args)
+Neurologics.AddCommand({"!addlife", "!addlive", "!addlifes", "!addlives"}, function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     if #args < 1 then
-        Traitormod.SendMessage(client, "Incorrect amount of arguments. usage: !addlife \"Client Name\" 1")
+        Neurologics.SendMessage(client, "Incorrect amount of arguments. usage: !addlife \"Client Name\" 1")
 
         return true
     end
@@ -277,7 +277,7 @@ Traitormod.AddCommand({"!addlife", "!addlive", "!addlifes", "!addlives"}, functi
     end
 
     if amount == nil or amount ~= amount then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDInvalidNumber)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDInvalidNumber)
         return true
     end
 
@@ -285,24 +285,24 @@ Traitormod.AddCommand({"!addlife", "!addlive", "!addlifes", "!addlives"}, functi
     if string.lower(name) == "all" then
         gainLifeClients = Client.ClientList
     else
-        local found = Traitormod.FindClient(name)
+        local found = Neurologics.FindClient(name)
 
         if found == nil then
-            Traitormod.SendMessage(client, Traitormod.Language.CMDClientNotFound .. name)
+            Neurologics.SendMessage(client, Neurologics.Language.CMDClientNotFound .. name)
             return true
         end
         table.insert(gainLifeClients, found)
     end
 
     for lifeClient in gainLifeClients do
-        local lifeMsg, lifeIcon = Traitormod.AdjustLives(lifeClient, amount)
-        local msg = string.format(Traitormod.Language.CMDAdminAddedLives, amount, Traitormod.ClientLogName(lifeClient))
+        local lifeMsg, lifeIcon = Neurologics.AdjustLives(lifeClient, amount)
+        local msg = string.format(Neurologics.Language.CMDAdminAddedLives, amount, Neurologics.ClientLogName(lifeClient))
 
         if lifeMsg then
-            Traitormod.SendMessage(lifeClient, lifeMsg, lifeIcon)
-            Traitormod.SendMessageEveryone(msg)
+            Neurologics.SendMessage(lifeClient, lifeMsg, lifeIcon)
+            Neurologics.SendMessageEveryone(msg)
         else
-            Game.SendDirectChatMessage("", Traitormod.ClientLogName(lifeClient) .. " already has maximum lives.", nil, Traitormod.Config.Error, client)
+            Game.SendDirectChatMessage("", Neurologics.ClientLogName(lifeClient) .. " already has maximum lives.", nil, Neurologics.Config.Error, client)
         end
     end
 
@@ -311,18 +311,18 @@ end)
 
 local voidPos = {}
 
-Traitormod.AddCommand("!void", function (client, args)
+Neurologics.AddCommand("!void", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
-    local target = Traitormod.FindClient(args[1])
+    local target = Neurologics.FindClient(args[1])
 
     if not target then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDClientNotFound)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDClientNotFound)
         return true
     end
 
     if target.Character == nil or target.Character.IsDead then
-        Traitormod.SendMessage(client, "Client's character is dead or non-existent.")
+        Neurologics.SendMessage(client, "Client's character is dead or non-existent.")
         return true
     end
 
@@ -330,23 +330,23 @@ Traitormod.AddCommand("!void", function (client, args)
     target.Character.TeleportTo(Vector2(0, Level.Loaded.Size.Y + 100000))
     target.Character.GodMode = true
 
-    Traitormod.SendMessage(client, "Sent the character to the void.")
+    Neurologics.SendMessage(client, "Sent the character to the void.")
 
     return true
 end)
 
-Traitormod.AddCommand("!unvoid", function (client, args)
+Neurologics.AddCommand("!unvoid", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
-    local target = Traitormod.FindClient(args[1])
+    local target = Neurologics.FindClient(args[1])
 
     if not target then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDClientNotFound)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDClientNotFound)
         return true
     end
 
     if target.Character == nil or target.Character.IsDead then
-        Traitormod.SendMessage(client, "Client's character is dead or non-existent.")
+        Neurologics.SendMessage(client, "Client's character is dead or non-existent.")
         return true
     end
 
@@ -354,12 +354,12 @@ Traitormod.AddCommand("!unvoid", function (client, args)
     target.Character.GodMode = false
     voidPos[target.Character] = nil
     
-    Traitormod.SendMessage(client, "Remove character from the void.")
+    Neurologics.SendMessage(client, "Remove character from the void.")
 
     return true
 end)
 
-Traitormod.AddCommand("!revive", function (client, args)
+Neurologics.AddCommand("!revive", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     local reviveClient = client
@@ -380,42 +380,42 @@ Traitormod.AddCommand("!revive", function (client, args)
         Timer.Wait(function ()
             reviveClient.SetClientCharacter(reviveClient.Character)
         end, 1500)
-        local liveMsg, liveIcon = Traitormod.AdjustLives(reviveClient, 1)
+        local liveMsg, liveIcon = Neurologics.AdjustLives(reviveClient, 1)
 
         if liveMsg then
-            Traitormod.SendMessage(reviveClient, liveMsg, liveIcon)
+            Neurologics.SendMessage(reviveClient, liveMsg, liveIcon)
         end
 
-        Game.SendDirectChatMessage("", "Character of " .. Traitormod.ClientLogName(reviveClient) .. " revived and given back 1 life.", nil, ChatMessageType.Error, client)
-        Traitormod.SendMessageEveryone(string.format("Admin revived %s", Traitormod.ClientLogName(reviveClient)))
+        Game.SendDirectChatMessage("", "Character of " .. Neurologics.ClientLogName(reviveClient) .. " revived and given back 1 life.", nil, ChatMessageType.Error, client)
+        Neurologics.SendMessageEveryone(string.format("Admin revived %s", Neurologics.ClientLogName(reviveClient)))
 
     elseif reviveClient.Character then
-        Game.SendDirectChatMessage("", "Character of " .. Traitormod.ClientLogName(reviveClient) .. " is not dead.", nil, ChatMessageType.Error, client)
+        Game.SendDirectChatMessage("", "Character of " .. Neurologics.ClientLogName(reviveClient) .. " is not dead.", nil, ChatMessageType.Error, client)
     else
-        Game.SendDirectChatMessage("", "Character of " .. Traitormod.ClientLogName(reviveClient) .. " not found.", nil, ChatMessageType.Error, client)
+        Game.SendDirectChatMessage("", "Character of " .. Neurologics.ClientLogName(reviveClient) .. " not found.", nil, ChatMessageType.Error, client)
     end
 
     return true
 end)
 
-Traitormod.AddCommand("!ongoingevents", function (client, args)
+Neurologics.AddCommand("!ongoingevents", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     local text = "On Going Events: "
-    for key, value in pairs(Traitormod.RoundEvents.OnGoingEvents) do
+    for key, value in pairs(Neurologics.RoundEvents.OnGoingEvents) do
         text = text .. "\"" .. value.Name .. "\" "
     end
 
-    Traitormod.SendMessage(client, text)
+    Neurologics.SendMessage(client, text)
 
     return true
 end)
 
-Traitormod.AddCommand("!giveghostrole", function (client, args)
+Neurologics.AddCommand("!giveghostrole", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     if #args < 2 then
-        Traitormod.SendMessage(client, "Usage: !giveghostrole <ghost role name> <character>")
+        Neurologics.SendMessage(client, "Usage: !giveghostrole <ghost role name> <character>")
         return true
     end
 
@@ -429,12 +429,12 @@ Traitormod.AddCommand("!giveghostrole", function (client, args)
     end
 
     if not target then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDCharacterNotFound)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDCharacterNotFound)
         return true
     end
 
-    Traitormod.GhostRoles.Ask(args[1], function (ghostClient)
-        Traitormod.LostLivesThisRound[ghostClient.SteamID] = false
+    Neurologics.GhostRoles.Ask(args[1], function (ghostClient)
+        Neurologics.LostLivesThisRound[ghostClient.SteamID] = false
 
         ghostClient.SetClientCharacter(target)
     end, target)
@@ -442,17 +442,17 @@ Traitormod.AddCommand("!giveghostrole", function (client, args)
     return true
 end)
 
-Traitormod.AddCommand("!roundtime", function (client, args)
-    Traitormod.SendMessage(client, string.format(Traitormod.Language.CMDRoundTime, Traitormod.FormatTime(math.ceil(Traitormod.RoundTime))))
+Neurologics.AddCommand("!roundtime", function (client, args)
+    Neurologics.SendMessage(client, string.format(Neurologics.Language.CMDRoundTime, Neurologics.FormatTime(math.ceil(Neurologics.RoundTime))))
 
     return true
 end)
 
-Traitormod.AddCommand("!assignrolecharacter", function (client, args)
+Neurologics.AddCommand("!assignrolecharacter", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
     
     if #args < 2 then
-        Traitormod.SendMessage(client, "Usage: !assignrole <character> <role>")
+        Neurologics.SendMessage(client, "Usage: !assignrole <character> <role>")
         return true
     end
 
@@ -466,105 +466,105 @@ Traitormod.AddCommand("!assignrolecharacter", function (client, args)
     end
 
     if not target then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDCharacterNotFound)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDCharacterNotFound)
         return true
     end
 
     if target == nil or target.IsDead then
-        Traitormod.SendMessage(client, "Client's character is dead or non-existent.")
+        Neurologics.SendMessage(client, "Client's character is dead or non-existent.")
         return true
     end
 
-    local role = Traitormod.RoleManager.Roles[args[2]]
+    local role = Neurologics.RoleManager.Roles[args[2]]
 
     if role == nil then
-        Traitormod.SendMessage(client, "Couldn't find role to assign.")
+        Neurologics.SendMessage(client, "Couldn't find role to assign.")
         return true
     end
 
-    if Traitormod.RoleManager.GetRole(target) ~= nil then
-        Traitormod.RoleManager.RemoveRole(target)
+    if Neurologics.RoleManager.GetRole(target) ~= nil then
+        Neurologics.RoleManager.RemoveRole(target)
     end
-    Traitormod.RoleManager.AssignRole(target, role:new())
+    Neurologics.RoleManager.AssignRole(target, role:new())
 
-    Traitormod.SendMessage(client, "Assigned " .. target.Name .. " the role " .. role.Name .. ".")
+    Neurologics.SendMessage(client, "Assigned " .. target.Name .. " the role " .. role.Name .. ".")
 
     return true
 end)
 
-Traitormod.AddCommand("!assignrole", function (client, args)
+Neurologics.AddCommand("!assignrole", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
     
     if #args < 2 then
-        Traitormod.SendMessage(client, "Usage: !assignrole <client> <role>")
+        Neurologics.SendMessage(client, "Usage: !assignrole <client> <role>")
         return true
     end
 
-    local target = Traitormod.FindClient(args[1])
+    local target = Neurologics.FindClient(args[1])
 
     if not target then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDClientNotFound)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDClientNotFound)
         return true
     end
 
     if target.Character == nil or target.Character.IsDead then
-        Traitormod.SendMessage(client, "Client's character is dead or non-existent.")
+        Neurologics.SendMessage(client, "Client's character is dead or non-existent.")
         return true
     end
 
-    local role = Traitormod.RoleManager.Roles[args[2]]
+    local role = Neurologics.RoleManager.Roles[args[2]]
 
     if role == nil then
-        Traitormod.SendMessage(client, "Couldn't find role to assign.")
+        Neurologics.SendMessage(client, "Couldn't find role to assign.")
         return true
     end
 
     local targetCharacter = target.Character
 
-    if Traitormod.RoleManager.GetRole(targetCharacter) ~= nil then
-        Traitormod.RoleManager.RemoveRole(targetCharacter)
+    if Neurologics.RoleManager.GetRole(targetCharacter) ~= nil then
+        Neurologics.RoleManager.RemoveRole(targetCharacter)
     end
-    Traitormod.RoleManager.AssignRole(targetCharacter, role:new())
+    Neurologics.RoleManager.AssignRole(targetCharacter, role:new())
 
-    Traitormod.SendMessage(client, "Assigned " .. target.Name .. " the role " .. role.Name .. ".")
+    Neurologics.SendMessage(client, "Assigned " .. target.Name .. " the role " .. role.Name .. ".")
 
     return true
 end)
 
-Traitormod.AddCommand("!triggerevent", function (client, args)
+Neurologics.AddCommand("!triggerevent", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     if #args < 1 then
-        Traitormod.SendMessage(client, "Usage: !triggerevent <event name>")
+        Neurologics.SendMessage(client, "Usage: !triggerevent <event name>")
         return true
     end
 
     local event = nil
-    for _, value in pairs(Traitormod.RoundEvents.EventConfigs.Events) do
+    for _, value in pairs(Neurologics.RoundEvents.EventConfigs.Events) do
         if value.Name == args[1] then
             event = value
         end
     end
 
     if event == nil then
-        Traitormod.SendMessage(client, "Event " .. args[1] .. " doesnt exist.")
+        Neurologics.SendMessage(client, "Event " .. args[1] .. " doesnt exist.")
         return true
     end
 
-    Traitormod.RoundEvents.TriggerEvent(event.Name)
-    Traitormod.SendMessage(client, "Triggered event " .. event.Name)
+    Neurologics.RoundEvents.TriggerEvent(event.Name)
+    Neurologics.SendMessage(client, "Triggered event " .. event.Name)
 
     return true
 end)
 
-Traitormod.AddCommand({"!locatesub", "!locatesubmarine"}, function (client, args)
+Neurologics.AddCommand({"!locatesub", "!locatesubmarine"}, function (client, args)
     if client.Character == nil or not client.InGame then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDAliveToUse)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDAliveToUse)
         return true
     end
 
     if client.Character.IsHuman and client.Character.TeamID == CharacterTeamType.Team1 then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDOnlyMonsters)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDOnlyMonsters)
         return true
     end
 
@@ -583,20 +583,20 @@ Traitormod.AddCommand({"!locatesub", "!locatesubmarine"}, function (client, args
         return oClock .. " o'clock"
     end
 
-    Game.SendDirectChatMessage("", string.format(Traitormod.Language.CMDLocateSub, math.floor(distance), degreeToOClock(angle)), nil, ChatMessageType.Error, client)
+    Game.SendDirectChatMessage("", string.format(Neurologics.Language.CMDLocateSub, math.floor(distance), degreeToOClock(angle)), nil, ChatMessageType.Error, client)
 
     return true
 end)
 
 
-Traitormod.AddCommand({"!monster", "!m"}, function (client, args)
+Neurologics.AddCommand({"!monster", "!m"}, function (client, args)
     if client.Character == nil or client.Character.IsHuman then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDOnlyMonsters)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDOnlyMonsters)
         return true
     end
 
     if #args < 1 then
-        Traitormod.SendMessage(client, "Usage: !monster message")
+        Neurologics.SendMessage(client, "Usage: !monster message")
         return true
     end
 
@@ -608,7 +608,7 @@ Traitormod.AddCommand({"!monster", "!m"}, function (client, args)
     for _, targetClient in pairs(Client.ClientList) do
         if (not targetClient.Character or targetClient.Character.IsDead) or not targetClient.Character.IsHuman then
             Game.SendDirectChatMessage("",
-                string.format(Traitormod.Language.CMDMonsterBroadcast, client.Character.Name, Traitormod.ClientLogName(client), msg), nil,
+                string.format(Neurologics.Language.CMDMonsterBroadcast, client.Character.Name, Neurologics.ClientLogName(client), msg), nil,
                 ChatMessageType.Error, targetClient)
         end
     end
@@ -617,38 +617,38 @@ Traitormod.AddCommand({"!monster", "!m"}, function (client, args)
 end)
 
 local preventSpam = {}
-Traitormod.AddCommand({"!droppoints", "!droppoint", "!dropoint", "!dropoints"}, function (client, args)
+Neurologics.AddCommand({"!droppoints", "!droppoint", "!dropoint", "!dropoints"}, function (client, args)
     if preventSpam[client] ~= nil and Timer.GetTime() < preventSpam[client] then
-        Traitormod.SendMessage(client, "Please wait a bit before using this command again.")
+        Neurologics.SendMessage(client, "Please wait a bit before using this command again.")
         return true
     end
 
     if client.Character == nil or client.Character.IsDead or client.Character.Inventory == nil then
-        Traitormod.SendMessage(client, Traitormod.Language.CMDAliveToUse)
+        Neurologics.SendMessage(client, Neurologics.Language.CMDAliveToUse)
         return true
     end
 
     if #args < 1 then
-        Traitormod.SendMessage(client, "Usage: !droppoints amount")
+        Neurologics.SendMessage(client, "Usage: !droppoints amount")
         return true
     end
 
     local amount = tonumber(args[1])
 
     if amount == nil or amount ~= amount or amount < 100 or amount > 100000 then
-        Traitormod.SendMessage(client, "Please specify a valid number between 100 and 100000.")
+        Neurologics.SendMessage(client, "Please specify a valid number between 100 and 100000.")
         return true
     end
 
-    local availablePoints = Traitormod.GetData(client, "Points") or 0
+    local availablePoints = Neurologics.GetData(client, "Points") or 0
 
     if amount > availablePoints then
-        Traitormod.SendMessage(client, "You don't have enough points to drop.")
+        Neurologics.SendMessage(client, "You don't have enough points to drop.")
         return true
     end
 
-    Traitormod.SpawnPointItem(client.Character.Inventory, tonumber(amount))
-    Traitormod.SetData(client, "Points", availablePoints - amount)
+    Neurologics.SpawnPointItem(client.Character.Inventory, tonumber(amount))
+    Neurologics.SetData(client, "Points", availablePoints - amount)
 
     preventSpam[client] = Timer.GetTime() + 5
 

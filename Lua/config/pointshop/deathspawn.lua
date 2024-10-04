@@ -39,14 +39,14 @@ local function SpawnCreature(species, client, product, paidPrice, insideHuman)
         -- no waypoints? https://c.tenor.com/RgExaLgYIScAAAAC/megamind-megamind-meme.gif
         spawnPosition = Submarine.MainSub.WorldPosition -- spawn it in the middle of the sub
 
-        Traitormod.Log("Couldnt find any good waypoints, spawning in the middle of the sub.")
+        Neurologics.Log("Couldnt find any good waypoints, spawning in the middle of the sub.")
     else
         spawnPosition = spawnPositions[math.random(#spawnPositions)]
     end
 
     Entity.Spawner.AddCharacterToSpawnQueue(species, spawnPosition, function (character)
         client.SetClientCharacter(character)
-        Traitormod.Pointshop.TrackRefund(client, product, paidPrice)
+        Neurologics.Pointshop.TrackRefund(client, product, paidPrice)
     end)
 end
 

@@ -4,22 +4,22 @@ local textPromptUtils = require("textpromptutils")
 
 local ItemsShown = 30 -- Sets how many lines will be shown. Should not be much more than 50
 
-if Traitormod.Config.PermanentStatistics and not File.Exists(Traitormod.Path .. "/Lua/stats.json") then
-    File.Write(Traitormod.Path .. "/Lua/stats.json", "{}")
+if Neurologics.Config.PermanentStatistics and not File.Exists(Neurologics.Path .. "/Lua/stats.json") then
+    File.Write(Neurologics.Path .. "/Lua/stats.json", "{}")
 end 
 
-local json = dofile(Traitormod.Path .. "/Lua/json.lua")
+local json = dofile(Neurologics.Path .. "/Lua/json.lua")
 statistics.LoadData = function ()
-    if Traitormod.Config.PermanentStatistics then
-        statistics.stats = json.decode(File.Read(Traitormod.Path .. "/Lua/stats.json")) or {}
+    if Neurologics.Config.PermanentStatistics then
+        statistics.stats = json.decode(File.Read(Neurologics.Path .. "/Lua/stats.json")) or {}
     else
         statistics.stats = {}
     end
 end
 
 statistics.SaveData = function ()
-    if Traitormod.Config.PermanentStatistics then
-        File.Write(Traitormod.Path .. "/Lua/stats.json", json.encode(statistics.stats))
+    if Neurologics.Config.PermanentStatistics then
+        File.Write(Neurologics.Path .. "/Lua/stats.json", json.encode(statistics.stats))
     end
 end
 
@@ -63,12 +63,12 @@ statistics.AddClientStat = function(category, client, value)
     if client then
         statistics.AddListStat(category, client.SteamID, value, client.Name)
     else
-        Traitormod.Error("AddClientStat failed for " .. category .. " - Client was null")
+        Neurologics.Error("AddClientStat failed for " .. category .. " - Client was null")
     end
 end
 
 statistics.AddCharacterStat = function(category, character, value)
-    local client = Traitormod.FindClientCharacter(character)
+    local client = Neurologics.FindClientCharacter(character)
     if client ~= nil then
         statistics.AddClientStat(category, client, value)
     end
@@ -84,7 +84,7 @@ statistics.ShowStats = function(client, category)
             local itemLimit = ItemsShown
             local compare = function(t,a,b) return t[b] < t[a] end
             local isTable = false
-            local topic = category .. " - " .. (Traitormod.Language[category] or "Stats")
+            local topic = category .. " - " .. (Neurologics.Language[category] or "Stats")
             text = ""
 
             if elem[firstKey] and type(elem[firstKey]) == "table" and elem[firstKey].Score ~= nil then
@@ -109,10 +109,10 @@ statistics.ShowStats = function(client, category)
         end
     end
 
-    Traitormod.SendMessage(client, text)
+    Neurologics.SendMessage(client, text)
 end
 
-Traitormod.AddCommand("!stats", function (client, args)
+Neurologics.AddCommand("!stats", function (client, args)
     if #args > 0 then
         statistics.ShowStats(client, args[1])
     else
@@ -144,7 +144,7 @@ Traitormod.AddCommand("!stats", function (client, args)
             end
         end
 
-        Traitormod.SendMessage(client, text)
+        Neurologics.SendMessage(client, text)
     end
 
     return true
@@ -174,4 +174,4 @@ function spairs(t, order)
 end
 
 statistics.LoadData()
-Traitormod.Stats = statistics
+Neurologics.Stats = statistics

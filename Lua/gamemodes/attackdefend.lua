@@ -1,5 +1,5 @@
-local weightedRandom = dofile(Traitormod.Path .. "/Lua/weightedrandom.lua")
-local gm = Traitormod.Gamemodes.Gamemode:new()
+local weightedRandom = dofile(Neurologics.Path .. "/Lua/weightedrandom.lua")
+local gm = Neurologics.Gamemodes.Gamemode:new()
 
 gm.Name = "AttackDefend"
 gm.RequiredGamemode = "sandbox"
@@ -67,8 +67,8 @@ local function ChooseTeam(client, team1, team2)
 end
 
 function gm:Start()
-    Traitormod.DisableRespawnShuttle = true
-    Traitormod.DisableMidRoundSpawn = true
+    Neurologics.DisableRespawnShuttle = true
+    Neurologics.DisableMidRoundSpawn = true
 
     if self.LockSubmarines then
         Submarine.LockX = true
@@ -141,13 +141,13 @@ function gm:Start()
         end
     end
 
-    Hook.Add("client.connected", "Traitormod.AttackDefend.ClientConnected", function (client)
+    Hook.Add("client.connected", "Neurologics.AttackDefend.ClientConnected", function (client)
         ChooseTeam(client, teams[1], teams[2])
     end)
 end
 
 function gm:End()
-    Hook.Remove("client.connected", "Traitormod.AttackDefend.ClientConnected")
+    Hook.Remove("client.connected", "Neurologics.AttackDefend.ClientConnected")
 
     if self.LockSubmarines then
         Submarine.LockX = false
@@ -166,7 +166,7 @@ function gm:Think()
     if self.DefendCountDown <= 10 then max = 1 end
     if self.LastDefendCountDown - self.DefendCountDown > max then
         for _, client in pairs(Client.ClientList) do
-            Traitormod.SendChatMessage(client, "The defender team has " .. math.ceil(self.DefendCountDown) .. " seconds left to defend the reactor!", Color.GreenYellow)
+            Neurologics.SendChatMessage(client, "The defender team has " .. math.ceil(self.DefendCountDown) .. " seconds left to defend the reactor!", Color.GreenYellow)
         end
         self.LastDefendCountDown = self.DefendCountDown
     end
@@ -190,12 +190,12 @@ function gm:Think()
         if team.CheckWinCondition() then
             self.Ending = true
             for _, client in pairs(Client.ClientList) do
-                Traitormod.SendMessage(client, team.Name .. " won the game!", "InfoFrameTabButton.Mission")
+                Neurologics.SendMessage(client, team.Name .. " won the game!", "InfoFrameTabButton.Mission")
             end
 
             for _, member in pairs(team.Members) do
-                local points = Traitormod.AwardPoints(member, self.WinningPoints)
-                Traitormod.SendMessage(member, string.format(Traitormod.Language.ReceivedPoints, points), "InfoFrameTabButton.Mission")    
+                local points = Neurologics.AwardPoints(member, self.WinningPoints)
+                Neurologics.SendMessage(member, string.format(Neurologics.Language.ReceivedPoints, points), "InfoFrameTabButton.Mission")    
             end
             Timer.Wait(function ()
                 Game.EndGame()
