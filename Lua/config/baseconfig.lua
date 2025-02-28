@@ -23,6 +23,14 @@ config.ExtensionConfig = {
 
 }
 
+config.Teams = {
+    None = 0,
+    Crew = 1,
+    Pirates = 2,
+    Guests = 3,
+    Nukies = 4,
+}
+
 ----- GAMEPLAY -----
 config.Codewords = {
     "hull", "tabacco", "nonsense", "fish", "clown", "quartermaster", "fast", "possibility",
