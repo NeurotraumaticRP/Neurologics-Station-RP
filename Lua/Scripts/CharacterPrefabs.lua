@@ -1,3 +1,5 @@
+print("[Neurologics] Test")
+
 if not Neurologics.CharacterSpawner.Char then
     Neurologics.CharacterSpawner.Char = {}
 end

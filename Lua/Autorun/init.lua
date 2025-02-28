@@ -15,3 +15,4 @@ local path = table.pack(...)[1]
 Neurologics.Path = path
 
 dofile(Neurologics.Path .. "/Lua/Neurologics.lua")
+dofile(Neurologics.Path .. "/Lua/Scriptloader.lua")
