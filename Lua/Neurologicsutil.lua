@@ -297,17 +297,17 @@ end
 
 -- type: 6 = Server message, 7 = Console usage, 9 error
 Neurologics.Log = function (message)
-    Game.Log("[TraitorMod] " .. message, 6)
+    Game.Log("[Neurologics] " .. message, 6)
 end
 
 Neurologics.Debug = function (message)
     if Neurologics.Config.DebugLogs then
-        Game.Log("[TraitorMod-Debug] " .. message, 6)
+        Game.Log("[Neurologics-Debug] " .. message, 6)
     end
 end
 
 Neurologics.Error = function (message, ...)
-    Game.Log("[TraitorMod-Error] " .. message, 9)
+    Game.Log("[Neurologics-Error] " .. message, 9)
     
     if Neurologics.Config.DebugLogs then
         printerror(string.format(message, ...))
@@ -508,12 +508,12 @@ end
 
 Neurologics.SendWelcome = function(client)
     if Neurologics.Config.SendWelcomeMessage or Neurologics.Config.SendWelcomeMessage == nil then
-        Game.SendDirectChatMessage("", "| Traitor Mod v" .. Neurologics.Traitormod.VERSION .. " |\n" .. Neurologics.GetDataInfo(client), nil, ChatMessageType.Server, client)
+        Game.SendDirectChatMessage("", "| Traitor Mod v" .. Neurologics.VERSION .. " |\n" .. Neurologics.GetDataInfo(client), nil, ChatMessageType.Server, client)
     end
 end
 
 Neurologics.ParseSubmarineConfig = function (description)
-    local startIndex, endIndex = string.find(description, "%[traitormod%]")
+    local startIndex, endIndex = string.find(description, "%[Neurologics%]")
 
     if startIndex == nil then return {} end
 

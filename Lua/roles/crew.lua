@@ -1,4 +1,4 @@
-local role = Traitormod.RoleManager.Roles.Role:new()
+local role = Neurologics.RoleManager.Roles.Role:new()
 role.Name = "Crew"
 role.Antagonist = false
 
@@ -15,7 +15,7 @@ function role:Start()
     for key, value in pairs(availableObjectives) do pool[key] = value end
 
     for i = 1, 3, 1 do
-        local objective = Traitormod.RoleManager.RandomObjective(pool)
+        local objective = Neurologics.RoleManager.RandomObjective(pool)
         if objective == nil then break end
 
         objective = objective:new()
@@ -34,15 +34,15 @@ function role:Start()
         end
     end
 
-    local finishObjectives = Traitormod.RoleManager.FindObjective("FinishAllObjectives"):new()
+    local finishObjectives = Neurologics.RoleManager.FindObjective("FinishAllObjectives"):new()
     finishObjectives:Init(self.Character)
     self:AssignObjective(finishObjectives)
 
 
     local text = self:Greet()
-    local client = Traitormod.FindClientCharacter(self.Character)
+    local client = Neurologics.FindClientCharacter(self.Character)
     if client then
-        Traitormod.SendChatMessage(client, text, Color.Green)
+        Neurologics.SendChatMessage(client, text, Color.Green)
     end
 end
 
@@ -53,13 +53,13 @@ end
 
 ---@return string objectives
 function role:ObjectivesToString()
-    local objs = Traitormod.StringBuilder:new()
+    local objs = Neurologics.StringBuilder:new()
 
     for _, objective in pairs(self.Objectives) do
         if objective:IsCompleted() then
-            objs:append(" > ", objective.Text, Traitormod.Language.Completed)
+            objs:append(" > ", objective.Text, Neurologics.Language.Completed)
         else
-            objs:append(" > ", objective.Text, string.format(Traitormod.Language.Points, objective.AmountPoints))
+            objs:append(" > ", objective.Text, string.format(Neurologics.Language.Points, objective.AmountPoints))
         end
     end
 
@@ -69,8 +69,8 @@ end
 function role:Greet()
     local objectives = self:ObjectivesToString()
 
-    local sb = Traitormod.StringBuilder:new()
-    sb(Traitormod.Language.CrewMember)
+    local sb = Neurologics.StringBuilder:new()
+    sb(Neurologics.Language.CrewMember)
     sb(objectives)
 
     return sb:concat()

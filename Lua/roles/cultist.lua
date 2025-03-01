@@ -1,24 +1,24 @@
-local role = Traitormod.RoleManager.Roles.Antagonist:new()
+local role = Neurologics.RoleManager.Roles.Antagonist:new()
 role.Name = "Cultist"
 
 function role:CultistLoop(first)
     if not Game.RoundStarted then return end
-    if self.RoundNumber ~= Traitormod.RoundNumber then return end
+    if self.RoundNumber ~= Neurologics.RoundNumber then return end
 
     local this = self
 
-    local husk = Traitormod.RoleManager.Objectives.Husk:new()
+    local husk = Neurologics.RoleManager.Objectives.Husk:new()
     husk:Init(self.Character)
     local target = self:FindValidTarget(husk)
     if not self.Character.IsDead and husk:Start(target) then
         self:AssignObjective(husk)
 
-        local client = Traitormod.FindClientCharacter(self.Character)
+        local client = Neurologics.FindClientCharacter(self.Character)
 
         husk.OnAwarded = function()
             if client then
-                Traitormod.SendMessage(client, Traitormod.Language.CultistNextTarget, "")
-                Traitormod.Stats.AddClientStat("TraitorMainObjectives", client, 1)
+                Neurologics.SendMessage(client, Neurologics.Language.CultistNextTarget, "")
+                Neurologics.Stats.AddClientStat("TraitorMainObjectives", client, 1)
             end
 
             local delay = math.random(this.NextObjectiveDelayMin, this.NextObjectiveDelayMax) * 1000
@@ -29,9 +29,9 @@ function role:CultistLoop(first)
 
 
         if client and not first then
-            Traitormod.SendMessage(client, string.format(Traitormod.Language.HuskNewObjective, target.Name),
+            Neurologics.SendMessage(client, string.format(Neurologics.Language.HuskNewObjective, target.Name),
                 "GameModeIcon.pvp")
-            Traitormod.UpdateVanillaTraitor(client, true, self:Greet())
+            Neurologics.UpdateVanillaTraitor(client, true, self:Greet())
         end
     else
         Timer.Wait(function()
@@ -41,7 +41,7 @@ function role:CultistLoop(first)
 end
 
 function role:Start()
-    Traitormod.Stats.AddCharacterStat("Traitor", self.Character, 1)
+    Neurologics.Stats.AddCharacterStat("Traitor", self.Character, 1)
 
     self.Character.AddAbilityFlag(AbilityFlags.IgnoredByEnemyAI) -- husks ignore the cultists
 
@@ -52,7 +52,7 @@ function role:Start()
 
     local toRemove = {}
     for key, value in pairs(pool) do
-        local objective = Traitormod.RoleManager.FindObjective(value)
+        local objective = Neurologics.RoleManager.FindObjective(value)
         if objective ~= nil and objective.AlwaysActive then
             objective = objective:new()
 
@@ -60,7 +60,7 @@ function role:Start()
 
             objective:Init(character)
             objective.OnAwarded = function ()
-                Traitormod.Stats.AddCharacterStat("TraitorSubObjectives", character, 1)
+                Neurologics.Stats.AddCharacterStat("TraitorSubObjectives", character, 1)
             end
 
             if objective:Start(character) then
@@ -72,7 +72,7 @@ function role:Start()
     for key, value in pairs(toRemove) do table.remove(pool, value) end
 
     for i = 1, math.random(self.MinSubObjectives, self.MaxSubObjectives), 1 do
-        local objective = Traitormod.RoleManager.RandomObjective(pool)
+        local objective = Neurologics.RoleManager.RandomObjective(pool)
         if objective == nil then break end
 
         objective = objective:new()
@@ -83,7 +83,7 @@ function role:Start()
         local target = self:FindValidTarget(objective)
 
         objective.OnAwarded = function ()
-            Traitormod.Stats.AddCharacterStat("TraitorSubObjectives", character, 1)
+            Neurologics.Stats.AddCharacterStat("TraitorSubObjectives", character, 1)
         end
 
         if objective:Start(target) then
@@ -97,47 +97,47 @@ function role:Start()
     end
 
     local text = self:Greet()
-    local client = Traitormod.FindClientCharacter(self.Character)
+    local client = Neurologics.FindClientCharacter(self.Character)
     if client then
-        Traitormod.SendTraitorMessageBox(client, text, "oneofus")
-        Traitormod.UpdateVanillaTraitor(client, true, text, "oneofus")
+        Neurologics.SendTraitorMessageBox(client, text, "oneofus")
+        Neurologics.UpdateVanillaTraitor(client, true, text, "oneofus")
     end
 end
 
 
 function role:End(roundEnd)
-    local client = Traitormod.FindClientCharacter(self.Character)
+    local client = Neurologics.FindClientCharacter(self.Character)
     if not roundEnd and client then
-        --Traitormod.SendMessage(client, Traitormod.Language.TraitorDeath, "InfoFrameTabButton.Traitor")
-        Traitormod.UpdateVanillaTraitor(client, false)
+        --Neurologics.SendMessage(client, Neurologics.Language.TraitorDeath, "InfoFrameTabButton.Traitor")
+        Neurologics.UpdateVanillaTraitor(client, false)
     end
 end
 
 ---@return string mainPart, string subPart
 function role:ObjectivesToString()
-    local primary = Traitormod.StringBuilder:new()
-    local secondary = Traitormod.StringBuilder:new()
+    local primary = Neurologics.StringBuilder:new()
+    local secondary = Neurologics.StringBuilder:new()
 
     for _, objective in pairs(self.Objectives) do
         -- Husk objectives are primary
         local buf = objective.Name == "Husk" and primary or secondary
 
         if objective:IsCompleted() or objective.Awarded then
-            buf:append(" > ", objective.Text, Traitormod.Language.Completed)
+            buf:append(" > ", objective.Text, Neurologics.Language.Completed)
         else
-            buf:append(" > ", objective.Text, string.format(Traitormod.Language.Points, objective.AmountPoints))
+            buf:append(" > ", objective.Text, string.format(Neurologics.Language.Points, objective.AmountPoints))
         end
     end
     if #primary == 0 then
-        primary(Traitormod.Language.NoObjectivesYet)
+        primary(Neurologics.Language.NoObjectivesYet)
     end
 
     return primary:concat("\n"), secondary:concat("\n")
 end
 
 function role:Greet()
-    local partners = Traitormod.StringBuilder:new()
-    local traitors = Traitormod.RoleManager.FindAntagonists()
+    local partners = Neurologics.StringBuilder:new()
+    local traitors = Neurologics.RoleManager.FindAntagonists()
     for _, character in pairs(traitors) do
         if character ~= self.Character then
             partners('"%s" ', character.Name)
@@ -146,21 +146,21 @@ function role:Greet()
     partners = partners:concat(" ")
     local primary, secondary = self:ObjectivesToString()
 
-    local sb = Traitormod.StringBuilder:new()
-    sb("%s\n\n", Traitormod.Language.CultistYou)
-    sb("%s\n", Traitormod.Language.MainObjectivesYou)
+    local sb = Neurologics.StringBuilder:new()
+    sb("%s\n\n", Neurologics.Language.CultistYou)
+    sb("%s\n", Neurologics.Language.MainObjectivesYou)
     sb(primary)
-    sb("\n\n%s\n", Traitormod.Language.SecondaryObjectivesYou)
+    sb("\n\n%s\n", Neurologics.Language.SecondaryObjectivesYou)
     sb(secondary)
     sb("\n\n")
     if #traitors < 2 then
-        sb(Traitormod.Language.SoloAntagonist)
+        sb(Neurologics.Language.SoloAntagonist)
     else
-        sb(Traitormod.Language.Partners, partners)
+        sb(Neurologics.Language.Partners, partners)
         sb("\n")
 
         if self.TraitorBroadcast then
-            sb(Traitormod.Language.TcTip)
+            sb(Neurologics.Language.TcTip)
         end
     end
     
@@ -168,12 +168,12 @@ function role:Greet()
 end
 
 function role:OtherGreet()
-    local sb = Traitormod.StringBuilder:new()
+    local sb = Neurologics.StringBuilder:new()
     local primary, secondary = self:ObjectivesToString()
-    sb(Traitormod.Language.CultistOther, self.Character.Name)
-    sb("\n%s\n", Traitormod.Language.MainObjectivesOther)
+    sb(Neurologics.Language.CultistOther, self.Character.Name)
+    sb("\n%s\n", Neurologics.Language.MainObjectivesOther)
     sb(primary)
-    sb("\n%s\n", Traitormod.Language.SecondaryObjectivesOther)
+    sb("\n%s\n", Neurologics.Language.SecondaryObjectivesOther)
     sb(secondary)
     return sb:concat()
 end
@@ -191,22 +191,22 @@ function role:FilterTarget(objective, character)
         return false
     end
 
-    return Traitormod.RoleManager.Roles.Antagonist.FilterTarget(self, objective, character)
+    return Neurologics.RoleManager.Roles.Antagonist.FilterTarget(self, objective, character)
 end
 
-Hook.Add("husk.clientControlHusk", "Traitormod.Cultist.HuskControl", function (client, husk)
+Hook.Add("husk.clientControlHusk", "Neurologics.Cultist.HuskControl", function (client, husk)
     local cultist
-    for _, character in pairs(Traitormod.RoleManager.FindCharactersByRole("Cultist")) do
+    for _, character in pairs(Neurologics.RoleManager.FindCharactersByRole("Cultist")) do
         if character.Name == client.Name then
-            cultist = Traitormod.RoleManager.GetRole(character)
+            cultist = Neurologics.RoleManager.GetRole(character)
             break
         end
     end
 
     if cultist then
-        Traitormod.RoleManager.TransferRole(client.Character, cultist)
+        Neurologics.RoleManager.TransferRole(client.Character, cultist)
     else
-        Traitormod.RoleManager.AssignRole(client.Character, Traitormod.RoleManager.Roles.HuskServant:new())
+        Neurologics.RoleManager.AssignRole(client.Character, Neurologics.RoleManager.Roles.HuskServant:new())
     end
 end)
 

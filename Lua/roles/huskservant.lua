@@ -1,20 +1,20 @@
-local role = Traitormod.RoleManager.Roles.Antagonist:new()
+local role = Neurologics.RoleManager.Roles.Antagonist:new()
 
 role.Name = "HuskServant"
 role.IsAntagonist = false
 
 function role:Start()
     local text = self:Greet()
-    local client = Traitormod.FindClientCharacter(self.Character)
+    local client = Neurologics.FindClientCharacter(self.Character)
     if client then
-        Traitormod.SendTraitorMessageBox(client, text, "oneofus")
-        Traitormod.UpdateVanillaTraitor(client, true, text, "oneofus")
+        Neurologics.SendTraitorMessageBox(client, text, "oneofus")
+        Neurologics.UpdateVanillaTraitor(client, true, text, "oneofus")
     end
 end
 
 function role:Greet()
-    local partners = Traitormod.StringBuilder:new()
-    local traitors = Traitormod.RoleManager.FindAntagonists()
+    local partners = Neurologics.StringBuilder:new()
+    local traitors = Neurologics.RoleManager.FindAntagonists()
     for _, character in pairs(traitors) do
         if character ~= self.Character then
             partners('"%s" ', character.Name)
@@ -22,22 +22,22 @@ function role:Greet()
     end
     partners = partners:concat(" ")
 
-    local sb = Traitormod.StringBuilder:new()
-    sb(Traitormod.Language.HuskServantYou)
+    local sb = Neurologics.StringBuilder:new()
+    sb(Neurologics.Language.HuskServantYou)
 
     sb("\n\n")
-    sb(Traitormod.Language.HuskCultists, partners)
+    sb(Neurologics.Language.HuskCultists, partners)
 
     if self.TraitorBroadcast then
-        sb("\n\n%s", Traitormod.Language.HuskServantTcTip)
+        sb("\n\n%s", Neurologics.Language.HuskServantTcTip)
     end
 
     return sb:concat()
 end
 
 function role:OtherGreet()
-    local sb = Traitormod.StringBuilder:new()
-    sb(Traitormod.Language.HuskServantOther, self.Character.Name)
+    local sb = Neurologics.StringBuilder:new()
+    sb(Neurologics.Language.HuskServantOther, self.Character.Name)
     return sb:concat()
 end
 

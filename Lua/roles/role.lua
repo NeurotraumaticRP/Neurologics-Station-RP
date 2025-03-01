@@ -6,7 +6,7 @@ role.IsAntagonist = false
 function role:Init(character)
     self.Character = character
     self.Objectives = {}
-    self.RoundNumber = Traitormod.RoundNumber
+    self.RoundNumber = Neurologics.RoundNumber
 end
 
 function role:Transfer(character)
@@ -70,7 +70,7 @@ function role:FindValidTarget(objective)
         end
     end
 
-    Traitormod.Debug("Selecting new random target out of " .. #targets .. " possible candidates" .. debug)
+    Neurologics.Debug("Selecting new random target out of " .. #targets .. " possible candidates" .. debug)
     if #targets > 0 then
         local chosenTarget = targets[math.random(1, #targets)]
         return chosenTarget
@@ -86,7 +86,7 @@ function role:FilterTarget(objective, character)
         return false
     end
 
-    if Traitormod.RoleManager.IsSameRole(self, character) then return false end
+    if Neurologics.RoleManager.IsSameRole(self, character) then return false end
 
     return true
 end

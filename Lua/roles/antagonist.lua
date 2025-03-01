@@ -1,30 +1,30 @@
-local role = Traitormod.RoleManager.Roles.Role:new()
+local role = Neurologics.RoleManager.Roles.Role:new()
 
 role.Name = "Antagonist"
 role.IsAntagonist = true
 
-Traitormod.AddCommand("!tc", function(client, args)
-    local feedback = Traitormod.Language.CommandNotActive
+Neurologics.AddCommand("!tc", function(client, args)
+    local feedback = Neurologics.Language.CommandNotActive
 
-    local clientRole = Traitormod.RoleManager.GetRole(client.Character)
+    local clientRole = Neurologics.RoleManager.GetRole(client.Character)
 
     if clientRole == nil or client.Character.IsDead then
-        feedback = Traitormod.Language.NoTraitor
+        feedback = Neurologics.Language.NoTraitor
     elseif not clientRole.TraitorBroadcast then
-        feedback = Traitormod.Language.CommandNotActive
+        feedback = Neurologics.Language.CommandNotActive
     elseif #args > 0 then
         local msg = ""
         for word in args do
             msg = msg .. " " .. word
         end
 
-        for character, role in pairs(Traitormod.RoleManager.RoundRoles) do
+        for character, role in pairs(Neurologics.RoleManager.RoundRoles) do
             if role.TraitorBroadcast then
-                local targetClient = Traitormod.FindClientCharacter(character)
+                local targetClient = Neurologics.FindClientCharacter(character)
 
                 if targetClient then
                     Game.SendDirectChatMessage("",
-                        string.format(Traitormod.Language.TraitorBroadcast, Traitormod.ClientLogName(client), msg), nil,
+                        string.format(Neurologics.Language.TraitorBroadcast, Neurologics.ClientLogName(client), msg), nil,
                         ChatMessageType.Error, targetClient)
                 end
             end
@@ -35,33 +35,33 @@ Traitormod.AddCommand("!tc", function(client, args)
         feedback = "Usage: !tc [Message]"
     end
 
-    Game.SendDirectChatMessage("", feedback, nil, Traitormod.Config.ChatMessageType, client)
+    Game.SendDirectChatMessage("", feedback, nil, Neurologics.Config.ChatMessageType, client)
 
     return true
 end)
 
-Traitormod.AddCommand({"!tannounce", "!ta"}, function(client, args)
-    local feedback = Traitormod.Language.CommandNotActive
+Neurologics.AddCommand({"!tannounce", "!ta"}, function(client, args)
+    local feedback = Neurologics.Language.CommandNotActive
 
-    local clientRole = Traitormod.RoleManager.GetRole(client.Character)
+    local clientRole = Neurologics.RoleManager.GetRole(client.Character)
 
     if clientRole == nil or client.Character.IsDead then
-        feedback = Traitormod.Language.NoTraitor
+        feedback = Neurologics.Language.NoTraitor
     elseif not clientRole.TraitorBroadcast then
-        feedback = Traitormod.Language.CommandNotActive
+        feedback = Neurologics.Language.CommandNotActive
     elseif #args > 0 then
         local msg = ""
         for word in args do
             msg = msg .. " " .. word
         end
 
-        for character, role in pairs(Traitormod.RoleManager.RoundRoles) do
+        for character, role in pairs(Neurologics.RoleManager.RoundRoles) do
             if role.TraitorBroadcast then
-                local targetClient = Traitormod.FindClientCharacter(character)
+                local targetClient = Neurologics.FindClientCharacter(character)
 
                 if targetClient then
                     Game.SendDirectChatMessage("",
-                        string.format(Traitormod.Language.TraitorBroadcast, client.Name, msg), nil,
+                        string.format(Neurologics.Language.TraitorBroadcast, client.Name, msg), nil,
                         ChatMessageType.ServerMessageBoxInGame, targetClient)
                 end
             end
@@ -72,30 +72,30 @@ Traitormod.AddCommand({"!tannounce", "!ta"}, function(client, args)
         feedback = "Usage: !tannounce [Message]"
     end
 
-    Game.SendDirectChatMessage("", feedback, nil, Traitormod.Config.ChatMessageType, client)
+    Game.SendDirectChatMessage("", feedback, nil, Neurologics.Config.ChatMessageType, client)
 
     return true
 end)
 
-Traitormod.AddCommand("!tdm", function(client, args)
+Neurologics.AddCommand("!tdm", function(client, args)
     local feedback = ""
 
-    local clientRole = Traitormod.RoleManager.GetRole(client.Character)
+    local clientRole = Neurologics.RoleManager.GetRole(client.Character)
 
     if clientRole == nil or client.Character.IsDead then
-        feedback = Traitormod.Language.NoTraitor
+        feedback = Neurologics.Language.NoTraitor
     elseif not clientRole.TraitorDm then
-        feedback = Traitormod.Language.CommandNotActive
+        feedback = Neurologics.Language.CommandNotActive
     else
         if #args > 1 then
-            local found = Traitormod.FindClient(table.remove(args, 1))
+            local found = Neurologics.FindClient(table.remove(args, 1))
             local msg = ""
             for word in args do
                 msg = msg .. " " .. word
             end
             if found then
-                Traitormod.SendMessage(found, Traitormod.Language.TraitorDirectMessage .. msg)
-                feedback = string.format("[To %s]: %s", Traitormod.ClientLogName(found), msg)
+                Neurologics.SendMessage(found, Neurologics.Language.TraitorDirectMessage .. msg)
+                feedback = string.format("[To %s]: %s", Neurologics.ClientLogName(found), msg)
                 return true
             else
                 feedback = "Name not found."
@@ -105,17 +105,17 @@ Traitormod.AddCommand("!tdm", function(client, args)
         end
     end
 
-    Game.SendDirectChatMessage("", feedback, nil, Traitormod.Config.ChatMessageType, client)
+    Game.SendDirectChatMessage("", feedback, nil, Neurologics.Config.ChatMessageType, client)
     return true
 end)
 
 function role:FilterTarget(objective, character)
-    local targetRole = Traitormod.RoleManager.GetRole(character)
+    local targetRole = Neurologics.RoleManager.GetRole(character)
     if targetRole and targetRole.IsAntagonist then
         return false
     end
 
-    return Traitormod.RoleManager.Roles.Role.FilterTarget(self, objective, character)
+    return Neurologics.RoleManager.Roles.Role.FilterTarget(self, objective, character)
 end
 
 

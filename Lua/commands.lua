@@ -18,7 +18,7 @@ Neurologics.AddCommand("!helptraitor", function (client, args)
 end)
 
 Neurologics.AddCommand("!version", function (client, args)
-    Neurologics.SendMessage(client, "Running Evil Factory's Traitor Mod v" .. Neurologics.Traitormod.VERSION)
+    Neurologics.SendMessage(client, "Running Evil Factory's Traitor Mod v" .. Neurologics.VERSION)
 
     return true
 end)
@@ -651,6 +651,24 @@ Neurologics.AddCommand({"!droppoints", "!droppoint", "!dropoint", "!dropoints"},
     Neurologics.SetData(client, "Points", availablePoints - amount)
 
     preventSpam[client] = Timer.GetTime() + 5
+
+    return true
+end)
+
+Neurologics.AddCommand({"!SpawnNukie"}, function(client, args)
+    -- for debug, spawns "nukie" at the player's location
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+
+    if #args > 1 then -- if more than 1 arg, send usage
+        Neurologics.SendMessage(client, "Usage: !SpawnNukie")
+        return true
+    end
+
+    local nukie = Neurologics.CharacterSpawner.SpawnCharacter("Nukie", client.Character.WorldPosition) -- leave other vals nil, prefab already has defaults
+    if not nukie then
+        Neurologics.SendMessage(client, "Failed to spawn nukie. check logs for details.")
+        return true
+    end
 
     return true
 end)

@@ -80,7 +80,7 @@ Neurologics.PreRoundStart = function (submarineInfo, chooseGamemode)
 end
 
 Neurologics.RoundStart = function()
-    Neurologics.Log("Starting traitor round - Traitor Mod v" .. Neurologics.Traitormod.VERSION)
+    Neurologics.Log("Starting traitor round - Traitor Mod v" .. Neurologics.VERSION)
     pointsGiveTimer = Timer.GetTime() + Neurologics.Config.ExperienceTimer
 
     Neurologics.CodeWords = Neurologics.SelectCodeWords()
