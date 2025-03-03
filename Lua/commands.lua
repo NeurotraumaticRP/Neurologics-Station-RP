@@ -664,7 +664,7 @@ Neurologics.AddCommand({"!SpawnNukie"}, function(client, args)
         return true
     end
 
-    local nukie = Neurologics.CharacterSpawner.SpawnCharacter("Nukie", client.Character.WorldPosition) -- leave other vals nil, prefab already has defaults
+    local nukie = NCS.SpawnCharacter("Nukie", client.Character.WorldPosition) -- leave other vals nil, prefab already has defaults
     if not nukie then
         Neurologics.SendMessage(client, "Failed to spawn nukie. check logs for details.")
         return true
