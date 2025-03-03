@@ -1,22 +1,22 @@
 -- Define the CharacterSpawner table and character prefab storage
-Neurologics = Neurologics or {}
+NCS = NCS or {}
 
-if not Neurologics.CharacterSpawner then
-    Neurologics.CharacterSpawner = {}
+if not NCS then
+    NCS = {}
 end
 
-if not Neurologics.CharacterSpawner.Char then -- this should fix overwriting the original CharacterSpawner
-    Neurologics.CharacterSpawner.Char = {}
+if not NCS.Char then -- this should fix overwriting the original CharacterSpawner
+    NCS.Char = {}
 end
 
 -- Spawns a character from a prefab
-Neurologics.CharacterSpawner.SpawnCharacter = function(prefabKey, position, client, team)
+NCS.SpawnCharacter = function(prefabKey, position, client, team)
     prefabKey = string.lower(prefabKey)
-    local charPrefab = Neurologics.CharacterSpawner.Char[prefabKey]
+    local charPrefab = NCS.Char[prefabKey]
     if not charPrefab then
         print("[Neurologics/CharacterSpawner] Character not found")
         print("[Neurologics/CharacterSpawner] Prefab key: " .. prefabKey)
-        print("[Neurologics/CharacterSpawner] Prefab keys: " .. table.concat(Neurologics.CharacterSpawner.Char, ", "))
+        print("[Neurologics/CharacterSpawner] Prefab keys: " .. table.concat(NCS.Char, ", "))
         return
     end
 
@@ -36,11 +36,11 @@ Neurologics.CharacterSpawner.SpawnCharacter = function(prefabKey, position, clie
 
     local character = Character.Create(info, position, info.Name, 0, false, true)
     -- Remove the character's inventory
-    Neurologics.CharacterSpawner.RemoveCharacterInventory(character)
+    NCS.RemoveCharacterInventory(character)
 
     -- Add each item from the prefab's inventory to the character
     for _, item in pairs(charPrefab.Inventory or {}) do
-        Neurologics.CharacterSpawner.AddItemToCharacter(
+        NCS.AddItemToCharacter(
             character,
             item.id,
             item.count,
@@ -53,7 +53,7 @@ Neurologics.CharacterSpawner.SpawnCharacter = function(prefabKey, position, clie
 end
 
 -- Helper: Recursively spawn sub-items (max 3 nested levels)
-Neurologics.CharacterSpawner.SpawnSubItems = function(subItems, parentInventory, depth)
+NCS.SpawnSubItems = function(subItems, parentInventory, depth)
     depth = depth or 1
     if depth > 3 then return end -- Prevent infinite recursion or performance issues
 
@@ -69,7 +69,7 @@ Neurologics.CharacterSpawner.SpawnSubItems = function(subItems, parentInventory,
                     -- If this sub-item has its own sub-items, spawn them into its OwnInventory (if available)
                     if subItem.subItems then
                         local childInventory = spawnedSubItem.OwnInventory or parentInventory
-                        Neurologics.CharacterSpawner.SpawnSubItems(subItem.subItems, childInventory, depth + 1)
+                        NCS.SpawnSubItems(subItem.subItems, childInventory, depth + 1)
                     end
                 end
             )
@@ -78,7 +78,7 @@ Neurologics.CharacterSpawner.SpawnSubItems = function(subItems, parentInventory,
 end
 
 -- Adds an item to the character's inventory (with its sub-items)
-Neurologics.CharacterSpawner.AddItemToCharacter = function(character, id, count, subItems, slot, quality, condition)
+NCS.AddItemToCharacter = function(character, id, count, subItems, slot, quality, condition)
     if not character then
         print("[Neurologics/CharacterSpawner] Character not found")
         return
@@ -105,7 +105,7 @@ Neurologics.CharacterSpawner.AddItemToCharacter = function(character, id, count,
     end
 end
 
-Neurologics.CharacterSpawner.RemoveCharacterInventory = function(character)
+NCS.RemoveCharacterInventory = function(character)
     for itemCount = 0, character.Inventory.Capacity do
         local item = character.Inventory.GetItemAt(itemCount)
         if item then
@@ -114,5 +114,5 @@ Neurologics.CharacterSpawner.RemoveCharacterInventory = function(character)
     end
 end
 
-return Neurologics.CharacterSpawner
+return NCS
 

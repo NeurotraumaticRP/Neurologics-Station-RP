@@ -7,51 +7,15 @@ print("[Neurologics] Test") -- for debug
 -- Max nested sub-items is 3 for lag prevention, so if it does not spawn, try reducing the amount of sub-items.
 -- Make sure all Char names are lowercase, otherwise it will not spawn.
 -- -------------------------------
-if not Neurologics.CharacterSpawner then
-    Neurologics.CharacterSpawner = {}
+if not NCS then
+    NCS = {}
 end
 
-if not Neurologics.CharacterSpawner.Char then
-    Neurologics.CharacterSpawner.Char = {}
+if not NCS.Char then
+    NCS.Char = {}
 end
 
---[[
-Any
-InvSlotType.Any = 1
-
-Bag
-InvSlotType.Bag = 256
-
-Card
-InvSlotType.Card = 128
-
-Head
-InvSlotType.Head = 8
-
-Headset
-InvSlotType.Headset = 64
-
-HealthInterface
-InvSlotType.HealthInterface = 512
-
-InnerClothes
-InvSlotType.InnerClothes = 16
-
-LeftHand
-InvSlotType.LeftHand = 4
-
-None
-InvSlotType.None = 0
-
-OuterClothes
-InvSlotType.OuterClothes = 32
-
-RightHand
-InvSlotType.RightHand = 2
-
-]]
-
-Neurologics.CharacterSpawner.Char["nukie"] = {
+NCS.Char["nukie"] = {
     Team    = Neurologics.Config.Teams.Nukies,
     Prefix  = "Nukie",
     BaseJob = "captain", -- this will be changed once we start working with the content package
