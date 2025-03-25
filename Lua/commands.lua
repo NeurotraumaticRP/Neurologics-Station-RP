@@ -672,3 +672,166 @@ Neurologics.AddCommand({"!SpawnNukie"}, function(client, args)
 
     return true
 end)
+
+Neurologics.AddCommand({"!roleban", "!banrole", "!jobban", "!banjob"}, function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if #args < 3 then
+        Neurologics.SendMessage(sender, "Usage: !roleban \"name\" \"job1,job2,job3,jobN\" \"reason for banning\"")
+        return true
+    end
+
+    local targetClientInput = table.remove(args, 1)
+    local jobsString = table.remove(args, 1):lower()
+    local reason = table.remove(args, 1)
+    if #args > 0 then
+        reason = reason .. " " .. table.concat(args, " ")
+    end
+
+    local jobList = splitJobList(jobsString)
+
+    local validJobs = { "doctor", "guard", "captain", "head doctor", "scientist", "clown", "priest", "warden", "staff", "janitor", "convict", "he-chef" }
+    local validJobsSet = {}
+    for _, job in ipairs(validJobs) do
+        validJobsSet[job] = true
+    end
+
+    local invalidJobs = {}
+    for _, job in ipairs(jobList) do
+        if not validJobsSet[job] then
+            table.insert(invalidJobs, job)
+        end
+    end
+
+    if #invalidJobs > 0 then
+        Neurologics.SendMessage(sender, "Invalid job/role(s) specified: " .. table.concat(invalidJobs, ", "))
+        return true
+    end
+
+    local targetClient, steamID = Neurologics.GetTargetClient(sender, targetClientInput)
+    if steamID == nil then return true end
+
+    local bannedJobs = Neurologics.LoadBannedJobs()
+    if not bannedJobs[steamID] then
+        bannedJobs[steamID] = {}
+    end
+
+    local function isJobBanned(bannedJobsList, job)
+        for _, bannedJob in ipairs(bannedJobsList) do
+            if bannedJob == job then
+                return true
+            end
+        end
+        return false
+    end
+
+    local addedJobs = {}
+    for _, job in ipairs(jobList) do
+        if not isJobBanned(bannedJobs[steamID], job) then
+            table.insert(bannedJobs[steamID], job)
+            table.insert(addedJobs, job)
+        end
+    end
+
+    Neurologics.SaveBannedJobs(bannedJobs)
+
+    if #addedJobs > 0 then
+        local jobsStr = table.concat(addedJobs, ", ")
+        Neurologics.SendMessage(sender, "Successfully banned " .. (targetClient and targetClient.Name or steamID) .. " from the roles: " .. jobsStr)
+        Neurologics.RecieveRoleBan(targetClient, table.concat(addedJobs, ","), reason)
+        if targetClient then
+            Traitormod.SendMessage(targetClient, "You have been banned from playing the roles: " .. jobsStr .. "\nReason: " .. reason)
+        end
+
+        local discordWebHook = Neurologics.GetAPIKey("discordWebhook")
+        local hookmsg = string.format("``Admin %s`` banned ``User %s`` from the roles: %s.\nReason: %s", sender.Name, (targetClient and targetClient.Name or steamID), jobsStr, reason)
+        local function escapeQuotes(str)
+            return str:gsub("\"", "\\\"")
+        end
+        local escapedMessage = escapeQuotes(hookmsg)
+        Networking.RequestPostHTTP(discordWebHook, function(result) end, '{"content": "' .. escapedMessage .. '", "username": "ADMIN HELP (CONVICT STATION)"}')
+    else
+        Traitormod.SendMessage(sender, (targetClient and targetClient.Name or steamID) .. " is already banned from the specified roles: " .. table.concat(jobList, ", "))
+    end
+
+    return true
+end)
+
+Neurologics.AddCommand({"!unroleban", "!unbanrole", "!roleunban", "!jobunban", "!unbanjob"}, function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+
+    if #args < 2 then
+        Neurologics.SendMessage(sender, "Usage: !unbanrole \"name\" \"job1,job2,job3,jobN\"")
+        return true
+    end
+
+    local targetClientInput = table.remove(args, 1)
+    local jobsString = table.remove(args, 1):lower()
+    local jobList = splitJobList(jobsString)
+
+    local validJobs = { "prisondoctor", "guard", "headguard", "warden", "staff", "janitor", "convict", "he-chef" }
+    local validJobsSet = {}
+    for _, job in ipairs(validJobs) do
+        validJobsSet[job] = true
+    end
+
+    local invalidJobs = {}
+    for _, job in ipairs(jobList) do
+        if not validJobsSet[job] then
+            table.insert(invalidJobs, job)
+        end
+    end
+
+    if #invalidJobs > 0 then
+        Neurologics.SendMessage(sender, "Invalid job/role(s) specified: " .. table.concat(invalidJobs, ", "))
+        return true
+    end
+
+    local targetClient, steamID = getTargetClient(sender, targetClientInput)
+    if steamID == nil then return true end
+
+    local bannedJobs = json.loadBannedJobs()
+    if not bannedJobs[steamID] then
+        bannedJobs[steamID] = {}
+    end
+
+    local function unbanJob(bannedJobsList, job)
+        for index, bannedJob in ipairs(bannedJobsList) do
+            if bannedJob == job then
+                table.remove(bannedJobsList, index)
+                return true
+            end
+        end
+        return false
+    end
+
+    local unbannedJobs = {}
+    for _, job in ipairs(jobList) do
+        if unbanJob(bannedJobs[steamID], job) then
+            table.insert(unbannedJobs, job)
+        end
+    end
+
+    json.saveBannedJobs(bannedJobs)
+
+    if #unbannedJobs > 0 then
+        local jobsStr = table.concat(unbannedJobs, ", ")
+        Neurologics.SendMessage(sender, "Successfully unbanned " .. (targetClient and targetClient.Name or steamID) .. " from the roles: " .. jobsStr)
+        Neurologics.RecieveRoleUnban(targetClient, jobsStr)
+        if targetClient then
+            Neurologics.SendMessage(targetClient, "You have been unbanned from playing the roles: " .. jobsStr)
+        end
+
+        local discordWebHook = Neurologics.GetAPIKey("discordWebhook")
+        local hookmsg = string.format("``Admin %s`` unbanned ``User %s`` from the roles: %s", sender.Name, (targetClient and targetClient.Name or steamID), jobsStr)
+        local function escapeQuotes(str)
+            return str:gsub("\"", "\\\"")
+        end
+        local escapedMessage = escapeQuotes(hookmsg)
+        Networking.RequestPostHTTP(discordWebHook, function(result) end, '{"content": "' .. escapedMessage .. '", "username": "ADMIN HELP (CONVICT STATION)"}')
+    else
+        Neurologics.SendMessage(sender, (targetClient and targetClient.Name or steamID) .. " is not banned from the specified roles.")
+    end
+
+    return true
+end)

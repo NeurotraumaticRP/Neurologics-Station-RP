@@ -528,3 +528,79 @@ end
 Neurologics.FormatTime = function(seconds)
     return TimeSpan.FromSeconds(seconds).ToString()
 end
+
+Neurologics.GetClientByName = function(sender, targetClientInput)
+    for key, value in pairs(Client.ClientList) do
+        if value.Name == targetClientInput or tostring(value.SteamID) == targetClientInput then
+            return value
+        end
+    end
+end
+
+Neurologics.GetClientByName = function(sender,inputName)
+    inputName = inputName:lower()
+
+    -- Find by client name or SteamID
+    for i,client in pairs(Client.ClientList) do
+        if type(client.Name) == "string" and client.Name:lower():find(inputName, 1, true) then
+            return client
+        elseif client.SteamID == inputName then
+            return client
+        end
+    end
+
+    -- Find by character name
+    for _, client in pairs(Client.ClientList) do
+        if client.Character and type(client.Character.Name) == "string" and client.Character.Name:lower():find(inputName, 1, true) then
+            return client
+        end
+    end
+
+    return nil
+end
+
+
+Neurologics.GetTargetClient = function(sender, targetClientInput)
+    local targetClient = nil
+    local steamID = nil
+
+    if targetClientInput:match("^%d+$") then
+        steamID = targetClientInput
+    else
+        targetClient = Neurologics.GetClientByName(sender, targetClientInput)
+        if targetClient == nil then
+            Neurologics.SendMessage(sender, "That player does not exist.")
+            return nil, nil
+        end
+        steamID = targetClient.SteamID
+    end
+
+    return targetClient, steamID
+end
+
+-- Utility functions to load API keys from a JSON file
+
+Neurologics.LoadAPIKeys = function()
+    local path = Neurologics.Path .. "/Lua/Json/apikeys.json"
+    if not File.Exists(path) then
+        File.Write(path, "{}")
+    end
+    local content = File.Read(path)
+    local keys = Neurologics.JSON.decode(content)
+    return keys
+end
+
+
+Neurologics.GetAPIKey = function(keyName)
+    local keys = Neurologics.LoadAPIKeys()
+    return keys[keyName]
+end
+
+Neurologics.SplitJobList = function(jobsString)
+    local jobList = {}
+    for job in string.gmatch(jobsString, '([^,]+)') do
+        local trimmedJob = job:match("^%s*(.-)%s*$")
+        table.insert(jobList, trimmedJob)
+    end
+    return jobList
+end

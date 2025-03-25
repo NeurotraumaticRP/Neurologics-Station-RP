@@ -86,6 +86,8 @@ end, Hook.HookMethodType.Before)
 
 
 
+
+
 --------------------------------
 --       Item Scripts         --
 --------------------------------
@@ -93,6 +95,12 @@ end, Hook.HookMethodType.Before)
 itemScript.item["wrench"] = {
     OnAttack = function(item, character, limb)
         print("wrench used ATTACK")
+    end
+}
+
+itemScript.item["screwdriver"] = {
+    OnUse = function(item, character, limb)
+        print("screwdriver used Use")
     end
 }
 
