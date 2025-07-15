@@ -162,9 +162,28 @@ config.GamemodeConfig = {
         TraitorFilter = function (client)
             if client.Character.TeamID ~= CharacterTeamType.Team1 then return 0 end
             if not client.Character.IsHuman then return 0 end
-            if client.Character.HasJob("captain") then return 0 end
-            if client.Character.HasJob("securityofficer") then return 0 end
-            if client.Character.HasJob("medicaldoctor") then return 0.5 end
+            
+            local jobChances = {
+                ["doctor"] = 0.5,
+                ["guard"] = 0,
+                ["warden"] = 0,
+                ["staff"] = 1,
+                ["janitor"] = 1,
+                ["convict"] = 1,
+                ["he-chef"] = 1,
+                ["cmo"] = 0,
+                ["crewmember"] = 1,
+                ["scientist"] = 0.8,
+                ["priest"] = 0.8,
+                ["captain"] = 0,
+                ["clown"] = 1
+            }
+            
+            for job, chance in pairs(jobChances) do
+                if client.Character.HasJob(job) then
+                    return chance
+                end
+            end
 
             return 1
         end

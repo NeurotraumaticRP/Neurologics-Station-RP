@@ -239,4 +239,7 @@ Neurologics.AddCommand("!midroundspawn", function (client, args)
     return true
 end)
 
+Neurologics = Neurologics or {}
+Neurologics.MidRoundSpawn = m
+
 return m

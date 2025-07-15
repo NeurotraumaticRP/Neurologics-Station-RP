@@ -1,6 +1,6 @@
 if CLIENT then return end
 
-local api_endpoint = Neurologics.GetAPIKey("apiEndpoint")
+--[[local api_endpoint = Neurologics.GetAPIKey("apiEndpoint")
 local api_key = Neurologics.GetAPIKey("apiKey")
 local json = require 'json'
 
@@ -217,4 +217,4 @@ Hook.Add("chatMessage", "content filter", function(message, client)
            return true
         end
     end
-end)
+end)]]-- disabled for now

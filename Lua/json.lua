@@ -404,7 +404,7 @@ function json.saveBannedJobs(bannedJobs)
     File.Write(Neurologics.Path .. "/Lua/Json/banned_jobs.json", json.encode(bannedJobs))
 end
 
+Neurologics = Neurologics or {}  -- Ensure Neurologics table exists
+Neurologics.JSON = json
 
 return json
-
-Neurologics.JSON = json
