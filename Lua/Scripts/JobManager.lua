@@ -3,6 +3,7 @@
 -- it automatically allocates maximum jobs allowed per job depending on player count.
 -- it handles job bans from the job ban command.
 -- it will be modular in case of future needs.
+-- in case of specific scenarios regarding the choice of a job, that code will be put in jobmanager.lua for clarity.
 
 Neurologics.JobManager = {}
 Neurologics.JobManager.ValidJobs = { "doctor","clown", "guard", "warden", "staff", "janitor", "convict", "he-chef", "cmo","crewmember","scientist","priest","captain" }
@@ -20,11 +21,14 @@ function Neurologics.JobManager.ProcessJobBans(ptable)
         local steamID = client.SteamID
         local flag = false
 
+        print("[JobManager] Checking job ban for " .. client.Name .. " with job: " .. jobName)
+
         -- Check if the client is banned from the assigned job
         if bannedJobs[steamID] then
             for _, bannedJob in ipairs(bannedJobs[steamID]) do
                 if jobName == bannedJob then
                     flag = true
+                    print("[JobManager] " .. client.Name .. " is banned from job: " .. jobName)
                     break
                 end
             end
@@ -50,14 +54,25 @@ function Neurologics.JobManager.ProcessJobBans(ptable)
                 end
             end
 
+            print("[JobManager] Available substitute roles for " .. client.Name .. ": " .. table.concat(substituteRoles, ", "))
+
             -- Choose a random job from the substitute roles
             if #substituteRoles > 0 then
                 local newJobName = substituteRoles[math.random(1, #substituteRoles)]
+                print("[JobManager] Reassigning " .. client.Name .. " from " .. jobName .. " to " .. newJobName .. " due to ban")
+                
                 client.AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(newJobName)
+                
+                -- Update CharacterInfo.Job to ensure proper spawning with clothes
+                if client.CharacterInfo then
+                    client.CharacterInfo.Job = Job(JobPrefab.Get(newJobName), 0, 0)
+                end
+                
                 Neurologics.SendMessage(client, "You have been banned from playing the role: " .. jobName .. ", Appeal in discord https://discord.gg/nv8Zz32PxK")
                 updated = true
             else
                 -- No substitute roles available, log this situation
+                print("[JobManager] Warning: " .. client.Name .. " is banned from all jobs. No substitute role available.")
                 Neurologics.Log("Warning: " .. client.Name .. " is banned from all jobs. No substitute role available.")
             end
         end
@@ -182,6 +197,68 @@ function Neurologics.JobManager.ReloadBannedJobs()
     return bannedJobs
 end
 
+-- Initialize JobManager hooks and systems
+function Neurologics.JobManager.PreStart()
+    print("[JobManager] Initializing JobManager hooks...")
+    
+    -- Update the AssignJobs hook to include overflow handling
+    Hook.Patch("Barotrauma.Networking.GameServer", "AssignJobs", function (instance, ptable)
+        print("[JobManager] AssignJobs hook called")
+        
+        -- Check if force role choice is enabled - if so, force preferred jobs
+        if Neurologics.ForceRoleChoice then
+            print("[JobManager] Force role choice is enabled, forcing preferred jobs")
+            
+            for index, client in pairs(ptable["unassigned"]) do
+                if client.PreferredJob then
+                    print("[JobManager] Forcing " .. client.Name .. " to their preferred job: " .. client.PreferredJob.ToString())
+                    
+                    -- Get the job prefab from the identifier
+                    local jobPrefab = JobPrefab.Get(client.PreferredJob)
+                    if jobPrefab then
+                        -- Create a JobVariant from the prefab
+                        local jobVariant = JobVariant.__new(jobPrefab, 0)
+                        client.AssignedJob = jobVariant
+                        
+                        -- Update CharacterInfo.Job to ensure proper spawning with clothes
+                        if client.CharacterInfo then
+                            client.CharacterInfo.Job = Job(jobPrefab, false, 0, jobVariant)
+                        end
+                        
+                        print("[JobManager] Successfully assigned " .. client.Name .. " to " .. jobPrefab.Identifier.ToString())
+                    else
+                        print("[JobManager] Warning: Could not find job prefab for " .. client.PreferredJob.ToString())
+                    end
+                end
+            end
+            
+            return true -- Indicate that we modified job assignments
+        end
+        
+        print("[JobManager] Processing job assignments...")
+        
+        -- Reload banned jobs data to ensure we have the latest information
+        Neurologics.JobManager.ReloadBannedJobs()
+        local updated = false
+        
+        -- Process job bans first
+        updated = Neurologics.JobManager.ProcessJobBans(ptable) or updated
+        
+        -- Then handle overflow
+        updated = Neurologics.JobManager.HandleJobOverflow(ptable) or updated
+        
+        if updated then
+            print("[JobManager] Job assignments were modified")
+        else
+            print("[JobManager] No job assignments were modified")
+        end
+        
+        return updated
+    end, Hook.HookMethodType.After)
+    
+    print("[JobManager] JobManager hooks initialized successfully")
+end
+
 function Neurologics.JobManager.splitJobList(jobString)
     local jobs = {}
     -- Split the string by commas and trim whitespace
@@ -204,76 +281,112 @@ function Neurologics.JobManager.splitJobList(jobString)
     return jobs
 end
 
+local jobConfig = {
+    ["captain"] = { max = 1, min = 1 },
+    ["cmo"] = { max = 1, min = 1 },
+    ["warden"] = { max = 1, min = 1 },
+    ["doctor"] = { max = 3, min = 0 },
+    ["guard"] = { max = 3, min = 0 },
+    ["staff"] = { max = 2, min = 1 },
+    ["he-chef"] = { max = 2, min = 1 },
+    ["scientist"] = { max = 2, min = 0 },
+    ["janitor"] = { max = 2, min = 0 },
+    ["convict"] = { max = 4, min = 0 },
+    ["priest"] = { max = 1, min = 0 },
+    ["clown"] = { max = 1, min = 0 },
+    ["crewmember"] = { max = -1, min = 0 } -- Unlimited
+}
+
 function Neurologics.JobManager.EvaluateJobMaxAmount(playercount)
-    local overflow = 3 -- Allow for 3 extra players worth of jobs
-    local adjustedPlayerCount = playercount + overflow
-
-    local jobmaxamounts = { -- given max player count is 25.
-        ["doctor"] = 3,
-        ["guard"] = 3,
-        ["warden"] = 1,
-        ["staff"] = 2,
-        ["janitor"] = 2,
-        ["convict"] = 4,
-        ["he-chef"] = 2,
-        ["cmo"] = 1,
-        ["crewmember"] = 2,
-        ["scientist"] = 2,
-        ["priest"] = 1,
-        ["captain"] = 1,
-        ["clown"] = 1
-    }
-
-    local minamounts = { -- 5 people required to play default gamemode, anyless becomes sandbox mode and no points will be given.
-        ["doctor"] = 0,
-        ["guard"] = 0,
-        ["warden"] = 1,
-        ["staff"] = 1,
-        ["janitor"] = 0,
-        ["convict"] = 0,
-        ["he-chef"] = 1,
-        ["cmo"] = 1,
-        ["crewmember"] = 0,
-        ["scientist"] = 0,
-        ["priest"] = 0,
-        ["captain"] = 1,
-        ["clown"] = 0
-    }
-
-    -- Calculate dynamic job amounts based on player count
+    local maxPercentage = 0.25 -- 25% of player count
     local dynamicAmounts = {}
     
-    -- If 5 or fewer players, set all jobs to max of 1
-    if playercount <= 5 then
-        for job, _ in pairs(jobmaxamounts) do
-            -- Some jobs already have max of 1 (captain, warden, priest, etc)
-            -- but we'll explicitly set everything to 1 for clarity
-            dynamicAmounts[job] = 1
+    for job, config in pairs(jobConfig) do
+        if job == "crewmember" then
+            dynamicAmounts[job] = -1 -- Unlimited
+        else
+            -- Calculate percentage-based limit
+            local percentageLimit = math.floor(playercount * maxPercentage)
+            -- Use the lower of: percentage limit or hard cap
+            local finalLimit = math.min(percentageLimit, config.max)
+            dynamicAmounts[job] = math.max(config.min, finalLimit)
         end
-        return dynamicAmounts
     end
     
-    -- For more than 5 players, calculate dynamic amounts
-    for job, maxAmount in pairs(jobmaxamounts) do
-        local minAmount = minamounts[job] or 0
-        
-        -- Calculate scaled amount based on adjusted player count
-        local scaledAmount = math.floor((adjustedPlayerCount / 25) * maxAmount)
-        
-        -- Ensure we don't go below minimum or above maximum
-        scaledAmount = math.max(minAmount, scaledAmount)
-        scaledAmount = math.min(maxAmount, scaledAmount)
-        
-        dynamicAmounts[job] = scaledAmount
-    end
-
-    -- Ensure critical roles are maintained
-    if dynamicAmounts["captain"] < 1 then dynamicAmounts["captain"] = 1 end -- captain/warden/cmo are the heads so they need to be at least 1
-    if dynamicAmounts["warden"] < 1 then dynamicAmounts["warden"] = 1 end
-    if dynamicAmounts["cmo"] < 1 then dynamicAmounts["cmo"] = 1 end
-
     return dynamicAmounts
+end
 
+-- Smart reassignment using job preferences
+local function reassignPlayer(client, originalJob, maxAmounts, jobCounts)
+    local steamID = client.SteamID
+    local preferences = client.JobPreferences or {}
+    
+    -- Try each preference in order
+    for _, preferredJob in ipairs(preferences) do
+        local jobName = preferredJob.Prefab.Identifier.ToString():lower()
+        
+        -- Skip if it's the same job
+        if jobName == originalJob then 
+            -- Continue to next preference
+        else
+            -- Check if job is banned
+            local isBanned = false
+            if bannedJobs[steamID] then
+                for _, bannedJob in ipairs(bannedJobs[steamID]) do
+                    if jobName == bannedJob then
+                        isBanned = true
+                        break
+                    end
+                end
+            end
+            
+            -- If not banned, check if job has space
+            if not isBanned then
+                local currentCount = jobCounts[jobName] or 0
+                local maxAllowed = maxAmounts[jobName] or 0
+                
+                if maxAllowed == -1 or currentCount < maxAllowed then
+                    print("[JobManager] Reassigned " .. client.Name .. " to preferred job: " .. jobName)
+                    return jobName -- Found available job
+                end
+            end
+        end
+    end
+    
+    -- If preferences didn't work, try random jobs
+    local availableJobs = {}
+    for job, count in pairs(jobCounts) do
+        -- Skip if it's the same job or banned
+        if job ~= originalJob then
+            local isBanned = false
+            if bannedJobs[steamID] then
+                for _, bannedJob in ipairs(bannedJobs[steamID]) do
+                    if job == bannedJob then
+                        isBanned = true
+                        break
+                    end
+                end
+            end
+            
+            if not isBanned then
+                local maxAllowed = maxAmounts[job] or 0
+                if maxAllowed == -1 or count < maxAllowed then
+                    table.insert(availableJobs, job)
+                end
+            end
+        end
+    end
+    
+    -- If random jobs are available, pick one
+    if #availableJobs > 0 then
+        local randomJob = availableJobs[math.random(#availableJobs)]
+        print("[JobManager] Reassigned " .. client.Name .. " to random job: " .. randomJob)
+        return randomJob
+    end
+    
+    -- Fallback to crewmember (unlimited)
+    print("[JobManager] Reassigned " .. client.Name .. " to crewmember (fallback)")
+    return "crewmember"
 end
 
 local forcemaxamounts_debug = {
@@ -312,6 +425,53 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
         end
         table.insert(jobAssignments[jobName], client)
     end
+    
+    -- Add debug job users to the count and create fake client entries (DEBUG - REMOVE BEFORE RELEASE)
+    if Neurologics.DebugJobUsers then
+        for i, debugJob in ipairs(Neurologics.DebugJobUsers) do
+            jobCounts[debugJob] = (jobCounts[debugJob] or 0) + 1
+            
+            -- Create fake client entry for debug user
+            if not jobAssignments[debugJob] then
+                jobAssignments[debugJob] = {}
+            end
+            
+            local fakeClient = {
+                Name = "DebugUser" .. i,
+                SteamID = "debug_" .. i,
+                AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(debugJob),
+                JobPreferences = {},
+                CharacterInfo = nil
+            }
+            table.insert(jobAssignments[debugJob], fakeClient)
+            
+            print("[JobManager] Added debug user for job: " .. debugJob)
+        end
+    end
+    
+    -- Add debug real players to the count and create fake client entries (DEBUG - REMOVE BEFORE RELEASE)
+    if Neurologics.DebugRealPlayers then
+        for i, debugPlayer in ipairs(Neurologics.DebugRealPlayers) do
+            local debugJob = debugPlayer.job
+            jobCounts[debugJob] = (jobCounts[debugJob] or 0) + 1
+            
+            -- Create fake client entry for debug real player
+            if not jobAssignments[debugJob] then
+                jobAssignments[debugJob] = {}
+            end
+            
+            local fakeClient = {
+                Name = debugPlayer.name,
+                SteamID = debugPlayer.steamID,
+                AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(debugJob),
+                JobPreferences = {},
+                CharacterInfo = nil
+            }
+            table.insert(jobAssignments[debugJob], fakeClient)
+            
+            print("[JobManager] Added debug real player: " .. debugPlayer.name .. " for job: " .. debugJob)
+        end
+    end
 
     -- Function to get available jobs for a client
     local function getAvailableJobs(client)
@@ -343,56 +503,177 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
     -- Handle overflow for each job
     for jobName, count in pairs(jobCounts) do
         local maxAllowed = maxAmounts[jobName] or 0
-        if count > maxAllowed then
+        print("[JobManager] Checking job: " .. jobName .. " - Count: " .. count .. ", Max Allowed: " .. maxAllowed)
+        
+        if maxAllowed ~= -1 and count > maxAllowed then
+            print("[JobManager] ===== OVERFLOW DETECTED =====")
+            print("[JobManager] Job overflow detected for " .. jobName .. ": " .. count .. " players, max allowed: " .. maxAllowed)
+            print("[JobManager] Processing overflow for " .. jobName .. " first - these players get priority choice")
+            
             -- Number of players that need to be reassigned
             local overflow = count - maxAllowed
             local playersInJob = jobAssignments[jobName]
             
-            -- Shuffle players in this job to randomize who gets reassigned
-            for i = #playersInJob, 2, -1 do
-                local j = math.random(i)
-                playersInJob[i], playersInJob[j] = playersInJob[j], playersInJob[i]
+            print("[JobManager] Overflow amount: " .. overflow .. " players need to be reassigned")
+            print("[JobManager] Total players in " .. jobName .. ": " .. #playersInJob)
+            
+            -- List all players in this job
+            print("[JobManager] All players in " .. jobName .. ":")
+            for i, client in pairs(playersInJob) do
+                local playerType = (client.SteamID and client.SteamID:find("debug_")) and "DEBUG" or "REAL"
+                print("[JobManager]   " .. i .. ". " .. client.Name .. " (" .. playerType .. ") - SteamID: " .. tostring(client.SteamID))
             end
-
-            -- Reassign overflow players
-            for i = 1, overflow do
-                local client = playersInJob[i]
-                local availableJobs = getAvailableJobs(client)
-                
-                if #availableJobs > 0 then
-                    -- Pick random available job
-                    local newJob = availableJobs[math.random(#availableJobs)]
-                    
-                    -- Update counts
-                    jobCounts[jobName] = jobCounts[jobName] - 1
-                    jobCounts[newJob] = (jobCounts[newJob] or 0) + 1
-                    
-                    -- Assign new job
-                    client.AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(newJob)
-                    Neurologics.SendMessage(client, "Due to role limits, you have been reassigned to: " .. newJob)
-                    updated = true
+            
+            -- Separate real players from debug users
+            local realPlayers = {}
+            local debugUsers = {}
+            
+            for _, client in pairs(playersInJob) do
+                if client.SteamID and client.SteamID:find("debug_") then
+                    -- Check if it's a debug real player (has "debug_real_" prefix)
+                    if client.SteamID:find("debug_real_") then
+                        table.insert(realPlayers, client)
+                        print("[JobManager] Categorized as REAL: " .. client.Name .. " (debug real player)")
+                    else
+                        table.insert(debugUsers, client)
+                        print("[JobManager] Categorized as DEBUG: " .. client.Name .. " (debug user)")
+                    end
                 else
-                    Neurologics.Log("Warning: Could not find alternative job for " .. client.Name)
+                    table.insert(realPlayers, client)
+                    print("[JobManager] Categorized as REAL: " .. client.Name .. " (actual player)")
                 end
             end
+            
+            print("[JobManager] Real players in " .. jobName .. ": " .. #realPlayers .. ", Debug users: " .. #debugUsers)
+            
+            -- List real players
+            print("[JobManager] Real players that can be reassigned:")
+            for i, client in pairs(realPlayers) do
+                print("[JobManager]   " .. i .. ". " .. client.Name .. " - SteamID: " .. tostring(client.SteamID))
+            end
+            
+            -- List debug users
+            print("[JobManager] Debug users (will not be reassigned):")
+            for i, client in pairs(debugUsers) do
+                print("[JobManager]   " .. i .. ". " .. client.Name .. " - SteamID: " .. tostring(client.SteamID))
+            end
+            
+            -- Combine all players for randomization (both real and debug count for odds)
+            local allPlayers = {}
+            for _, client in pairs(realPlayers) do
+                table.insert(allPlayers, {client = client, type = "real"})
+            end
+            for _, client in pairs(debugUsers) do
+                table.insert(allPlayers, {client = client, type = "debug"})
+            end
+            
+            -- Calculate odds
+            local totalPlayers = #allPlayers
+            local playersToReassign = math.min(overflow, totalPlayers)
+            local odds = totalPlayers > 0 and (playersToReassign / totalPlayers) * 100 or 0
+            
+            print("[JobManager] ===== REASSIGNMENT CALCULATION =====")
+            print("[JobManager] Total players (real + debug): " .. totalPlayers)
+            print("[JobManager] Players to reassign: " .. playersToReassign)
+            print("[JobManager] Reassignment odds per player: " .. string.format("%.1f", odds) .. "%")
+            
+            if totalPlayers == 1 then
+                print("[JobManager] Only 1 player - they will be reassigned (100% chance)")
+            elseif totalPlayers == 2 then
+                print("[JobManager] 2 players - each has 50% chance of being reassigned")
+            else
+                print("[JobManager] " .. totalPlayers .. " players - each has " .. string.format("%.1f", odds) .. "% chance of being reassigned")
+            end
+            
+            -- Shuffle all players to randomize who gets reassigned
+            print("[JobManager] ===== SHUFFLING ALL PLAYERS =====")
+            print("[JobManager] Before shuffle:")
+            for i, playerData in pairs(allPlayers) do
+                print("[JobManager]   " .. i .. ". " .. playerData.client.Name .. " (" .. playerData.type .. ")")
+            end
+            
+            for i = #allPlayers, 2, -1 do
+                local j = math.random(i)
+                allPlayers[i], allPlayers[j] = allPlayers[j], allPlayers[i]
+                print("[JobManager] Swapped positions " .. i .. " and " .. j .. " (random: " .. j .. ")")
+            end
+            
+            print("[JobManager] After shuffle:")
+            for i, playerData in pairs(allPlayers) do
+                print("[JobManager]   " .. i .. ". " .. playerData.client.Name .. " (" .. playerData.type .. ")")
+            end
+
+            -- Reassign overflow players (only the overflow amount, not everyone)
+            print("[JobManager] ===== STARTING REASSIGNMENT =====")
+            local reassignedCount = 0
+            for i = 1, #allPlayers do
+                if reassignedCount >= overflow then
+                    print("[JobManager] Reached overflow limit (" .. overflow .. "), stopping reassignment")
+                    break
+                end
+                
+                local playerData = allPlayers[i]
+                local client = playerData.client
+                local playerType = playerData.type
+                
+                print("[JobManager] Processing player " .. i .. "/" .. #allPlayers .. ": " .. client.Name .. " (" .. playerType .. ")")
+                print("[JobManager] Reassigned count: " .. reassignedCount .. "/" .. overflow)
+                
+                -- If this is a debug user, stop the reassignment process
+                if playerType == "debug" then
+                    print("[JobManager] ===== DEBUG USER SELECTED - STOPPING REASSIGNMENT =====")
+                    print("[JobManager] Debug user " .. client.Name .. " would be reassigned, but stopping process")
+                    print("[JobManager] Real player gets to keep " .. jobName .. " job")
+                    break
+                end
+                
+                local newJob = reassignPlayer(client, jobName, maxAmounts, jobCounts)
+                
+                print("[JobManager] ===== REASSIGNING PLAYER =====")
+                print("[JobManager] Reassigning " .. client.Name .. " from " .. jobName .. " to " .. newJob)
+                print("[JobManager] Player SteamID: " .. tostring(client.SteamID))
+                
+                -- Update counts
+                local oldCount = jobCounts[jobName]
+                jobCounts[jobName] = jobCounts[jobName] - 1
+                jobCounts[newJob] = (jobCounts[newJob] or 0) + 1
+                print("[JobManager] Updated job counts - " .. jobName .. ": " .. oldCount .. " -> " .. jobCounts[jobName])
+                print("[JobManager] Updated job counts - " .. newJob .. ": " .. (jobCounts[newJob] - 1) .. " -> " .. jobCounts[newJob])
+                
+                -- Assign new job
+                client.AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(newJob)
+                
+                -- Update CharacterInfo.Job to ensure proper spawning with clothes
+                if client.CharacterInfo then
+                    local jobPrefab = JobPrefab.Get(newJob)
+                    if jobPrefab then
+                        client.CharacterInfo.Job = Job(jobPrefab, false, 0, 0)
+                        print("[JobManager] Updated CharacterInfo.Job for " .. client.Name)
+                    else
+                        print("[JobManager] Warning: Could not find job prefab for " .. newJob)
+                    end
+                else
+                    print("[JobManager] Warning: No CharacterInfo for " .. client.Name)
+                end
+                
+                Neurologics.SendMessage(client, "Due to role limits, you have been reassigned to: " .. newJob)
+                
+                -- Show popup message for job reassignment
+                Game.SendDirectChatMessage("", "Your job was reassigned due to overflow: " .. newJob, nil, ChatMessageType.ServerMessageBoxInGame, client) -- emojis cause errors
+                
+                updated = true
+                reassignedCount = reassignedCount + 1
+                print("[JobManager] Successfully reassigned " .. client.Name .. " (reassigned count: " .. reassignedCount .. "/" .. overflow .. ")")
+            end
+            
+            print("[JobManager] ===== REASSIGNMENT COMPLETE =====")
+            print("[JobManager] Kept " .. (count - overflow) .. " players in " .. jobName .. " job")
+            print("[JobManager] Reassigned " .. reassignedCount .. " players from " .. jobName .. " job")
+        else
+            print("[JobManager] No overflow for " .. jobName .. " - count: " .. count .. ", max: " .. maxAllowed)
         end
     end
 
     return updated
 end
-
--- Update the AssignJobs hook to include overflow handling
-Hook.Patch("Barotrauma.Networking.GameServer", "AssignJobs", function (instance, ptable)
-    -- Reload banned jobs data to ensure we have the latest information
-    Neurologics.JobManager.ReloadBannedJobs()
-    local updated = false
-    
-    -- Process job bans first
-    updated = Neurologics.JobManager.ProcessJobBans(ptable) or updated
-    
-    -- Then handle overflow
-    updated = Neurologics.JobManager.HandleJobOverflow(ptable) or updated
-    
-    return updated
-end, Hook.HookMethodType.After)
 

@@ -4,6 +4,14 @@ gm.Name = "Gamemode"
 
 function gm:PreStart()
     Neurologics.Pointshop.Initialize(self.PointshopCategories or {})
+    
+    -- Initialize JobManager hooks and systems
+    if Neurologics.JobManager then
+        print("[Gamemode] Initializing JobManager...")
+        Neurologics.JobManager.PreStart()
+    else
+        print("[Gamemode] Warning: JobManager not found!")
+    end
 end
 
 function gm:Start()

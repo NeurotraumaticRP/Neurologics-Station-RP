@@ -43,7 +43,7 @@ m.GetJobVariant = function(jobId)
 end
 
 -- TryCreateClientCharacter inspied by Oiltanker
-m.TryCreateClientCharacter = function(submarine, client)
+m.TryCreateClientCharacter = function(submarine, client) -- this will be revamped in the future to stop people from overflowing a single job (we dont need 30 prisoners)
     local session = Game.GameSession
     local crewManager = session.CrewManager
 
@@ -59,9 +59,15 @@ m.TryCreateClientCharacter = function(submarine, client)
     elseif preventMultiCaptain and jobPreference.Prefab.Identifier == "captain" then
         -- if crew has a captain, spawn as security
         if m.CrewHasJob("captain") then
-            Neurologics.Log(client.Name .. " tried to mid-round spawn as second captain - assigning security instead.")
-            -- set jobPreference = security
-            jobPreference = m.GetJobVariant("securityofficer")
+            -- Check if force role choice is enabled - if so, allow multiple captains
+            if Neurologics.ForceRoleChoice then
+                print("[MidRoundSpawn] Force role choice enabled, allowing " .. client.Name .. " to spawn as captain despite existing captain")
+            else
+                print("[MidRoundSpawn] " .. client.Name .. " tried to mid-round spawn as second captain - assigning security instead.")
+                Neurologics.Log(client.Name .. " tried to mid-round spawn as second captain - assigning security instead.")
+                -- set jobPreference = security
+                jobPreference = m.GetJobVariant("securityofficer")
+            end
         end
     end
 
