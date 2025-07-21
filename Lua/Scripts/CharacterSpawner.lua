@@ -95,7 +95,7 @@ NCS.AddItemToCharacter = function(character, id, count, subItems, slot, quality,
                 -- Use the spawned item's OwnInventory if it exists; otherwise, fall back to character.inventory.
                 local targetInventory = spawnedItem.OwnInventory or character.inventory
                 if subItems then
-                    Neurologics.CharacterSpawner.SpawnSubItems(subItems, targetInventory, 1)
+                    NCS.SpawnSubItems(subItems, targetInventory, 1)
                 end
             end,
             nil,

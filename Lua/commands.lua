@@ -655,20 +655,305 @@ Neurologics.AddCommand({"!droppoints", "!droppoint", "!dropoint", "!dropoints"},
     return true
 end)
 
-Neurologics.AddCommand({"!SpawnNukie"}, function(client, args)
-    -- for debug, spawns "nukie" at the player's location
+Neurologics.AddCommand({"!SpawnAs"}, function(client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
-
-    if #args > 1 then -- if more than 1 arg, send usage
-        Neurologics.SendMessage(client, "Usage: !SpawnNukie")
+    
+    if #args < 1 then
+        Neurologics.SendMessage(client, "Usage: !SpawnAs <character name>")
         return true
     end
 
-    local nukie = NCS.SpawnCharacter("Nukie", client.Character.WorldPosition) -- leave other vals nil, prefab already has defaults
-    if not nukie then
-        Neurologics.SendMessage(client, "Failed to spawn nukie. check logs for details.")
+    if client.Character == nil then
+        Neurologics.SendMessage(client, "You must have a character to use this command.")
         return true
     end
 
+    local characterName = args[1]
+    local currentPos = client.Character.WorldPosition
+    
+    -- Store current character to remove after spawning new one
+    local oldCharacter = client.Character
+    
+    local newCharacter = NCS.SpawnCharacter(characterName, currentPos)
+    if not newCharacter then
+        Neurologics.SendMessage(client, "Failed to spawn as " .. characterName .. ". Check logs for details.")
+        return true
+    end
+
+    -- Set the new character as the client's character
+    client.SetClientCharacter(newCharacter)
+    
+    -- Remove the old character
+    if oldCharacter then
+        Entity.Spawner.AddEntityToRemoveQueue(oldCharacter)
+    end
+
+    Neurologics.SendMessage(client, "Successfully spawned as " .. characterName)
+    return true
+end)
+
+Neurologics.AddCommand({"!roleban", "!banrole", "!jobban", "!banjob"}, function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if #args < 3 then
+        Neurologics.SendMessage(sender, "Usage: !roleban \"name\" \"job1,job2,job3,jobN\" \"reason for banning\"")
+        return true
+    end
+
+    local targetClientInput = table.remove(args, 1)
+    local jobsString = table.remove(args, 1):lower()
+    local reason = table.remove(args, 1)
+    if #args > 0 then
+        reason = reason .. " " .. table.concat(args, " ")
+    end
+
+    local jobList = Neurologics.JobManager.splitJobList(jobsString)
+
+    local validJobs = Neurologics.JobManager.ValidJobs
+    local validJobsSet = {}
+    for _, job in ipairs(validJobs) do
+        validJobsSet[job] = true
+    end
+
+    local invalidJobs = {}
+    for _, job in ipairs(jobList) do
+        if not validJobsSet[job] then
+            table.insert(invalidJobs, job)
+        end
+    end
+
+    if #invalidJobs > 0 then
+        Neurologics.SendMessage(sender, "Invalid job/role(s) specified: " .. table.concat(invalidJobs, ", "))
+        return true
+    end
+
+    local targetClient, steamID = Neurologics.GetTargetClient(sender, targetClientInput)
+    if steamID == nil then return true end
+
+    -- Use the JobManager.BanJobs function to ban the player from specified jobs
+    local addedJobs = Neurologics.JobManager.BanJobs(steamID, jobList, reason, sender, targetClient)
+    
+    if #addedJobs == 0 then
+        Neurologics.SendMessage(sender, (targetClient and targetClient.Name or steamID) .. " is already banned from the specified roles: " .. table.concat(jobList, ", "))
+    end
+
+    return true
+end)
+
+Neurologics.AddCommand({"!unroleban", "!unbanrole", "!roleunban", "!jobunban", "!unbanjob"}, function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+
+    if #args < 2 then
+        Neurologics.SendMessage(sender, "Usage: !unbanrole \"name\" \"job1,job2,job3,jobN\"")
+        return true
+    end
+
+    local targetClientInput = table.remove(args, 1)
+    local jobsString = table.remove(args, 1):lower()
+    local jobList = Neurologics.JobManager.splitJobList(jobsString)
+
+    local validJobs = Neurologics.JobManager.ValidJobs
+    local validJobsSet = {}
+    for _, job in ipairs(validJobs) do
+        validJobsSet[job] = true
+    end
+
+    local invalidJobs = {}
+    for _, job in ipairs(jobList) do
+        if not validJobsSet[job] then
+            table.insert(invalidJobs, job)
+        end
+    end
+
+    if #invalidJobs > 0 then
+        Neurologics.SendMessage(sender, "Invalid job/role(s) specified: " .. table.concat(invalidJobs, ", "))
+        return true
+    end
+
+    local targetClient, steamID = Neurologics.GetTargetClient(sender, targetClientInput)
+    if steamID == nil then return true end
+
+    -- Use the JobManager.UnbanJobs function to unban the player from specified jobs
+    local unbannedJobs = Neurologics.JobManager.UnbanJobs(steamID, jobList, sender, targetClient)
+    
+    if #unbannedJobs == 0 then
+        Neurologics.SendMessage(sender, (targetClient and targetClient.Name or steamID) .. " is not banned from the specified roles.")
+    end
+
+    return true
+end)
+
+Neurologics.AddCommand({"!forcerolechoice", "!frc"}, function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if #args < 1 then
+        Neurologics.SendMessage(sender, "Usage: !forcerolechoice <on/off>")
+        return true
+    end
+
+    local toggle = string.lower(args[1])
+    
+    if toggle == "on" then
+        Neurologics.ForceRoleChoice = true
+        Neurologics.SendMessage(sender, "Force role choice enabled - job manager bypassed")
+        Neurologics.SendMessageEveryone("Job restrictions have been disabled by an admin")
+        Neurologics.Log("ForceRoleChoice enabled by " .. Neurologics.ClientLogName(sender))
+    elseif toggle == "off" then
+        Neurologics.ForceRoleChoice = false
+        Neurologics.SendMessage(sender, "Force role choice disabled - job manager active")
+        Neurologics.SendMessageEveryone("Job restrictions have been re-enabled")
+        Neurologics.Log("ForceRoleChoice disabled by " .. Neurologics.ClientLogName(sender))
+    else
+        Neurologics.SendMessage(sender, "Usage: !forcerolechoice <on/off>")
+        return true
+    end
+
+    -- Log the action
+    Neurologics.Log(Neurologics.ClientLogName(sender) .. " toggled force role choice: " .. toggle)
+
+    return true
+end)
+
+Neurologics.AddCommand("!forcerolechoicestatus", function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    local status = Neurologics.ForceRoleChoice and "ENABLED" or "DISABLED"
+    Neurologics.SendMessage(sender, "Force role choice is currently: " .. status)
+    
+    return true
+end)
+
+-- DEBUG COMMAND - REMOVE BEFORE RELEASE
+Neurologics.AddCommand("!addjobuser", function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if #args < 2 then
+        Neurologics.SendMessage(sender, "Usage: !addjobuser <job> <amount>")
+        return true
+    end
+    
+    local jobName = string.lower(args[1])
+    local amount = tonumber(args[2])
+    
+    if not amount or amount <= 0 then
+        Neurologics.SendMessage(sender, "Invalid amount. Must be a positive number.")
+        return true
+    end
+    
+    -- Initialize debug job users if not exists
+    if not Neurologics.DebugJobUsers then
+        Neurologics.DebugJobUsers = {}
+    end
+    
+    -- Add debug users
+    for i = 1, amount do
+        table.insert(Neurologics.DebugJobUsers, jobName)
+    end
+    
+    Neurologics.SendMessage(sender, "Added " .. amount .. " debug user(s) for job: " .. jobName)
+    Neurologics.Log("Debug: Added " .. amount .. " fake users for job " .. jobName)
+    
+    return true
+end)
+
+-- DEBUG COMMAND - REMOVE BEFORE RELEASE
+Neurologics.AddCommand("!clearjobusers", function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    Neurologics.DebugJobUsers = {}
+    Neurologics.SendMessage(sender, "Cleared all debug job users")
+    Neurologics.Log("Debug: Cleared all fake job users")
+    
+    return true
+end)
+
+-- DEBUG COMMAND - REMOVE BEFORE RELEASE
+Neurologics.AddCommand("!listjobusers", function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if not Neurologics.DebugJobUsers or #Neurologics.DebugJobUsers == 0 then
+        Neurologics.SendMessage(sender, "No debug job users added")
+        return true
+    end
+    
+    local jobCounts = {}
+    for _, job in ipairs(Neurologics.DebugJobUsers) do
+        jobCounts[job] = (jobCounts[job] or 0) + 1
+    end
+    
+    local message = "Debug job users:\n"
+    for job, count in pairs(jobCounts) do
+        message = message .. "- " .. job .. ": " .. count .. "\n"
+    end
+    
+    Neurologics.SendMessage(sender, message)
+    
+    return true
+end)
+
+-- DEBUG COMMAND - REMOVE BEFORE RELEASE
+Neurologics.AddCommand("!addrealplayer", function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if #args < 2 then
+        Neurologics.SendMessage(sender, "Usage: !addrealplayer <job> <player_name>")
+        return true
+    end
+    
+    local jobName = string.lower(args[1])
+    local playerName = args[2]
+    
+    -- Initialize debug real players if not exists
+    if not Neurologics.DebugRealPlayers then
+        Neurologics.DebugRealPlayers = {}
+    end
+    
+    -- Add debug real player
+    table.insert(Neurologics.DebugRealPlayers, {
+        job = jobName,
+        name = playerName,
+        steamID = "debug_real_" .. #Neurologics.DebugRealPlayers + 1
+    })
+    
+    Neurologics.SendMessage(sender, "Added debug real player: " .. playerName .. " for job: " .. jobName)
+    Neurologics.Log("Debug: Added fake real player " .. playerName .. " for job " .. jobName)
+    
+    return true
+end)
+
+-- DEBUG COMMAND - REMOVE BEFORE RELEASE
+Neurologics.AddCommand("!clearrealplayers", function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    Neurologics.DebugRealPlayers = {}
+    Neurologics.SendMessage(sender, "Cleared all debug real players")
+    Neurologics.Log("Debug: Cleared all fake real players")
+    
+    return true
+end)
+
+-- DEBUG COMMAND - REMOVE BEFORE RELEASE
+Neurologics.AddCommand("!listrealplayers", function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if not Neurologics.DebugRealPlayers or #Neurologics.DebugRealPlayers == 0 then
+        Neurologics.SendMessage(sender, "No debug real players added")
+        return true
+    end
+    
+    local jobCounts = {}
+    local message = "Debug real players:\n"
+    for _, player in ipairs(Neurologics.DebugRealPlayers) do
+        message = message .. "- " .. player.name .. " wants " .. player.job .. "\n"
+        jobCounts[player.job] = (jobCounts[player.job] or 0) + 1
+    end
+    
+    message = message .. "\nJob counts:\n"
+    for job, count in pairs(jobCounts) do
+        message = message .. "- " .. job .. ": " .. count .. "\n"
+    end
+    
+    Neurologics.SendMessage(sender, message)
+    
     return true
 end)

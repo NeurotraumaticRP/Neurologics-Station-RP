@@ -384,5 +384,42 @@ function json.decode(str)
   return res
 end
 
+-- Load banned jobs from file
+function json.loadBannedJobs()
+  local jsonDir = Neurologics.Path .. "/Lua/Json"
+  local jsonFile = jsonDir .. "/banned_jobs.json"
+
+  -- Check if directory exists, if not create it
+  if not File.Exists(jsonDir) then
+    -- Create the Json directory
+    File.CreateDirectory(jsonDir)
+  end
+
+  -- Check if file exists
+  if not File.Exists(jsonFile) then
+    File.Write(jsonFile, "{}")
+  end
+
+  -- Read the content of the file
+  local content = File.Read(jsonFile)
+  return json.decode(content)
+end
+
+-- Save banned jobs to file
+function json.saveBannedJobs(bannedJobs)
+    local jsonDir = Neurologics.Path .. "/Lua/Json"
+    local jsonFile = jsonDir .. "/banned_jobs.json"
+
+    -- Ensure directory exists
+    if not File.Exists(jsonDir) then
+        File.CreateDirectory(jsonDir)
+    end
+
+    -- Write the JSON data to the file
+    File.Write(jsonFile, json.encode(bannedJobs))
+end
+
+Neurologics = Neurologics or {}  -- Ensure Neurologics table exists
+Neurologics.JSON = json
 
 return json

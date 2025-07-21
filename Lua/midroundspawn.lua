@@ -50,24 +50,57 @@ m.TryCreateClientCharacter = function(submarine, client)
     -- fix client char info
     if client.CharacterInfo == nil then client.CharacterInfo = CharacterInfo("human", client.Name) end
 
-    local jobPreference = client.JobPreferences[1]
-
-    if jobPreference == nil then
-        -- if no jobPreference, set assistant
-        jobPreference = m.GetJobVariant("assistant")
-
-    elseif preventMultiCaptain and jobPreference.Prefab.Identifier == "captain" then
-        -- if crew has a captain, spawn as security
-        if m.CrewHasJob("captain") then
-            Neurologics.Log(client.Name .. " tried to mid-round spawn as second captain - assigning security instead.")
-            -- set jobPreference = security
-            jobPreference = m.GetJobVariant("securityofficer")
+    -- Gather current job counts
+    local jobCounts = {}
+    for _, c in pairs(Client.ClientList) do
+        if c.CharacterInfo and c.AssignedJob then
+            local jobName = c.AssignedJob.Prefab.Identifier.ToString():lower()
+            jobCounts[jobName] = (jobCounts[jobName] or 0) + 1
         end
     end
 
-    client.AssignedJob = jobPreference
-    client.CharacterInfo.Job = Job(jobPreference.Prefab, 0, jobPreference.Variant);
+    -- Get job caps for current player count
+    local playerCount = #Client.ClientList
+    local maxAmounts = Neurologics.JobManager.EvaluateJobMaxAmount(playerCount)
 
+    -- Determine the best job for this client
+    local jobPreference = client.JobPreferences[1]
+    local assignedJob = nil
+    local originalJobName = nil
+
+    if jobPreference then
+        originalJobName = jobPreference.Prefab.Identifier.ToString():lower()
+        -- Check if job is available (not over cap, not banned)
+        local currentCount = jobCounts[originalJobName] or 0
+        local maxAllowed = maxAmounts[originalJobName] or 0
+        local isBanned = false
+        local bannedJobs = Neurologics.JSON.loadBannedJobs()
+        if bannedJobs[client.SteamID] then
+            for _, bannedJob in ipairs(bannedJobs[client.SteamID]) do
+                if originalJobName == bannedJob then
+                    isBanned = true
+                    break
+                end
+            end
+        end
+        if not isBanned and (maxAllowed == -1 or currentCount < maxAllowed) then
+            assignedJob = jobPreference
+        else
+            -- Use JobManager's reassignPlayer to get the next best job
+            local reassign = package.loaded["Lua/Scripts/JobManager.lua"] and package.loaded["Lua/Scripts/JobManager.lua"].reassignPlayer or nil
+            if not reassign then
+                reassign = loadfile("Lua/Scripts/JobManager.lua")().reassignPlayer
+            end
+            local nextJobName = reassignPlayer(client, originalJobName, maxAmounts, jobCounts)
+            assignedJob = Neurologics.MidRoundSpawn.GetJobVariant(nextJobName)
+        end
+    else
+        -- No preference, assign assistant
+        assignedJob = m.GetJobVariant("assistant")
+    end
+
+    client.AssignedJob = assignedJob
+    client.CharacterInfo.Job = Job(assignedJob.Prefab, 0, assignedJob.Variant)
     crewManager.AddCharacterInfo(client.CharacterInfo)
 
     local spawnWayPoints = WayPoint.SelectCrewSpawnPoints({client.CharacterInfo}, submarine)
@@ -238,5 +271,8 @@ Neurologics.AddCommand("!midroundspawn", function (client, args)
 
     return true
 end)
+
+Neurologics = Neurologics or {}
+Neurologics.MidRoundSpawn = m
 
 return m
