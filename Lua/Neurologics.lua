@@ -414,7 +414,6 @@ Neurologics.Voting = dofile(Neurologics.Path .. "/Lua/voting.lua")
 Neurologics.RoleManager = dofile(Neurologics.Path .. "/Lua/rolemanager.lua")
 Neurologics.Pointshop = dofile(Neurologics.Path .. "/Lua/pointshop.lua")
 Neurologics.RoundEvents = dofile(Neurologics.Path .. "/Lua/roundevents.lua")
-Neurologics.MidRoundSpawn = dofile(Neurologics.Path .. "/Lua/midroundspawn.lua")
 Neurologics.GhostRoles = dofile(Neurologics.Path .. "/Lua/ghostroles.lua")
 
 dofile(Neurologics.Path .. "/Lua/playtime.lua")

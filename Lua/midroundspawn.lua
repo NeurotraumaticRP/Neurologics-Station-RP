@@ -15,6 +15,8 @@ local newPlayers = {}
 
 local m = {}
 
+print("[Midroundspawn] loaded")
+
 m.SetSpawnedClient = function (client, character)
     hasBeenSpawned[client.SteamID] = character
 end
@@ -35,11 +37,6 @@ m.CrewHasJob = function(job)
         end
     end
     return false
-end
-
-m.GetJobVariant = function(jobId)
-    local prefab = JobPrefab.Get(jobId)
-    return JobVariant.__new(prefab, 0)
 end
 
 -- TryCreateClientCharacter inspied by Oiltanker
@@ -87,20 +84,16 @@ m.TryCreateClientCharacter = function(submarine, client)
             assignedJob = jobPreference
         else
             -- Use JobManager's reassignPlayer to get the next best job
-            local reassign = package.loaded["Lua/Scripts/JobManager.lua"] and package.loaded["Lua/Scripts/JobManager.lua"].reassignPlayer or nil
-            if not reassign then
-                reassign = loadfile("Lua/Scripts/JobManager.lua")().reassignPlayer
-            end
-            local nextJobName = reassignPlayer(client, originalJobName, maxAmounts, jobCounts)
-            assignedJob = Neurologics.MidRoundSpawn.GetJobVariant(nextJobName)
+            local nextJobName = Neurologics.JobManager.ReassignPlayer(client, originalJobName, maxAmounts, jobCounts)
+            assignedJob = Neurologics.JobManager.GetJobVariant(nextJobName)
         end
     else
         -- No preference, assign assistant
-        assignedJob = m.GetJobVariant("assistant")
+        assignedJob = Neurologics.JobManager.GetJobVariant("assistant")
     end
 
     client.AssignedJob = assignedJob
-    client.CharacterInfo.Job = Job(assignedJob.Prefab, 0, assignedJob.Variant)
+    client.CharacterInfo.Job = Job(assignedJob.Prefab, false, 0, assignedJob.Variant)
     crewManager.AddCharacterInfo(client.CharacterInfo)
 
     local spawnWayPoints = WayPoint.SelectCrewSpawnPoints({client.CharacterInfo}, submarine)
@@ -145,7 +138,7 @@ m.TryCreateClientCharacter = function(submarine, client)
 
         client.SetClientCharacter(char)
 
-        char.GiveJobItems(waypoint)
+        char.GiveJobItems(false, waypoint)
         char.LoadTalents()
 
         Hook.Call("Neurologics.midroundspawn", client, char)
@@ -263,10 +256,10 @@ Neurologics.AddCommand("!midroundspawn", function (client, args)
         if (not hasBeenSpawned[client.SteamID] or client.HasPermission(ClientPermissions.ConsoleCommands)) and (not client.Character or client.Character.IsDead) then
             m.ShowSpawnDialog(client)
         else
-            Game.SendDirectChatMessage("", "You spawned already.", nil, ChatMessageType.Error, client)
+            print("You spawned already.")
         end
     else
-        Game.SendDirectChatMessage("", "You are not in-game.", nil, ChatMessageType.Error, client)
+        print("You are not in-game.")
     end
 
     return true

@@ -60,7 +60,7 @@ config.RespawnEnabled = true -- set this to false to disable respawn, respawn sh
 config.RespawnTextOnlySpectators = false
 
 -- Allows players that just joined the server to instantly spawn
-config.MidRoundSpawn = false
+config.MidRoundSpawn = true
 
 ----- POINTS + LIVES -----
 config.StartPoints = 5000 -- new players start with this amount of points

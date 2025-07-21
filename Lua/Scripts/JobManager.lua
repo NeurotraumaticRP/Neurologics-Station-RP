@@ -55,7 +55,7 @@ function Neurologics.JobManager.ProcessJobBans(ptable)
             if #substituteRoles > 0 then
                 local newJobName = substituteRoles[math.random(1, #substituteRoles)]
                 
-                client.AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(newJobName)
+                client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJobName)
                 
                 -- Update CharacterInfo.Job to ensure proper spawning with clothes
                 if client.CharacterInfo then
@@ -310,7 +310,7 @@ function Neurologics.JobManager.EvaluateJobMaxAmount(playercount)
 end
 
 -- Smart reassignment using job preferences
-local function reassignPlayer(client, originalJob, maxAmounts, jobCounts)
+function Neurologics.JobManager.ReassignPlayer(client, originalJob, maxAmounts, jobCounts)
     local steamID = client.SteamID
     local preferences = client.JobPreferences or {}
     
@@ -405,60 +405,33 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
     local jobAssignments = {}
     local updated = false
 
-    -- Count current job assignments and store assignments by job
+    -- Count job preferences and store assignments by preferred job
     for _, client in pairs(ptable["unassigned"]) do
-        local jobName = client.AssignedJob.Prefab.Identifier.ToString():lower()
-        jobCounts[jobName] = (jobCounts[jobName] or 0) + 1
-        
-        if not jobAssignments[jobName] then
-            jobAssignments[jobName] = {}
-        end
-        table.insert(jobAssignments[jobName], client)
-    end
-    
-    -- Add debug job users to the count and create fake client entries (DEBUG - REMOVE BEFORE RELEASE)
-    if Neurologics.DebugJobUsers then
-        for i, debugJob in ipairs(Neurologics.DebugJobUsers) do
-            jobCounts[debugJob] = (jobCounts[debugJob] or 0) + 1
-            
-            -- Create fake client entry for debug user
-            if not jobAssignments[debugJob] then
-                jobAssignments[debugJob] = {}
+        if not client.SpectateOnly then
+            local preferredJob = nil
+            if client.JobPreferences and #client.JobPreferences > 0 then
+                preferredJob = client.JobPreferences[1].Prefab.Identifier.ToString():lower()
+            elseif client.AssignedJob then
+                preferredJob = client.AssignedJob.Prefab.Identifier.ToString():lower()
             end
-            
-            local fakeClient = {
-                Name = "DebugUser" .. i,
-                SteamID = "debug_" .. i,
-                AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(debugJob),
-                JobPreferences = {},
-                CharacterInfo = nil
-            }
-            table.insert(jobAssignments[debugJob], fakeClient)
-            
+            if preferredJob then
+                jobCounts[preferredJob] = (jobCounts[preferredJob] or 0) + 1
+                if not jobAssignments[preferredJob] then
+                    jobAssignments[preferredJob] = {}
+                end
+                table.insert(jobAssignments[preferredJob], client)
+                print("[JobManager] Counted " .. client.Name .. " for preferred job: " .. preferredJob)
+            else
+                print("[JobManager] No valid job preference for " .. client.Name)
+            end
+        else
+            print("[JobManager] Skipped spectator: " .. client.Name)
         end
     end
-    
-    -- Add debug real players to the count and create fake client entries (DEBUG - REMOVE BEFORE RELEASE)
-    if Neurologics.DebugRealPlayers then
-        for i, debugPlayer in ipairs(Neurologics.DebugRealPlayers) do
-            local debugJob = debugPlayer.job
-            jobCounts[debugJob] = (jobCounts[debugJob] or 0) + 1
-            
-            -- Create fake client entry for debug real player
-            if not jobAssignments[debugJob] then
-                jobAssignments[debugJob] = {}
-            end
-            
-            local fakeClient = {
-                Name = debugPlayer.name,
-                SteamID = debugPlayer.steamID,
-                AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(debugJob),
-                JobPreferences = {},
-                CharacterInfo = nil
-            }
-            table.insert(jobAssignments[debugJob], fakeClient)
-            
-        end
+
+    print("[JobManager] Final job counts:")
+    for job, count in pairs(jobCounts) do
+        print("[JobManager]   " .. job .. ": " .. count)
     end
 
     -- Function to get available jobs for a client
@@ -491,88 +464,90 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
     -- Handle overflow for each job
     for jobName, count in pairs(jobCounts) do
         local maxAllowed = maxAmounts[jobName] or 0
+        print("[JobManager] Checking job: " .. jobName .. " - Count: " .. count .. ", Max Allowed: " .. maxAllowed)
         
         if maxAllowed ~= -1 and count > maxAllowed then
-            -- Number of players that need to be reassigned
-            local overflow = count - maxAllowed
+            print("[JobManager] ===== OVERFLOW DETECTED =====")
+            print("[JobManager] Job overflow detected for " .. jobName .. ": " .. count .. " players, max allowed: " .. maxAllowed)
+            
             local playersInJob = jobAssignments[jobName]
-            
-            -- Separate real players from debug users
-            local realPlayers = {}
-            local debugUsers = {}
-            
+            print("[JobManager] Total players in " .. jobName .. ": " .. #playersInJob)
+
+            -- Build a table of eligible players (real players only, not spectators)
+            local eligiblePlayers = {}
             for _, client in pairs(playersInJob) do
-                if client.SteamID and client.SteamID:find("debug_") then
-                    -- Check if it's a debug real player (has "debug_real_" prefix)
-                    if client.SteamID:find("debug_real_") then
-                        table.insert(realPlayers, client)
-                    else
-                        table.insert(debugUsers, client)
-                    end
+                if not client.SpectateOnly then
+                    table.insert(eligiblePlayers, client)
+                    print("[JobManager] Added eligible player: " .. client.Name .. " for overflow selection")
                 else
-                    table.insert(realPlayers, client)
+                    print("[JobManager] Skipped ineligible player: " .. client.Name .. " (spectator)")
                 end
             end
-            
-            -- Combine all players for randomization (both real and debug count for odds)
-            local allPlayers = {}
-            for _, client in pairs(realPlayers) do
-                table.insert(allPlayers, {client = client, type = "real"})
+            print("[JobManager] Eligible players for overflow: " .. #eligiblePlayers)
+
+            -- Randomly select maxAllowed players to KEEP the job
+            local keepers = {}
+            local overflowers = {}
+            local pool = {table.unpack(eligiblePlayers)}
+            print("[JobManager] Pool before selection:")
+            for i, client in ipairs(pool) do
+                print("[JobManager]   " .. i .. ": " .. client.Name)
             end
-            for _, client in pairs(debugUsers) do
-                table.insert(allPlayers, {client = client, type = "debug"})
+            for i = 1, math.min(maxAllowed, #pool) do
+                local idx = math.random(#pool)
+                print("[JobManager] Randomly chose index " .. idx .. " (" .. pool[idx].Name .. ") to KEEP " .. jobName)
+                table.insert(keepers, pool[idx])
+                print("[JobManager] Selected " .. pool[idx].Name .. " to KEEP " .. jobName)
+                table.remove(pool, idx)
             end
-            
-            -- Calculate odds
-            local totalPlayers = #allPlayers
-            local playersToReassign = math.min(overflow, totalPlayers)
-            local odds = totalPlayers > 0 and (playersToReassign / totalPlayers) * 100 or 0
-            
-            -- Shuffle all players to randomize who gets reassigned
-            for i = #allPlayers, 2, -1 do
-                local j = math.random(i)
-                allPlayers[i], allPlayers[j] = allPlayers[j], allPlayers[i]
+            -- The rest are overflowers
+            for _, client in pairs(pool) do
+                table.insert(overflowers, client)
+                print("[JobManager] Selected " .. client.Name .. " for REASSIGNMENT from " .. jobName)
             end
 
-            -- Reassign overflow players (only the overflow amount, not everyone)
-            local reassignedCount = 0
-            for i = 1, #allPlayers do
-                if reassignedCount >= overflow then
-                    break
+            -- Assign the job to keepers
+            for _, client in pairs(keepers) do
+                client.AssignedJob = Neurologics.JobManager.GetJobVariant(jobName)
+                if client.CharacterInfo then
+                    local jobPrefab = JobPrefab.Get(jobName)
+                    if jobPrefab then
+                        client.CharacterInfo.Job = Job(jobPrefab, false, 0, 0)
+                        print("[JobManager] Assigned " .. client.Name .. " to " .. jobName)
+                    end
                 end
-                
-                local playerData = allPlayers[i]
-                local client = playerData.client
-                local playerType = playerData.type
-                
-                -- If this is a debug user, stop the reassignment process
-                if playerType == "debug" then
-                    break
-                end
-                
+            end
+
+            -- Reassign overflowers
+            for _, client in pairs(overflowers) do
                 local newJob = reassignPlayer(client, jobName, maxAmounts, jobCounts)
-                
-                -- Update counts
-                jobCounts[jobName] = jobCounts[jobName] - 1
-                jobCounts[newJob] = (jobCounts[newJob] or 0) + 1
-                
-                -- Assign new job
-                client.AssignedJob = Neurologics.MidRoundSpawn.GetJobVariant(newJob)
-                
-                -- Update CharacterInfo.Job to ensure proper spawning with clothes
+                print("[JobManager] Reassigned " .. client.Name .. " from " .. jobName .. " to " .. newJob)
+                client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJob)
                 if client.CharacterInfo then
                     local jobPrefab = JobPrefab.Get(newJob)
                     if jobPrefab then
                         client.CharacterInfo.Job = Job(jobPrefab, false, 0, 0)
+                        print("[JobManager] Updated CharacterInfo.Job for " .. client.Name)
                     end
                 end
-                
+                -- Update jobCounts for the new job
+                jobCounts[jobName] = jobCounts[jobName] - 1
+                jobCounts[newJob] = (jobCounts[newJob] or 0) + 1
+                print("[JobManager] Updated job counts - " .. jobName .. ": " .. jobCounts[jobName] .. ", " .. newJob .. ": " .. jobCounts[newJob])
                 updated = true
-                reassignedCount = reassignedCount + 1
             end
+            print("[JobManager] ===== OVERFLOW RESOLVED for " .. jobName .. " =====")
+        else
+            print("[JobManager] No overflow for " .. jobName .. " - count: " .. count .. ", max: " .. maxAllowed)
         end
     end
 
     return updated
 end
 
+function Neurologics.JobManager.GetJobVariant(jobId)
+    local prefab = JobPrefab.Get(jobId)
+    return JobVariant.__new(prefab, 0)
+end
+
+Neurologics.MidRoundSpawn = dofile(Neurologics.Path .. "/Lua/midroundspawn.lua") -- we load here to avoid circular dependency and ensure it's loaded after jobmanager
