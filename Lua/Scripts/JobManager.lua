@@ -520,7 +520,7 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
 
             -- Reassign overflowers
             for _, client in pairs(overflowers) do
-                local newJob = reassignPlayer(client, jobName, maxAmounts, jobCounts)
+                local newJob = Neurologics.JobManager.ReassignPlayer(client, jobName, maxAmounts, jobCounts)
                 print("[JobManager] Reassigned " .. client.Name .. " from " .. jobName .. " to " .. newJob)
                 client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJob)
                 if client.CharacterInfo then

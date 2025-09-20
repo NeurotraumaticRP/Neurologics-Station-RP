@@ -229,7 +229,7 @@ local tipDelay = 0
 Hook.Add("think", "Neurologics.Think", function()
     if Timer.GetTime() > tipDelay then
         tipDelay = Timer.GetTime() + 500
-        Neurologics.SendTip()
+        --Neurologics.SendTip() -- throws nil error
     end
 
     if not Game.RoundStarted or Neurologics.SelectedGamemode == nil then

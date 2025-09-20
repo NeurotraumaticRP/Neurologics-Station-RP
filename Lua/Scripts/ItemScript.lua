@@ -92,17 +92,17 @@ end, Hook.HookMethodType.Before)
 --       Item Scripts         --
 --------------------------------
 
-itemScript.item["wrench"] = {
+--[[itemScript.item["wrench"] = {
     OnAttack = function(item, character, limb)
         print("wrench used ATTACK")
     end
-}
+}]]
 
-itemScript.item["screwdriver"] = {
+--[[itemScript.item["screwdriver"] = {
     OnUse = function(item, character, limb)
         print("screwdriver used Use")
     end
-}
+}]]
 
 return itemScript
 

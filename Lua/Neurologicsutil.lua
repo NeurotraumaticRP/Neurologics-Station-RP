@@ -1,3 +1,4 @@
+print("[Neurologicsutil] loaded")
 Neurologics.Config = dofile(Neurologics.Path .. "/Lua/config/baseconfig.lua")
 
 if not File.Exists(Neurologics.Path .. "/Lua/config/config.lua") then
@@ -226,8 +227,11 @@ Neurologics.SendObjectiveCompleted = function(client, objectiveText, points, liv
 end
 
 Neurologics.SendObjectiveFailed = function(client, objectiveText)
-    Neurologics.SendMessage(client, 
-    string.format(Neurologics.Language.ObjectiveFailed, objectiveText), "MissionFailedIcon")
+    if not Neurologics.Language then return end
+    
+    local failedMsg = Neurologics.Language.ObjectiveFailed and string.format(Neurologics.Language.ObjectiveFailed, objectiveText) or "Objective failed: " .. objectiveText
+    
+    Neurologics.SendMessage(client, failedMsg, "MissionFailedIcon")
 
     local role = Neurologics.RoleManager.GetRole(client.Character)
 
@@ -387,17 +391,29 @@ Neurologics.AdjustLives = function (client, amount)
         return nil, icon
     end
 
-    local amountString = Neurologics.Language.ALife
-    if amount > 1 then amountString = amount .. Neurologics.Language.Lives end
+    local amountString = (Neurologics.Language and Neurologics.Language.ALife) or "a life"
+    if amount > 1 then 
+        amountString = amount .. ((Neurologics.Language and Neurologics.Language.Lives) or " lives")
+    end
 
-    local lifeAdjustMessage = string.format(Neurologics.Language.LivesGained, amountString, newLives, Neurologics.Config.MaxLives)
+    local lifeAdjustMessage
+    if Neurologics.Language and Neurologics.Language.LivesGained then
+        lifeAdjustMessage = string.format(Neurologics.Language.LivesGained, amountString, newLives, Neurologics.Config.MaxLives)
+    else
+        lifeAdjustMessage = "Gained " .. amountString .. ". Lives: " .. newLives .. "/" .. Neurologics.Config.MaxLives
+    end
+    
     if amount < 0 then
         icon = "GameModeIcon.pvp"
-        local newLivesString = Neurologics.Language.ALife
+        local newLivesString = (Neurologics.Language and Neurologics.Language.ALife) or "a life"
         if newLives > 1 then
-            newLivesString = newLives .. Neurologics.Language.Lives
+            newLivesString = newLives .. ((Neurologics.Language and Neurologics.Language.Lives) or " lives")
         end
-        lifeAdjustMessage = string.format(Neurologics.Language.Death, newLivesString)
+        if Neurologics.Language and Neurologics.Language.Death then
+            lifeAdjustMessage = string.format(Neurologics.Language.Death, newLivesString)
+        else
+            lifeAdjustMessage = "Lost a life. Lives: " .. newLivesString
+        end
     end
 
     if (newLives or 0) <= 0 then
@@ -412,7 +428,11 @@ Neurologics.AdjustLives = function (client, amount)
             Neurologics.LoadExperience(client)
         end
         newLives = Neurologics.Config.MaxLives
-        lifeAdjustMessage = string.format(Neurologics.Language.NoLives, newLives)
+        if Neurologics.Language and Neurologics.Language.NoLives then
+            lifeAdjustMessage = string.format(Neurologics.Language.NoLives, newLives)
+        else
+            lifeAdjustMessage = "No lives left! Reset to " .. newLives .. " lives."
+        end
     end
     
     Neurologics.Log("Adjusting lives of player " .. Neurologics.ClientLogName(client) .. " by " .. amount .. ". New value: " .. newLives)
@@ -420,11 +440,13 @@ Neurologics.AdjustLives = function (client, amount)
     return lifeAdjustMessage, icon
 end
 
-Neurologics.SendTip = function ()
+
+print("[Neurologicsutil] SendTip function defined")
+Neurologics.SendTip = function()
     local tip = Neurologics.Language.Tips[math.random(1, #Neurologics.Language.Tips)]
 
-    for index, value in pairs(Client.ClientList) do
-        Neurologics.SendChatMessage(value, Neurologics.Language.TipText .. tip, Color.Orange)
+    for key, client in pairs(Client.ClientList) do
+        Neurologics.SendChatMessage(client, Neurologics.Language.TipText .. tip, Color.Orange)
     end
 end
 
@@ -444,10 +466,21 @@ Neurologics.GetDataInfo = function(client, showWeights)
             percentage = 100 -- percentage is NaN, set it to 100%
         end
 
-        weightInfo = "\n\n" .. string.format(Neurologics.Language.TraitorInfo, math.floor(percentage))
+        if Neurologics.Language and Neurologics.Language.TraitorInfo then
+            weightInfo = "\n\n" .. string.format(Neurologics.Language.TraitorInfo, math.floor(percentage))
+        else
+            weightInfo = "\n\nTraitor chance: " .. math.floor(percentage) .. "%"
+        end
     end
 
-    return string.format(Neurologics.Language.PointsInfo, math.floor(Neurologics.GetData(client, "Points") or 0), Neurologics.GetData(client, "Lives") or Neurologics.Config.MaxLives, Neurologics.Config.MaxLives) .. weightInfo
+    local pointsInfo
+    if Neurologics.Language and Neurologics.Language.PointsInfo then
+        pointsInfo = string.format(Neurologics.Language.PointsInfo, math.floor(Neurologics.GetData(client, "Points") or 0), Neurologics.GetData(client, "Lives") or Neurologics.Config.MaxLives, Neurologics.Config.MaxLives)
+    else
+        pointsInfo = "Points: " .. math.floor(Neurologics.GetData(client, "Points") or 0) .. " | Lives: " .. (Neurologics.GetData(client, "Lives") or Neurologics.Config.MaxLives) .. "/" .. Neurologics.Config.MaxLives
+    end
+    
+    return pointsInfo .. weightInfo
 end
 
 Neurologics.ClientLogName = function(client, name)

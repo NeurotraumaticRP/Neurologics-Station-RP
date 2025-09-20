@@ -347,6 +347,7 @@ config.RandomEventConfig = {
         dofile(Neurologics.Path .. "/Lua/config/randomevents/prisoner.lua"),
         dofile(Neurologics.Path .. "/Lua/config/randomevents/randomlights.lua"),
         dofile(Neurologics.Path .. "/Lua/config/randomevents/clownmagic.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/randomevents/nukieraid.lua"),
     }
 }
 

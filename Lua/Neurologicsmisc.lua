@@ -30,7 +30,8 @@ Hook.Add("think", "Neurologics.MiscThink", function ()
     end
 
     timer = Timer.GetTime() + 5
-
+    if not Neurologics.Config then print("[Neurologicsmisc] Neurologics.Config failed to load") return end
+    
     if Neurologics.Config.GhostRoleConfig.Enabled then
         for key, character in pairs(Character.CharacterList) do
             local client = Neurologics.FindClientCharacter(character)

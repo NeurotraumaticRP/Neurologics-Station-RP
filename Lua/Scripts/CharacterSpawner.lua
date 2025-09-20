@@ -10,7 +10,7 @@ if not NCS.Char then -- this should fix overwriting the original CharacterSpawne
 end
 
 -- Spawns a character from a prefab
-NCS.SpawnCharacter = function(prefabKey, position, client, team)
+NCS.SpawnCharacter = function(prefabKey, position, team)
     prefabKey = string.lower(prefabKey)
     local charPrefab = NCS.Char[prefabKey]
     if not charPrefab then
@@ -49,6 +49,12 @@ NCS.SpawnCharacter = function(prefabKey, position, client, team)
         )
     end
 
+    return character
+end
+
+NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client)
+    local character = NCS.SpawnCharacter(prefabKey, position, team)
+    client.SetClientCharacter(character)
     return character
 end
 

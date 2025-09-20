@@ -178,7 +178,7 @@ local function checkCommandQueue()
                 for _, command in ipairs(commands) do
                     if not Starts_with_special_char(command.content) then
                         print("Received command from " .. command.author .. ": " .. command.content)
-                        for client in Client.ClientList do
+                        for key, client in pairs(Client.ClientList) do
                             if client.Character == nil or client.Character.IsDead then
                                 Neurologics.SendChatMessage(client, "(Discord) "..command.author .. ": " .. command.content)
                             end

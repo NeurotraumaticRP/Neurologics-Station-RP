@@ -419,7 +419,6 @@ function json.saveBannedJobs(bannedJobs)
     File.Write(jsonFile, json.encode(bannedJobs))
 end
 
-Neurologics = Neurologics or {}  -- Ensure Neurologics table exists
 Neurologics.JSON = json
 
 return json

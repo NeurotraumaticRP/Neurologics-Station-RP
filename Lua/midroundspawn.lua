@@ -1,6 +1,8 @@
 -- Originally by MassCraxx, ported to Neurologics.
 
 Neurologics.DisableMidRoundSpawn = false
+if not Neurologics.Config then print("[Midroundspawn] Neurologics.Config failed to load") return end
+if not Neurologics.Config.MidRoundSpawn then print("[Midroundspawn] MidRoundSpawn is disabled in config") return end
 
 local textPromptUtils = require("textpromptutils")
 
@@ -219,7 +221,7 @@ Hook.Add("client.connected", "Neurologics.MidRoundSpawn.ClientConnected", functi
 end)
 
 Hook.Add("think", "Neurologics.MidRoundSpawn.Think", function ()
-    if not Neurologics.Config.MidRoundSpawn then return end
+    --if not Neurologics.Config.MidRoundSpawn then return end -- throwing nil error
     if Neurologics.DisableMidRoundSpawn then return end
 
     if Game.RoundStarted and checkTime and Timer.GetTime() > checkTime then
@@ -265,7 +267,6 @@ Neurologics.AddCommand("!midroundspawn", function (client, args)
     return true
 end)
 
-Neurologics = Neurologics or {}
 Neurologics.MidRoundSpawn = m
 
 return m

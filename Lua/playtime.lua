@@ -1,6 +1,6 @@
 Hook.Add("think", "Neurologics.Playtime.think", function()
     for index, client in pairs(Client.ClientList) do
-        Neurologics.AddData(client, "Playtime", 1/60)
+        Neurologics.AddData(client, "Playtime", 1/60) -- throwing nil error
     end
 end)
 

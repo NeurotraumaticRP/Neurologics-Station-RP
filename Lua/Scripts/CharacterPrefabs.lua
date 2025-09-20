@@ -70,6 +70,10 @@ NCS.Char["nukie"] = {
             }
         },
         { id = "pirateclothes", count = 1, slot = InvSlotType.InnerClothes },
-        { id = "crowbar", count = 1 } -- Add crowbar as a normal item
+        { id = "crowbar", count = 1 }, -- Add crowbar as a normal item
+        { id = "scp_renegadedivingsuit", count = 1, subItems = {
+             { id = "oxygenitetank", count = 1 } 
+            } 
+        },
     }
 }

@@ -368,7 +368,7 @@ Neurologics.AddCommand("!revive", function (client, args)
         -- if client name is given, revive related character
         local name = table.remove(args, 1)
         -- find character by client name
-        for player in Client.ClientList do
+        for key, player in pairs(Client.ClientList) do
             if player.Name == name or player.SteamID == name then
                 reviveClient = player
             end
@@ -651,6 +651,21 @@ Neurologics.AddCommand({"!droppoints", "!droppoint", "!dropoint", "!dropoints"},
     Neurologics.SetData(client, "Points", availablePoints - amount)
 
     preventSpam[client] = Timer.GetTime() + 5
+
+    return true
+end)
+
+Neurologics.AddCommand({"!intercom"}, function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+
+    if #args < 1 then
+        Neurologics.SendMessage(client, "Incorrect amount of arguments. usage: !announce [msg] - If you need to announce something with more than one word, surround it in quotations.")
+        return true
+    end
+
+    local text = table.remove(args, 1)
+
+    Neurologics.RoundEvents.SendEventMessage(text, nil, Color.LightGreen)
 
     return true
 end)
