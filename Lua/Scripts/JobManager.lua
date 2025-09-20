@@ -275,8 +275,8 @@ local jobConfig = {
     ["scientist"] = { max = 2, min = 0 },
     ["janitor"] = { max = 2, min = 0 },
     ["convict"] = { max = 4, min = 0 },
-    ["priest"] = { max = 1, min = 0 },
-    ["clown"] = { max = 1, min = 0 },
+    ["priest"] = { max = 1, min = 0, minPlayers = 5 }, -- Available at 5+ players, max 1
+    ["clown"] = { max = 1, min = 0, minPlayers = 5 }, -- Available at 5+ players, max 1
     ["crewmember"] = { max = -1, min = 0 } -- Unlimited
 }
 
@@ -288,11 +288,16 @@ function Neurologics.JobManager.EvaluateJobMaxAmount(playercount)
         if job == "crewmember" then
             dynamicAmounts[job] = -1 -- Unlimited
         else
-            -- Calculate percentage-based limit
-            local percentageLimit = math.floor(playercount * maxPercentage)
-            -- Use the lower of: percentage limit or hard cap
-            local finalLimit = math.min(percentageLimit, config.max)
-            dynamicAmounts[job] = math.max(config.min, finalLimit)
+            -- Check if job has a minimum player requirement
+            if config.minPlayers and playercount < config.minPlayers then
+                dynamicAmounts[job] = 0 -- Not available yet
+            else
+                -- Calculate percentage-based limit
+                local percentageLimit = math.floor(playercount * maxPercentage)
+                -- Use the lower of: percentage limit or hard cap
+                local finalLimit = math.min(percentageLimit, config.max)
+                dynamicAmounts[job] = math.max(config.min, finalLimit)
+            end
         end
     end
     
