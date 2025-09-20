@@ -192,19 +192,15 @@ end
 
 -- Initialize JobManager hooks and systems
 function Neurologics.JobManager.PreStart()
-    print("[JobManager] Initializing JobManager hooks...")
     
     -- Update the AssignJobs hook to include overflow handling
     Hook.Patch("Barotrauma.Networking.GameServer", "AssignJobs", function (instance, ptable)
-        print("[JobManager] AssignJobs hook called")
         
         -- Check if force role choice is enabled - if so, force preferred jobs
         if Neurologics.ForceRoleChoice then
-            print("[JobManager] Force role choice is enabled, forcing preferred jobs")
             
             for index, client in pairs(ptable["unassigned"]) do
                 if client.PreferredJob then
-                    print("[JobManager] Forcing " .. client.Name .. " to their preferred job: " .. client.PreferredJob.ToString())
                     
                     -- Get the job prefab from the identifier
                     local jobPrefab = JobPrefab.Get(client.PreferredJob)
@@ -218,9 +214,7 @@ function Neurologics.JobManager.PreStart()
                             client.CharacterInfo.Job = Job(jobPrefab, false, 0, jobVariant)
                         end
                         
-                        print("[JobManager] Successfully assigned " .. client.Name .. " to " .. jobPrefab.Identifier.ToString())
                     else
-                        print("[JobManager] Warning: Could not find job prefab for " .. client.PreferredJob.ToString())
                     end
                 end
             end
@@ -228,7 +222,6 @@ function Neurologics.JobManager.PreStart()
             return true -- Indicate that we modified job assignments
         end
         
-        print("[JobManager] Processing job assignments...")
         
         -- Reload banned jobs data to ensure we have the latest information
         Neurologics.JobManager.ReloadBannedJobs()
@@ -241,15 +234,12 @@ function Neurologics.JobManager.PreStart()
         updated = Neurologics.JobManager.HandleJobOverflow(ptable) or updated
         
         if updated then
-            print("[JobManager] Job assignments were modified")
         else
-            print("[JobManager] No job assignments were modified")
         end
         
         return updated
     end, Hook.HookMethodType.After)
     
-    print("[JobManager] JobManager hooks initialized successfully")
 end
 
 function Neurologics.JobManager.splitJobList(jobString)
@@ -420,18 +410,13 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
                     jobAssignments[preferredJob] = {}
                 end
                 table.insert(jobAssignments[preferredJob], client)
-                print("[JobManager] Counted " .. client.Name .. " for preferred job: " .. preferredJob)
             else
-                print("[JobManager] No valid job preference for " .. client.Name)
             end
         else
-            print("[JobManager] Skipped spectator: " .. client.Name)
         end
     end
 
-    print("[JobManager] Final job counts:")
     for job, count in pairs(jobCounts) do
-        print("[JobManager]   " .. job .. ": " .. count)
     end
 
     -- Function to get available jobs for a client
@@ -464,46 +449,34 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
     -- Handle overflow for each job
     for jobName, count in pairs(jobCounts) do
         local maxAllowed = maxAmounts[jobName] or 0
-        print("[JobManager] Checking job: " .. jobName .. " - Count: " .. count .. ", Max Allowed: " .. maxAllowed)
         
         if maxAllowed ~= -1 and count > maxAllowed then
-            print("[JobManager] ===== OVERFLOW DETECTED =====")
-            print("[JobManager] Job overflow detected for " .. jobName .. ": " .. count .. " players, max allowed: " .. maxAllowed)
             
             local playersInJob = jobAssignments[jobName]
-            print("[JobManager] Total players in " .. jobName .. ": " .. #playersInJob)
 
             -- Build a table of eligible players (real players only, not spectators)
             local eligiblePlayers = {}
             for _, client in pairs(playersInJob) do
                 if not client.SpectateOnly then
                     table.insert(eligiblePlayers, client)
-                    print("[JobManager] Added eligible player: " .. client.Name .. " for overflow selection")
                 else
-                    print("[JobManager] Skipped ineligible player: " .. client.Name .. " (spectator)")
                 end
             end
-            print("[JobManager] Eligible players for overflow: " .. #eligiblePlayers)
 
             -- Randomly select maxAllowed players to KEEP the job
             local keepers = {}
             local overflowers = {}
             local pool = {table.unpack(eligiblePlayers)}
-            print("[JobManager] Pool before selection:")
             for i, client in ipairs(pool) do
-                print("[JobManager]   " .. i .. ": " .. client.Name)
             end
             for i = 1, math.min(maxAllowed, #pool) do
                 local idx = math.random(#pool)
-                print("[JobManager] Randomly chose index " .. idx .. " (" .. pool[idx].Name .. ") to KEEP " .. jobName)
                 table.insert(keepers, pool[idx])
-                print("[JobManager] Selected " .. pool[idx].Name .. " to KEEP " .. jobName)
                 table.remove(pool, idx)
             end
             -- The rest are overflowers
             for _, client in pairs(pool) do
                 table.insert(overflowers, client)
-                print("[JobManager] Selected " .. client.Name .. " for REASSIGNMENT from " .. jobName)
             end
 
             -- Assign the job to keepers
@@ -513,7 +486,6 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
                     local jobPrefab = JobPrefab.Get(jobName)
                     if jobPrefab then
                         client.CharacterInfo.Job = Job(jobPrefab, false, 0, 0)
-                        print("[JobManager] Assigned " .. client.Name .. " to " .. jobName)
                     end
                 end
             end
@@ -521,24 +493,19 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
             -- Reassign overflowers
             for _, client in pairs(overflowers) do
                 local newJob = Neurologics.JobManager.ReassignPlayer(client, jobName, maxAmounts, jobCounts)
-                print("[JobManager] Reassigned " .. client.Name .. " from " .. jobName .. " to " .. newJob)
                 client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJob)
                 if client.CharacterInfo then
                     local jobPrefab = JobPrefab.Get(newJob)
                     if jobPrefab then
                         client.CharacterInfo.Job = Job(jobPrefab, false, 0, 0)
-                        print("[JobManager] Updated CharacterInfo.Job for " .. client.Name)
                     end
                 end
                 -- Update jobCounts for the new job
                 jobCounts[jobName] = jobCounts[jobName] - 1
                 jobCounts[newJob] = (jobCounts[newJob] or 0) + 1
-                print("[JobManager] Updated job counts - " .. jobName .. ": " .. jobCounts[jobName] .. ", " .. newJob .. ": " .. jobCounts[newJob])
                 updated = true
             end
-            print("[JobManager] ===== OVERFLOW RESOLVED for " .. jobName .. " =====")
         else
-            print("[JobManager] No overflow for " .. jobName .. " - count: " .. count .. ", max: " .. maxAllowed)
         end
     end
 
