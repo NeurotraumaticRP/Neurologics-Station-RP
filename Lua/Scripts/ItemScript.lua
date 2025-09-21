@@ -124,7 +124,8 @@ end, Hook.HookMethodType.Before)
 
 Hook.Add("meleeWeapon.handleImpact", "itemScript.OnHit", function(melee, target) -- OnHit hook
     local item = melee.Item
-    local character = target.UserData.character
+    print(tostring(target.UserData)) -- might be able to check if the userdate is a character depending on what this prints
+    local character = target.UserData.character -- this fails if the userdate is not a character
     local prefab = item.Prefab
     local ishuman = nil
     if character == nil then return end
