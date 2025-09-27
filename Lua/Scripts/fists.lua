@@ -102,7 +102,7 @@ local function ActivateFists(client) -- activates fists for the client's free ha
 end
 
 local function CheckActiveFists(client) -- checks if the client has active fists, returns true if they do
-    local rightitem = client.Character.Inventory.GetItemInLimbSlot(InvSlotType.RightHand)
+    local rightitem = client.Character.Inventory.GetItemInLimbSlot(InvSlotType.RightHand) -- can be nil sometimes
     local leftitem = client.Character.Inventory.GetItemInLimbSlot(InvSlotType.LeftHand)
     
     -- Check if either hand has active fists
@@ -180,9 +180,7 @@ Networking.Receive("attemptActivateFists", function(message, client)
     -- Check if we can activate fists after unequipping
     if CheckFists(client) then
         ActivateFists(client)
-        print("activated fists")
     else
-        print("failed to activate fists - no free hands available after unequipping items")
     end
 end)
 

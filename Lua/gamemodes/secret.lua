@@ -200,7 +200,9 @@ end
 
 function gm:AwardCrew()
     local missionType = {}
-
+    if not MissionType then
+        return
+    end
     for key, value in pairs(MissionType) do
         missionType[value] = key
     end
