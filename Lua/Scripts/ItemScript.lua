@@ -124,14 +124,17 @@ end, Hook.HookMethodType.Before)
 
 Hook.Add("meleeWeapon.handleImpact", "itemScript.OnHit", function(melee, target) -- OnHit hook
     local item = melee.Item
-    print(tostring(target.UserData)) -- might be able to check if the userdate is a character depending on what this prints
-    local character = target.UserData.character -- this fails if the userdate is not a character
-    local prefab = item.Prefab
-    local ishuman = nil
-    if character == nil then return end
-    if character.IsHuman then ishuman = true else ishuman = false end
-    if itemScript.item[prefab.Identifier.Value] and itemScript.item[prefab.Identifier.Value].OnHit then
-        itemScript.item[prefab.Identifier.Value].OnHit(item, character, ishuman)
+    if tostring(target.UserData) == "Barotrauma.Limb" then
+        local character = target.UserData.character
+        local prefab = item.Prefab
+        local ishuman = nil
+        if character == nil then return end
+        if character.IsHuman then ishuman = true else ishuman = false end
+        if itemScript.item[prefab.Identifier.Value] and itemScript.item[prefab.Identifier.Value].OnHit then
+            itemScript.item[prefab.Identifier.Value].OnHit(item, character, ishuman)
+        end
+    else
+        return
     end
 end)
 
@@ -220,7 +223,7 @@ itemScript.HF.EvaluateSinful = function(character) -- 100% chance to light trait
     elseif character.HasJob("priest") then -- if a priest is a traitor, it should still be able to be set on fire, otherwise it should be 0%
         chance = 0.0
     else
-        chance = 0.25 -- 25% chance to light regular players on fire
+        chance = 0.1 -- 10% chance to light regular players on fire
     end
 
     local val = math.random()
