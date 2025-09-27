@@ -68,7 +68,7 @@ config.PermanentPoints = true      -- sets if points and lives will be stored in
 config.RemotePoints = nil
 config.RemoteServerAuth = {}
 config.PermanentStatistics = true  -- sets if statistics be stored in and loaded from a file
-config.MaxLives = 5
+config.MaxLives = 9999
 config.MinRoundTimeToLooseLives = 180
 config.RespawnedPlayersDontLooseLives = true
 config.MaxExperienceFromPoints = 500000     -- if not nil, this amount is the maximum experience players gain from stored points (30k = lvl 10 | 38400 = lvl 12)
@@ -85,7 +85,7 @@ config.PointsGainedFromSkill = {
 }
 
 config.PointsLostAfterNoLives = function (x)
-    return x * 0.75
+    return x * 1
 end
 
 config.AmountExperienceWithPoints = function (x)
