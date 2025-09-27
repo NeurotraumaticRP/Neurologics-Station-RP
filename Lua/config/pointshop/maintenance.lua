@@ -1,6 +1,9 @@
 local category = {}
 
 category.Identifier = "maintenance"
+category.CanAccess = function(client)
+    return client.Character and not client.Character.IsDead and client.Character.HasJob("crewmember") or client.Character.HasJob("staff")
+end
 
 category.Products = {
     {

@@ -193,23 +193,19 @@ end
 -- Initialize JobManager hooks and systems
 function Neurologics.JobManager.PreStart()
     
-    -- Update the AssignJobs hook to include overflow handling
     Hook.Patch("Barotrauma.Networking.GameServer", "AssignJobs", function (instance, ptable)
         
-        -- Check if force role choice is enabled - if so, force preferred jobs
         if Neurologics.ForceRoleChoice then
             
             for index, client in pairs(ptable["unassigned"]) do
                 if client.PreferredJob then
                     
-                    -- Get the job prefab from the identifier
                     local jobPrefab = JobPrefab.Get(client.PreferredJob)
                     if jobPrefab then
-                        -- Create a JobVariant from the prefab
+
                         local jobVariant = JobVariant.__new(jobPrefab, 0)
                         client.AssignedJob = jobVariant
                         
-                        -- Update CharacterInfo.Job to ensure proper spawning with clothes
                         if client.CharacterInfo then
                             client.CharacterInfo.Job = Job(jobPrefab, false, 0, jobVariant)
                         end
@@ -219,18 +215,16 @@ function Neurologics.JobManager.PreStart()
                 end
             end
             
-            return true -- Indicate that we modified job assignments
+            return true 
         end
         
         
-        -- Reload banned jobs data to ensure we have the latest information
+
         Neurologics.JobManager.ReloadBannedJobs()
         local updated = false
-        
-        -- Process job bans first
+
         updated = Neurologics.JobManager.ProcessJobBans(ptable) or updated
-        
-        -- Then handle overflow
+
         updated = Neurologics.JobManager.HandleJobOverflow(ptable) or updated
         
         if updated then

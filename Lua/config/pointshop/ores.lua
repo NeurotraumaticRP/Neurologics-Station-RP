@@ -2,6 +2,10 @@ local category = {}
 
 category.Identifier = "ores"
 
+category.CanAccess = function(client)
+    return client.Character and not client.Character.IsDead and client.Character.HasJob("crewmember") or client.Character.HasJob("staff")
+end
+
 category.Products = {
     {
         Price = 70,

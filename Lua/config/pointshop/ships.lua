@@ -5,6 +5,10 @@ category.CanAccess = function(client)
     return client.Character and not client.Character.IsDead and client.Character.IsHuman and Neurologics.SubmarineBuilder ~= nil and Neurologics.SubmarineBuilder.IsActive()
 end
 
+category.CanAccess = function(client)
+    return client.Character and not client.Character.IsDead and client.Character.IsHuman and client.Character.HasJob("captain")
+end
+
 category.Init = function ()
     if Neurologics.SubmarineBuilder then
         category.StreamChalkId = Neurologics.SubmarineBuilder.AddSubmarine(Neurologics.Path .. "/Submarines/Stream Chalk.sub", "[P]Stream Chalk")

@@ -5,7 +5,7 @@ category.Decoration = "cultist"
 category.FadeToBlack = true
 
 category.CanAccess = function(client)
-    return client.Character and not client.Character.IsDead and Neurologics.RoleManager.HasRole(client.Character, "Clown")
+    return client.Character and not client.Character.IsDead and client.Character.HasJob("clown")
 end
 
 category.Init = function ()

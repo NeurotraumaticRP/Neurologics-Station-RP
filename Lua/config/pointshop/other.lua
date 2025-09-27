@@ -9,6 +9,10 @@ for prefab in ItemPrefab.Prefabs do
     end
 end
 
+category.CanAccess = function(client)
+    return false -- disabled for now
+end
+
 category.Products = {
     {
         Identifier = "randomitem",
