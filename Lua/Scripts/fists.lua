@@ -132,12 +132,15 @@ local function DeactivateFists(client) -- deactivates fists for the client
 end
 
 Networking.Receive("attemptActivateFists", function(message, client)
-    print("attemptActivateFists") -- receives the network event from the client, message is not used
-    
+    if client.Character.IsDead then
+        return
+    end
+    if client.Character.IsUnconscious then
+        return
+    end
     -- If fists are already active, allow deactivation
     if CheckActiveFists(client) then
         DeactivateFists(client)
-        print("deactivated fists")
         return
     end
     
@@ -152,7 +155,6 @@ Networking.Receive("attemptActivateFists", function(message, client)
         for _, blacklistedItem in ipairs(blacklist) do
             if rightitem.Prefab.Identifier == blacklistedItem then
                 rightHasBlacklisted = true
-                print("Right hand has blacklisted item: " .. blacklistedItem)
                 break
             end
         end
@@ -162,7 +164,6 @@ Networking.Receive("attemptActivateFists", function(message, client)
         for _, blacklistedItem in ipairs(blacklist) do
             if leftitem.Prefab.Identifier == blacklistedItem then
                 leftHasBlacklisted = true
-                print("Left hand has blacklisted item: " .. blacklistedItem)
                 break
             end
         end
@@ -170,7 +171,6 @@ Networking.Receive("attemptActivateFists", function(message, client)
     
     -- Only prevent activation if BOTH hands have blacklisted items
     if rightHasBlacklisted and leftHasBlacklisted then
-        print("Cannot activate fists - both hands have blacklisted items")
         return
     end
     
