@@ -458,7 +458,7 @@ ps.ShowCategory = function(client)
 end
 
 ps.TrackRefund = function (client, product, paidPrice)
-    ps.Refunds[client] = { Product = product, Time = Timer.GetTime(), Price = paidPrice }
+    ps.Refunds[client] = { Product = product, Time = math.floor(Timer.GetTime()), Price = paidPrice }
 end
 
 Neurologics.AddCommand({"!pointshop", "!pointsshop", "!ps", "!shop"}, function (client, args)

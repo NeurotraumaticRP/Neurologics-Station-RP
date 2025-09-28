@@ -1,4 +1,4 @@
-if CLIENT then return end
+--[[if CLIENT then return end
 
 LuaCsClientSideEnforced = {}
 LuaCsClientSideEnforced.KickTimer = 60
@@ -58,4 +58,4 @@ Hook.Add("think", "ClientSideEnforced", function(client)
             end
         end
     end
-end)
+end)]]
