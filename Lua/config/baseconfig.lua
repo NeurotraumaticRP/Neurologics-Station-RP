@@ -14,7 +14,7 @@ config.SendWelcomeMessage = true
 config.ChatMessageType = ChatMessageType.Private    -- Error = red | Private = green | Dead = blue | Radio = yellow
 
 config.Extensions = {
-    --dofile(Neurologics.Path .. "/Lua/extensions/weaponnerfs.lua"),
+    dofile(Neurologics.Path .. "/Lua/extensions/weaponnerfs.lua"),
     --dofile(Neurologics.Path .. "/Lua/extensions/paralysisnerf.lua"),
     --dofile(Neurologics.Path .. "/Lua/extensions/pressuremidjoin.lua"),
 }

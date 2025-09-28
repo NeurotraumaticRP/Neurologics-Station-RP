@@ -36,6 +36,26 @@ extension.Init = function ()
         Neurologics.Patching.RemoveAll(element, "Attack")
         Neurologics.Patching.Add(element, replacement)
     end
+
+    do -- Truncheon
+        local replacement = [[
+        <overwrite>
+            <Attack structuredamage="2" itemdamage="2" targetimpulse="16">
+                <Affliction identifier="blunttrauma" strength="5" />
+                <Affliction identifier="stun" strength="1.15" />
+                <StatusEffect type="OnUse" target="UseTarget">
+                <Sound file="Content/Items/Weapons/Smack1.ogg" selectionmode="random" range="500" />
+                <Sound file="Content/Items/Weapons/Smack2.ogg" range="500" />
+                </StatusEffect>
+            </Attack>
+        </overwrite>
+        ]]
+
+        local itemPrefab = ItemPrefab.GetItemPrefab("thgtruncheon")
+        local element = itemPrefab.ConfigElement.Element.Element("MeleeWeapon")
+        Neurologics.Patching.RemoveAll(element, "Attack")
+        Neurologics.Patching.Add(element, replacement)
+    end
 end
 
 return extension
