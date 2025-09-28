@@ -42,7 +42,7 @@ extension.Init = function ()
         <overwrite>
             <Attack structuredamage="2" itemdamage="2" targetimpulse="16">
                 <Affliction identifier="blunttrauma" strength="5" />
-                <Affliction identifier="stun" strength="1.15" />
+                <Affliction identifier="stun" strength="1" />
                 <StatusEffect type="OnUse" target="UseTarget">
                 <Sound file="Content/Items/Weapons/Smack1.ogg" selectionmode="random" range="500" />
                 <Sound file="Content/Items/Weapons/Smack2.ogg" range="500" />
@@ -56,6 +56,24 @@ extension.Init = function ()
         Neurologics.Patching.RemoveAll(element, "Attack")
         Neurologics.Patching.Add(element, replacement)
     end
+
+    do -- Pickaxe
+        local replacement = [[
+        <overwrite>
+            <Fabricate suitablefabricators="fabricator" requiredtime="9999">
+                <RequiredSkill identifier="mechanical" level="100" />
+                <RequiredItem identifier="plastic" amount="3" />
+                <RequiredItem identifier="steel" amount="3" />
+            </Fabricate>
+        </overwrite>
+        ]]
+
+        local itemPrefab = ItemPrefab.GetItemPrefab("pickaxe")
+        local element = itemPrefab.ConfigElement.Element.Element("Fabricate")
+        Neurologics.Patching.RemoveAll(element, "Fabricate")
+        Neurologics.Patching.Add(element, replacement)
+    end
 end
+
 
 return extension
