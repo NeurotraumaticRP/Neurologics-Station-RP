@@ -57,8 +57,8 @@ extension.Init = function ()
         Neurologics.Patching.Add(element, replacement)
     end
 
-    do -- Pickaxe
-        local replacement = [[
+    --[[do -- Pickaxe
+        local replacement = 
         <overwrite>
             <Fabricate suitablefabricators="fabricator" requiredtime="9999">
                 <RequiredSkill identifier="mechanical" level="100" />
@@ -66,13 +66,13 @@ extension.Init = function ()
                 <RequiredItem identifier="steel" amount="3" />
             </Fabricate>
         </overwrite>
-        ]]
+        
 
         local itemPrefab = ItemPrefab.GetItemPrefab("pickaxe")
         local element = itemPrefab.ConfigElement.Element.Element("Fabricate")
         Neurologics.Patching.RemoveAll(element, "Fabricate")
         Neurologics.Patching.Add(element, replacement)
-    end
+    end]]
 end
 
 
