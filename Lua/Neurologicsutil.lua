@@ -534,6 +534,10 @@ Neurologics.EndReached = function(character, distance)
         return Submarine.MainSub.AtEndExit
     end
 
+    if not character or not Level or not Level.Loaded then
+        return false
+    end
+
     local characterInsideOutpost = not character.IsDead and character.Submarine == Level.Loaded.EndOutpost
     -- character is inside or docked to outpost 
     return characterInsideOutpost or Vector2.Distance(character.WorldPosition, Level.Loaded.EndPosition) < distance
