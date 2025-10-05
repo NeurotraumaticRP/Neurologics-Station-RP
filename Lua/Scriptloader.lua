@@ -3,7 +3,9 @@ local luapath = Neurologics.Path .. "/Lua"
 
 local loadorder = {
     "CharacterPrefabs", -- should load CharacterPrefabs first then load everything else as normal
-    "CharacterSpawner" -- loads right after prefabs
+    "CharacterSpawner", -- loads right after prefabs
+    "NeuroImplantsPrefabs",
+    "NeuroImplants"
 }
 
 local function EndsWith(str, suffix)
