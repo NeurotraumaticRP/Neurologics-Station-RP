@@ -545,7 +545,7 @@ end
 
 Neurologics.SendWelcome = function(client)
     if Neurologics.Config.SendWelcomeMessage or Neurologics.Config.SendWelcomeMessage == nil then
-        Game.SendDirectChatMessage("", "| Traitor Mod v" .. Neurologics.VERSION .. " |\n" .. Neurologics.GetDataInfo(client), nil, ChatMessageType.Server, client)
+        Game.SendDirectChatMessage("", "| Neurologics Mod v" .. Neurologics.VERSION .. " |\n" .. Neurologics.GetDataInfo(client), nil, ChatMessageType.Server, client)
     end
 end
 
@@ -656,3 +656,10 @@ Neurologics.Deepcopy = function(orig) -- copies tables and their metatables
     end
     return copy
 end
+
+--[[Neurologics.GiveHungryEuropan = function()
+    for key, value in pairs(Client.ClientList) do
+        if value.Character then
+            value.Character.GiveTalent("")
+    end
+end]]--

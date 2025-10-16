@@ -135,7 +135,7 @@ config.GamemodeConfig = {
             return 0
         end,
 
-        TraitorTypeSelectionMode = "Vote", -- Vote | Random
+        TraitorTypeSelectionMode = "Random", -- Vote | Random
         TraitorTypeChance = {
             Traitor = 50, -- Traitors have 33% chance of being a normal traitor
             Cultist = 50,

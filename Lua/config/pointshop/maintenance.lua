@@ -3,7 +3,7 @@ local category = {}
 category.Identifier = "maintenance"
 category.CanAccess = function(client)
     if not client.Character then return false end
-    return client.Character and not client.Character.IsDead and client.Character.HasJob("crewmember") or client.Character.HasJob("staff")
+    return client.Character and (not client.Character.IsDead) and (client.Character.HasJob("crewmember") or client.Character.HasJob("staff"))
 end
 
 category.Products = {

@@ -62,10 +62,9 @@ Neurologics.PreRoundStart = function (submarineInfo, chooseGamemode)
         Neurologics.SelectedGamemode = Neurologics.Gamemodes.PvP:new()
     elseif Game.ServerSettings.GameModeIdentifier == "multiplayercampaign" then
         Neurologics.SelectedGamemode = Neurologics.Gamemodes.Gamemode:new()
-    elseif math.random() <= Game.ServerSettings.TraitorProbability then
-        Neurologics.SelectedGamemode = Neurologics.Gamemodes.Secret:new()
     else
-        Neurologics.SelectedGamemode = Neurologics.Gamemodes.Gamemode:new()
+        -- Always use Secret gamemode
+        Neurologics.SelectedGamemode = Neurologics.Gamemodes.Secret:new()
     end
 
     if Neurologics.SelectedGamemode.RequiredGamemode then

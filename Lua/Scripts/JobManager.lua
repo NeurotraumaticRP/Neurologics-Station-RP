@@ -17,56 +17,59 @@ function Neurologics.JobManager.ProcessJobBans(ptable)
     local updated = false
 
     for index, client in pairs(ptable["unassigned"]) do
-        local jobName = client.AssignedJob.Prefab.Identifier.ToString()
-        local steamID = client.SteamID
-        local flag = false
+        -- Only process if client has an assigned job
+        if client.AssignedJob then
+            local jobName = client.AssignedJob.Prefab.Identifier.ToString()
+            local steamID = client.SteamID
+            local flag = false
 
-        -- Check if the client is banned from the assigned job
-        if bannedJobs[steamID] then
-            for _, bannedJob in ipairs(bannedJobs[steamID]) do
-                if jobName == bannedJob then
-                    flag = true
-                    break
-                end
-            end
-        end
-
-        -- If the client is banned from the job, find a substitute role
-        if flag then
-            local substituteRoles = {}
-
-            -- Create a list of jobs that the client is not banned from
-            for _, validJob in ipairs(validJobs) do
-                local isBanned = false
-
+            -- Check if the client is banned from the assigned job
+            if bannedJobs[steamID] then
                 for _, bannedJob in ipairs(bannedJobs[steamID]) do
-                    if validJob == bannedJob then
-                        isBanned = true
+                    if jobName == bannedJob then
+                        flag = true
                         break
                     end
                 end
-
-                if not isBanned then
-                    table.insert(substituteRoles, validJob)
-                end
             end
 
-            -- Choose a random job from the substitute roles
-            if #substituteRoles > 0 then
-                local newJobName = substituteRoles[math.random(1, #substituteRoles)]
-                
-                client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJobName)
-                
-                -- Update CharacterInfo.Job to ensure proper spawning with clothes
-                if client.CharacterInfo then
-                    client.CharacterInfo.Job = Job(JobPrefab.Get(newJobName), 0, 0)
+            -- If the client is banned from the job, find a substitute role
+            if flag then
+                local substituteRoles = {}
+
+                -- Create a list of jobs that the client is not banned from
+                for _, validJob in ipairs(validJobs) do
+                    local isBanned = false
+
+                    for _, bannedJob in ipairs(bannedJobs[steamID]) do
+                        if validJob == bannedJob then
+                            isBanned = true
+                            break
+                        end
+                    end
+
+                    if not isBanned then
+                        table.insert(substituteRoles, validJob)
+                    end
                 end
-                
-                Neurologics.SendMessage(client, "You have been banned from playing the role: " .. jobName .. ", Appeal in discord https://discord.gg/nv8Zz32PxK")
-                updated = true
-            else
-                -- No substitute roles available, log this situation
-                Neurologics.Log("Warning: " .. client.Name .. " is banned from all jobs. No substitute role available.")
+
+                -- Choose a random job from the substitute roles
+                if #substituteRoles > 0 then
+                    local newJobName = substituteRoles[math.random(1, #substituteRoles)]
+                    
+                    client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJobName)
+                    
+                    -- Update CharacterInfo.Job to ensure proper spawning with clothes
+                    if client.CharacterInfo then
+                        client.CharacterInfo.Job = Job(JobPrefab.Get(newJobName), false, 0, client.AssignedJob.Variant) -- uses Job(prefab, isPVP, RandSync, Variant, Skills) where skills is optional
+                    end
+                    
+                    Neurologics.SendMessage(client, "You have been banned from playing the role: " .. jobName .. ", Appeal in discord https://discord.gg/nv8Zz32PxK")
+                    updated = true
+                else
+                    -- No substitute roles available, log this situation
+                    Neurologics.Log("Warning: " .. client.Name .. " is banned from all jobs. No substitute role available.")
+                end
             end
         end
     end
@@ -336,7 +339,7 @@ function Neurologics.JobManager.ReassignPlayer(client, originalJob, maxAmounts, 
     
     -- If preferences didn't work, try random jobs
     local availableJobs = {}
-    for job, count in pairs(jobCounts) do
+    for job, maxAllowed in pairs(maxAmounts) do
         -- Skip if it's the same job or banned
         if job ~= originalJob then
             local isBanned = false
@@ -350,8 +353,8 @@ function Neurologics.JobManager.ReassignPlayer(client, originalJob, maxAmounts, 
             end
             
             if not isBanned then
-                local maxAllowed = maxAmounts[job] or 0
-                if maxAllowed == -1 or count < maxAllowed then
+                local currentCount = jobCounts[job] or 0
+                if maxAllowed == -1 or currentCount < maxAllowed then
                     table.insert(availableJobs, job)
                 end
             end
