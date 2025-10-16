@@ -11,6 +11,7 @@ for prefab in ItemPrefab.Prefabs do
 end
 
 category.CanAccess = function(client)
+    if not client.Character then return false end
     return client.Character and not client.Character.IsDead and client.Character.HasJob("doctor") or client.Character.HasJob("cmo")
 end
 

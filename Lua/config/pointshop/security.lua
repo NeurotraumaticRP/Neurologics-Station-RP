@@ -4,6 +4,7 @@ category.Identifier = "security"
 category.Decoration = "security"
 
 category.CanAccess = function(client)
+    if not client.Character then return false end
     return client.Character and not client.Character.IsDead and 
     (client.Character.HasJob("guard") or client.Character.HasJob("captain") or client.Character.HasJob("warden"))
 end

@@ -5,6 +5,7 @@ category.Decoration = "clown"
 category.FadeToBlack = true
 
 category.CanAccess = function(client)
+    if not client.Character then return false end
     return client.Character and not client.Character.IsDead and Neurologics.RoleManager.HasRole(client.Character, "Traitor")
 end
 

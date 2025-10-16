@@ -2,11 +2,8 @@ local category = {}
 
 category.Identifier = "ships"
 category.CanAccess = function(client)
-    return client.Character and not client.Character.IsDead and client.Character.IsHuman and Neurologics.SubmarineBuilder ~= nil and Neurologics.SubmarineBuilder.IsActive()
-end
-
-category.CanAccess = function(client)
-    return client.Character and not client.Character.IsDead and client.Character.IsHuman and client.Character.HasJob("captain")
+    if not client.Character then return false end
+    return client.Character and not client.Character.IsDead and client.Character.IsHuman and client.Character.HasJob("captain") and Neurologics.SubmarineBuilder ~= nil and Neurologics.SubmarineBuilder.IsActive()
 end
 
 category.Init = function ()
