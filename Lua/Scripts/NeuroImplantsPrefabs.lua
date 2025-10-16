@@ -171,7 +171,7 @@ Neurologics.Implants["Fists"] = Neurologics.Implants.Create("Fists", {
 })
 
 -- 2. AFFLICTION-BASED TOGGLE IMPLANT (Grenade Launcher Arm)
-Neurologics.Implants["GrenadeLauncherArm"] = Neurologics.Implants.Create("GrenadeLauncherArm", {
+--[[Neurologics.Implants["GrenadeLauncherArm"] = Neurologics.Implants.Create("GrenadeLauncherArm", {
     Name = "Grenade Launcher Arm",
     ItemIdentifier = "grenadelauncher",
     Description = "A cybernetic arm equipped with a grenade launcher.",
@@ -206,10 +206,10 @@ Neurologics.Implants["GrenadeLauncherArm"] = Neurologics.Implants.Create("Grenad
             Neurologics.SetData(client, "grenadelauncher_ammo", currentAmmo)
         end
     end,
-})
+})]]--
 
 -- 3. PERMANENT IMPLANT (Gun Arm)
-Neurologics.Implants["GunArm"] = Neurologics.Implants.Create("GunArm", {
+--[[Neurologics.Implants["GunArm"] = Neurologics.Implants.Create("GunArm", {
     Name = "Cybernetic Gun Arm",
     ItemIdentifier = "gunarm",
     Description = "A permanent cybernetic arm replacement with integrated weaponry.",
@@ -231,10 +231,10 @@ Neurologics.Implants["GunArm"] = Neurologics.Implants.Create("GunArm", {
     OnActivate = function(client, implant, spawnedItems)
         Neurologics.Log(client.Name .. " has activated their permanent gun arm")
     end,
-})
+})]]--
 
 -- 4. CONDITIONAL AUTO-IMPLANT (Adrenal Spine)
-Neurologics.Implants["AdrenalSpine"] = Neurologics.Implants.Create("AdrenalSpine", {
+--[[Neurologics.Implants["AdrenalSpine"] = Neurologics.Implants.Create("AdrenalSpine", {
     Name = "Adrenal Spine Autoinjector",
     ItemIdentifier = "adrenalspine",
     Description = "Automatically injects adrenaline when health falls below 25%.",
@@ -264,10 +264,10 @@ Neurologics.Implants["AdrenalSpine"] = Neurologics.Implants.Create("AdrenalSpine
     OnConditionLost = function(client, implant)
         Neurologics.Log(client.Name .. "'s adrenal spine deactivated")
     end,
-})
+})]]--
 
 -- 5. SWORD ARM (Affliction-based, simple toggle)
-Neurologics.Implants["SwordArm"] = Neurologics.Implants.Create("SwordArm", {
+--[[Neurologics.Implants["SwordArm"] = Neurologics.Implants.Create("SwordArm", {
     Name = "Mantis Blade",
     ItemIdentifier = "sword",
     Description = "A retractable cybernetic blade that extends from your arm.",
@@ -290,4 +290,4 @@ Neurologics.Implants["SwordArm"] = Neurologics.Implants.Create("SwordArm", {
     OnDeactivate = function(client, implant, reason)
         Neurologics.Log(client.Name .. " retracted their mantis blade")
     end,
-})
+})]]--
