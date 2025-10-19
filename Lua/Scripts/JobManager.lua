@@ -18,7 +18,7 @@ function Neurologics.JobManager.ProcessJobBans(ptable)
 
     for index, client in pairs(ptable["unassigned"]) do
         -- Only process if client has an assigned job
-        if client.AssignedJob then
+        if client.AssignedJob and client.AssignedJob.Prefab then
             local jobName = tostring(client.AssignedJob.Prefab.Identifier)
             local steamID = client.SteamID
             local flag = false
