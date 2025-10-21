@@ -5,6 +5,8 @@ objective.Text = "Complete the objective!"
 objective.AmountPoints = 100
 objective.EndRoundObjective = false
 objective.DontLooseLives = false
+objective.Job = nil -- Can be string or table of strings (e.g., "doctor" or {"doctor", "cmo"})
+objective.Role = nil -- Can be string or table of strings (e.g., "traitor" or {"traitor", "cultist"})
 
 objective.Awarded = false
 

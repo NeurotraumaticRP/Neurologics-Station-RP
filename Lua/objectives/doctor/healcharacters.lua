@@ -3,6 +3,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 objective.Name = "HealCharacters"
 objective.AmountPoints = 400
 objective.Amount = 500
+objective.Job = {"doctor", "cmo"} -- Available to medical staff
 
 function objective:Start(target)
     self.Progress = 0

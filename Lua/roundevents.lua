@@ -27,15 +27,15 @@ re.EventExists = function (eventName)
     return event ~= nil
 end
 
-re.TriggerEvent = function (eventName)
+re.TriggerEvent = function (eventName, ...)
     if not Game.RoundStarted then
         Neurologics.Error("Tried to trigger event " .. eventName .. ", but round is not started.")
-        return
+        return false, "Round not started"
     end
 
     if re.OnGoingEvents[eventName] then
         Neurologics.Error("Event " .. eventName .. " is already running.")
-        return
+        return false, "Event already running"
     end
 
     local event = nil
@@ -47,7 +47,7 @@ re.TriggerEvent = function (eventName)
 
     if event == nil then
         Neurologics.Error("Tried to trigger event " .. eventName .. " but it doesnt exist or is disabled.")
-        return
+        return false, "Event doesn't exist"
     end
 
     local originalEnd = event.End
@@ -59,7 +59,10 @@ re.TriggerEvent = function (eventName)
     Neurologics.Stats.AddStat("EventTriggered", event.Name, 1)
 
     re.OnGoingEvents[eventName] = event
-    event.Start()
+    
+    -- Pass parameters to event.Start
+    local params = {...}
+    event.Start(table.unpack(params))
 
     if re.ThisRoundEvents[eventName] == nil then
         re.ThisRoundEvents[eventName] = 0
@@ -67,6 +70,7 @@ re.TriggerEvent = function (eventName)
     re.ThisRoundEvents[eventName] = re.ThisRoundEvents[eventName] + 1
 
     Neurologics.Log("Event " .. eventName .. " triggered.")
+    return true, event
 end
 
 re.CheckRandomEvent = function (event)

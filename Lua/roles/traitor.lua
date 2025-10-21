@@ -48,8 +48,20 @@ function role:Start()
 
     self:AssasinationLoop(true)
 
+    -- Get objectives valid for this traitor character
+    local availableObjectives = Neurologics.RoleManager.GetObjectivesForCharacter(self.Character, self)
+    
+    -- Build pool from SubObjectives config, but only include those that match job/role
     local pool = {}
-    for key, value in pairs(self.SubObjectives) do pool[key] = value end
+    for key, value in pairs(self.SubObjectives) do
+        -- Check if this objective is in the available list
+        for _, availableName in ipairs(availableObjectives) do
+            if value == availableName then
+                table.insert(pool, value)
+                break
+            end
+        end
+    end
 
     local toRemove = {}
     for key, value in pairs(pool) do

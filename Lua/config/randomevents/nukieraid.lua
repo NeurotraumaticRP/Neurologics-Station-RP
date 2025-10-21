@@ -5,8 +5,9 @@ event.MinIntensity = 0
 event.MaxIntensity = 0.1
 event.ChancePerMinute = 0.000005
 event.OnlyOncePerRound = true
+event.Parameters = "[count] - Optional: number of nukies to spawn (default: all dead players)"
 
-event.Start = function()
+event.Start = function(count)
     local deadCharacters = {}
     for _,client in pairs(Client.ClientList) do
         if client.Character == nil or client.Character.IsDead then
@@ -19,7 +20,14 @@ event.Start = function()
         return
     end
 
-    for _, deadCharacter in ipairs(deadCharacters) do
+    -- Determine how many nukies to spawn
+    local nukieCount = count or #deadCharacters
+    nukieCount = math.min(nukieCount, #deadCharacters) -- Can't spawn more than available dead players
+    nukieCount = math.max(1, nukieCount) -- Spawn at least 1
+
+    -- Spawn the specified number of nukies
+    for i = 1, nukieCount do
+        local deadCharacter = deadCharacters[i]
         local submarine = Submarine.MainSub
         local subPosition = submarine.WorldPosition
         local angle = math.random() * 2 * math.pi

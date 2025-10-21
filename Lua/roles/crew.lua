@@ -3,13 +3,15 @@ role.Name = "Crew"
 role.Antagonist = false
 
 function role:Start()
-    local job = self.Character.Info.Job.Prefab.Identifier.Value
-    
-    local availableObjectives = self.AvailableObjectives[job]
+    -- Get objectives valid for this character based on job/role
+    local availableObjectives = Neurologics.RoleManager.GetObjectivesForCharacter(self.Character, self)
 
     if not availableObjectives or #availableObjectives == 0 then
+        print("WARNING: Crew role found NO objectives for " .. self.Character.Name .. " (Job: " .. self.Character.Info.Job.Prefab.Identifier.Value .. ")")
         return
     end
+    
+    print("Crew role found " .. #availableObjectives .. " objectives for " .. self.Character.Name .. " (Job: " .. self.Character.Info.Job.Prefab.Identifier.Value .. ")")
 
     local pool = {}
     for key, value in pairs(availableObjectives) do pool[key] = value end

@@ -2,6 +2,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "Assassinate"
 objective.AmountPoints = 500
+objective.Role = {"Traitor", "Cultist"} -- Available to traitors and cultists
 function objective:Start(target)
     self.Target = target
 

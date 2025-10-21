@@ -14,4 +14,4 @@ function objective:IsCompleted()
     return false
 end
 
-return objective
+return false

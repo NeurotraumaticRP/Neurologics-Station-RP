@@ -41,6 +41,73 @@ rm.AddObjective = function(objective)
     objective.Static()
 end
 
+-- Helper function to check if a value matches a string or table of strings
+local function MatchesAny(value, filterValue)
+    if filterValue == nil then
+        return false
+    end
+    
+    if type(filterValue) == "string" then
+        return value == filterValue
+    elseif type(filterValue) == "table" then
+        for _, v in ipairs(filterValue) do
+            if value == v then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
+-- Get objectives that are valid for a specific character based on their job and/or role
+rm.GetObjectivesForCharacter = function(character, roleFilter)
+    local validObjectives = {}
+    local jobId = character.Info.Job.Prefab.Identifier.Value
+    local characterRole = roleFilter or rm.GetRole(character)
+    local roleId = characterRole and characterRole.Name or nil
+    
+    for name, objective in pairs(rm.Objectives) do
+        local jobMatches = false
+        local roleMatches = false
+        local hasJobRequirement = objective.Job ~= nil
+        local hasRoleRequirement = objective.Role ~= nil
+        
+        -- Check if job matches
+        if hasJobRequirement then
+            jobMatches = MatchesAny(jobId, objective.Job)
+        end
+        
+        -- Check if role matches
+        if hasRoleRequirement and roleId then
+            roleMatches = MatchesAny(roleId, objective.Role)
+        end
+        
+        -- Include objective if:
+        -- 1. No requirements set (nil Job and nil Role) = NOT automatically assignable
+        -- 2. Has job requirement and it matches
+        -- 3. Has role requirement and it matches
+        -- 4. Has both requirements and both match
+        local shouldInclude = false
+        
+        if not hasJobRequirement and not hasRoleRequirement then
+            shouldInclude = false -- No automatic assignment - only via manual commands
+        elseif hasJobRequirement and hasRoleRequirement then
+            shouldInclude = jobMatches and roleMatches -- Both must match
+        elseif hasJobRequirement then
+            shouldInclude = jobMatches -- Only job must match
+        elseif hasRoleRequirement then
+            shouldInclude = roleMatches -- Only role must match
+        end
+        
+        if shouldInclude then
+            table.insert(validObjectives, name)
+        end
+    end
+    
+    return validObjectives
+end
+
 rm.CheckObjectives = function(endRound)
     for character, role in pairs(rm.RoundRoles) do
         if not character.IsDead and role.Objectives then

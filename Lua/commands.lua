@@ -535,24 +535,56 @@ Neurologics.AddCommand("!triggerevent", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     if #args < 1 then
-        Neurologics.SendMessage(client, "Usage: !triggerevent <event name>")
+        Neurologics.SendMessage(client, "Usage: !triggerevent <event name> [parameters...]")
         return true
     end
 
+    local eventName = table.remove(args, 1)
+    
     local event = nil
     for _, value in pairs(Neurologics.RoundEvents.EventConfigs.Events) do
-        if value.Name == args[1] then
+        if value.Name == eventName then
             event = value
         end
     end
 
     if event == nil then
-        Neurologics.SendMessage(client, "Event " .. args[1] .. " doesnt exist.")
+        Neurologics.SendMessage(client, "Event " .. eventName .. " doesnt exist.")
         return true
     end
 
-    Neurologics.RoundEvents.TriggerEvent(event.Name)
-    Neurologics.SendMessage(client, "Triggered event " .. event.Name)
+    -- Parse parameters - convert numeric strings to numbers
+    local params = {}
+    for _, arg in ipairs(args) do
+        local num = tonumber(arg)
+        if num ~= nil then
+            table.insert(params, num)
+        else
+            table.insert(params, arg)
+        end
+    end
+
+    -- Trigger event with parameters
+    local success, result = Neurologics.RoundEvents.TriggerEvent(event.Name, table.unpack(params))
+    
+    if success then
+        local paramStr = ""
+        if #params > 0 then
+            paramStr = " with parameters: " .. table.concat(args, ", ")
+        end
+        Neurologics.SendMessage(client, "Triggered event " .. event.Name .. paramStr)
+    else
+        local errorMsg = "Failed to trigger event " .. event.Name .. ": " .. tostring(result)
+        
+        -- Check if event has parameter documentation
+        if event.Parameters then
+            errorMsg = errorMsg .. "\nUsage: !triggerevent " .. event.Name .. " " .. event.Parameters
+        elseif #params > 0 then
+            errorMsg = errorMsg .. "\nNote: This event may not accept parameters."
+        end
+        
+        Neurologics.SendMessage(client, errorMsg)
+    end
 
     return true
 end)
@@ -613,6 +645,189 @@ Neurologics.AddCommand({"!monster", "!m"}, function (client, args)
         end
     end
 
+    return true
+end)
+
+Neurologics.AddCommand("!giveobjective", function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+    
+    if client.Character == nil or client.Character.IsDead then
+        Neurologics.SendMessage(client, "You must be alive to use this command.")
+        return true
+    end
+    
+    if #args < 1 then
+        Neurologics.SendMessage(client, "Usage: !giveobjective <objective_name>")
+        return true
+    end
+    
+    local objectiveName = args[1]
+    
+    -- Find the objective
+    local objectiveTemplate = Neurologics.RoleManager.FindObjective(objectiveName)
+    
+    if not objectiveTemplate then
+        Neurologics.SendMessage(client, "Objective '" .. objectiveName .. "' not found.")
+        
+        -- List available objectives
+        local availableObjectives = {}
+        for name, _ in pairs(Neurologics.RoleManager.Objectives) do
+            table.insert(availableObjectives, name)
+        end
+        table.sort(availableObjectives)
+        
+        local objectiveList = table.concat(availableObjectives, ", ")
+        Neurologics.SendMessage(client, "Available objectives: " .. objectiveList)
+        return true
+    end
+    
+    -- Get or create role for character
+    local role = Neurologics.RoleManager.GetRole(client.Character)
+    
+    if not role then
+        -- If character has no role, create a basic crew role
+        role = Neurologics.RoleManager.Roles.Crew:new()
+        Neurologics.RoleManager.AssignRole(client.Character, role)
+        Neurologics.SendMessage(client, "Created basic crew role for you.")
+    end
+    
+    -- Create new instance of objective
+    local objective = objectiveTemplate:new()
+    objective:Init(client.Character)
+    
+    -- Try to find a valid target if needed
+    local target = nil
+    if role.FindValidTarget then
+        target = role:FindValidTarget(objective)
+    end
+    
+    -- Start the objective
+    local success = objective:Start(target)
+    
+    if success then
+        role:AssignObjective(objective)
+        Neurologics.SendMessage(client, "Objective '" .. objectiveName .. "' assigned: " .. objective.Text, "InfoFrameTabButton.Mission")
+    else
+        Neurologics.SendMessage(client, "Failed to start objective '" .. objectiveName .. "'. It may require specific conditions or a valid target.")
+    end
+    
+    return true
+end)
+
+Neurologics.AddCommand("!forceassignroles", function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+    
+    if not Game.RoundStarted then
+        Neurologics.SendMessage(client, "Round must be started to assign roles.")
+        return true
+    end
+    
+    local assignedCount = 0
+    
+    -- Assign Crew role to all players without a role
+    for key, value in pairs(Client.ClientList) do
+        if value.Character ~= nil and value.Character.IsHuman and not value.SpectateOnly and not value.Character.IsDead and value.Character.TeamID == CharacterTeamType.Team1 then
+            local role = Neurologics.RoleManager.GetRole(value.Character)
+            if role == nil then
+                role = Neurologics.RoleManager.Roles["Crew"]
+                Neurologics.RoleManager.AssignRole(value.Character, role:new())
+                assignedCount = assignedCount + 1
+                Neurologics.SendMessage(value, "You have been assigned the Crew role with objectives.", "InfoFrameTabButton.Mission")
+            end
+        end
+    end
+    
+    if assignedCount > 0 then
+        Neurologics.SendMessage(client, "Assigned Crew role to " .. assignedCount .. " player(s).")
+    else
+        Neurologics.SendMessage(client, "All players already have roles assigned.")
+    end
+    
+    return true
+end)
+
+Neurologics.AddCommand("!debugobjectives", function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+    
+    if client.Character == nil then
+        Neurologics.SendMessage(client, "You must have a character to use this command.")
+        return true
+    end
+    
+    local jobId = client.Character.Info.Job.Prefab.Identifier.Value
+    local role = Neurologics.RoleManager.GetRole(client.Character)
+    local roleId = role and role.Name or "None"
+    
+    local message = string.format("Your Job: %s\nYour Role: %s\n\nAvailable Objectives:\n", jobId, roleId)
+    
+    local availableObjectives = Neurologics.RoleManager.GetObjectivesForCharacter(client.Character, role)
+    
+    if #availableObjectives == 0 then
+        message = message .. "NONE - No objectives match your job/role!\n\nAll Objectives:\n"
+        
+        -- List all objectives and their requirements
+        for name, objective in pairs(Neurologics.RoleManager.Objectives) do
+            local jobReq = "Any"
+            local roleReq = "Any"
+            
+            if objective.Job then
+                if type(objective.Job) == "table" then
+                    jobReq = table.concat(objective.Job, ", ")
+                else
+                    jobReq = objective.Job
+                end
+            end
+            
+            if objective.Role then
+                if type(objective.Role) == "table" then
+                    roleReq = table.concat(objective.Role, ", ")
+                else
+                    roleReq = objective.Role
+                end
+            end
+            
+            message = message .. string.format("- %s (Job: %s, Role: %s)\n", name, jobReq, roleReq)
+        end
+    else
+        for _, objName in ipairs(availableObjectives) do
+            message = message .. "- " .. objName .. "\n"
+        end
+    end
+    
+    Neurologics.SendMessage(client, message)
+    
+    return true
+end)
+
+Neurologics.AddCommand("!forceselecttraitors", function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+    
+    if not Game.RoundStarted then
+        Neurologics.SendMessage(client, "Round must be started to select traitors.")
+        return true
+    end
+    
+    if not Neurologics.SelectedGamemode or Neurologics.SelectedGamemode.Name ~= "Secret" then
+        Neurologics.SendMessage(client, "This command only works in Secret gamemode.")
+        return true
+    end
+    
+    -- Check if roles have already been assigned
+    local hasRoles = false
+    for character, role in pairs(Neurologics.RoleManager.RoundRoles) do
+        hasRoles = true
+        break
+    end
+    
+    if hasRoles then
+        Neurologics.SendMessage(client, "Roles have already been assigned this round.")
+        return true
+    end
+    
+    -- Trigger the antagonist selection immediately
+    Neurologics.SelectedGamemode:SelectAntagonists()
+    Neurologics.SendMessage(client, "Traitor selection triggered immediately (bypassing delay).")
+    
     return true
 end)
 
@@ -972,3 +1187,5 @@ Neurologics.AddCommand("!listrealplayers", function (sender, args)
     
     return true
 end)
+
+
