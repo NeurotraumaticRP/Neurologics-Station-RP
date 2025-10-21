@@ -7,5 +7,5 @@ objective.Monster = {
     Text = Neurologics.Language.LargeCreatures,
     Amount = 3,
 }
-
+objective.Job = {"warden","captain"}
 return objective

@@ -3,7 +3,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 objective.Name = "StealIDCard"
 objective.AmountPoints = 400
 objective.Seconds = 60
-
+objective.Role = {"traitor","clown"}
 function objective:GetTargetName()
     if self.IdCard.OwnerName == "" then
         return self.Target.Name

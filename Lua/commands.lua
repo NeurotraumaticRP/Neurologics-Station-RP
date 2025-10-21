@@ -767,10 +767,12 @@ Neurologics.AddCommand("!debugobjectives", function (client, args)
         
         -- List all objectives and their requirements
         for name, objective in pairs(Neurologics.RoleManager.Objectives) do
-            local jobReq = "Any"
-            local roleReq = "Any"
+            local jobReq = "None (not auto-assigned)"
+            local roleReq = "None (not auto-assigned)"
             
-            if objective.Job then
+            if objective.Job == true then
+                jobReq = "ALL"
+            elseif objective.Job then
                 if type(objective.Job) == "table" then
                     jobReq = table.concat(objective.Job, ", ")
                 else
@@ -778,7 +780,9 @@ Neurologics.AddCommand("!debugobjectives", function (client, args)
                 end
             end
             
-            if objective.Role then
+            if objective.Role == true then
+                roleReq = "ALL"
+            elseif objective.Role then
                 if type(objective.Role) == "table" then
                     roleReq = table.concat(objective.Role, ", ")
                 else

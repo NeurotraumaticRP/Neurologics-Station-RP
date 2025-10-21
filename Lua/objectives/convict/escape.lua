@@ -6,13 +6,14 @@ objective.Name = "Escape"
 objective.AmountPoints = 1500
 objective.EndRoundObjective = false -- Check continuously during round
 objective.Job = {"convict"}
+objective.ForceJob = {"convict"} -- ALWAYS give to convicts
 
 local ESCAPE_DISTANCE = 10000 -- Distance in display units from submarine
 local ESCAPE_TIME = 300 -- 5 minutes in seconds
 local HALF_POINTS_THRESHOLD = 300 -- 5 minutes
 
 function objective:Start(target)
-    self.Text = "Escape the station! Get 10,000 units away from the submarine without handcuffs. Survive 5 minutes to fully escape and become a pirate."
+    self.Text = "Escape the station! Get 1,000 meters away from the submarine without handcuffs. Survive 5 minutes to fully escape and become a pirate."
     
     self.EscapeStartTime = nil -- When escape conditions were first met
     self.HasEscaped = false -- Full escape completed (5 mins)

@@ -3,7 +3,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 objective.Name = "StealCaptainID"
 objective.RoleFilter = {["captain"] = true}
 objective.AmountPoints = 1300
-
+objective.Role = {"traitor","clown"}
 function objective:Start(target)
     -- if no valid captain found, abort
     if not target then

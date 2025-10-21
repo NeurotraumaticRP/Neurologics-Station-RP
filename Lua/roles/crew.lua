@@ -13,10 +13,75 @@ function role:Start()
     
     print("Crew role found " .. #availableObjectives .. " objectives for " .. self.Character.Name .. " (Job: " .. self.Character.Info.Job.Prefab.Identifier.Value .. ")")
 
-    local pool = {}
-    for key, value in pairs(availableObjectives) do pool[key] = value end
+    local jobId = self.Character.Info.Job.Prefab.Identifier.Value
+    local assignedCount = 0
+    local assignedNames = {}
+    
+    -- STEP 1: Assign all FORCED objectives first
+    for _, objName in ipairs(availableObjectives) do
+        local objectiveTemplate = Neurologics.RoleManager.FindObjective(objName)
+        
+        if objectiveTemplate and (objectiveTemplate.ForceJob or objectiveTemplate.ForceRole) then
+            local shouldForce = false
+            
+            -- Check if ForceJob matches
+            if objectiveTemplate.ForceJob then
+                if objectiveTemplate.ForceJob == true then
+                    shouldForce = true
+                elseif type(objectiveTemplate.ForceJob) == "string" and objectiveTemplate.ForceJob == jobId then
+                    shouldForce = true
+                elseif type(objectiveTemplate.ForceJob) == "table" then
+                    for _, forcedJob in ipairs(objectiveTemplate.ForceJob) do
+                        if forcedJob == jobId then
+                            shouldForce = true
+                            break
+                        end
+                    end
+                end
+            end
+            
+            -- Check if ForceRole matches
+            if objectiveTemplate.ForceRole and self.Name then
+                if objectiveTemplate.ForceRole == true then
+                    shouldForce = true
+                elseif type(objectiveTemplate.ForceRole) == "string" and objectiveTemplate.ForceRole == self.Name then
+                    shouldForce = true
+                elseif type(objectiveTemplate.ForceRole) == "table" then
+                    for _, forcedRole in ipairs(objectiveTemplate.ForceRole) do
+                        if forcedRole == self.Name then
+                            shouldForce = true
+                            break
+                        end
+                    end
+                end
+            end
+            
+            if shouldForce then
+                local objective = objectiveTemplate:new()
+                objective:Init(self.Character)
+                local target = self:FindValidTarget(objective)
+                
+                if objective:Start(target) then
+                    self:AssignObjective(objective)
+                    assignedCount = assignedCount + 1
+                    assignedNames[objName] = true
+                    print("Force-assigned objective: " .. objName)
+                end
+            end
+        end
+    end
 
-    for i = 1, 3, 1 do
+    -- STEP 2: Build pool of remaining (non-forced, non-assigned) objectives
+    local pool = {}
+    for _, objName in ipairs(availableObjectives) do
+        if not assignedNames[objName] then
+            table.insert(pool, objName)
+        end
+    end
+    
+    -- STEP 3: Randomly assign up to 3 total objectives (including forced ones)
+    local maxObjectives = 3
+    while assignedCount < maxObjectives and #pool > 0 do
         local objective = Neurologics.RoleManager.RandomObjective(pool)
         if objective == nil then break end
 
@@ -28,9 +93,19 @@ function role:Start()
 
         if objective:Start(target) then
             self:AssignObjective(objective)
+            assignedCount = assignedCount + 1
             for key, value in pairs(pool) do
                 if value == objective.Name then
                     table.remove(pool, key)
+                    break
+                end
+            end
+        else
+            -- Remove failed objective from pool to avoid retry
+            for key, value in pairs(pool) do
+                if value == objective.Name then
+                    table.remove(pool, key)
+                    break
                 end
             end
         end

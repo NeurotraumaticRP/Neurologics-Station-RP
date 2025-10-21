@@ -3,7 +3,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 objective.Name = "FinishRoundFast"
 objective.AmountPoints = 450
 objective.EndRoundObjective = true
-
+objective.Job = {"traitor","clown"}
 function objective:Start(target)
     self.Text = Neurologics.Language.ObjectiveFinishRoundFast
 

@@ -7,7 +7,7 @@ objective.Monster = {
     Text = "Crawlers",
     Amount = 20,
 }
-
+objective.Job = {"guard","warden","captain"}
 function objective:Start(target)
     self.Progress = 0
     self.Text = string.format(Neurologics.Language.ObjectiveKillMonsters, self.Progress, self.Monster.Amount, self.Monster.Text)

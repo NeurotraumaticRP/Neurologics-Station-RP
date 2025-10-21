@@ -2,6 +2,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "AssassinateDrunk"
 objective.AmountPoints = 900
+objective.Role = {"clown"}
 function objective:Start(target)
     self.Target = target
 

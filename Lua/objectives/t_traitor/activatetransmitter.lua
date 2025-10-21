@@ -22,4 +22,4 @@ function objective:TargetPreference(character)
     return true
 end
 
-return objective
+return false

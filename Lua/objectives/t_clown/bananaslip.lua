@@ -3,7 +3,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 objective.Name = "BananaSlip"
 objective.AmountPoints = 850
 objective.Times = 3
-
+objective.Role = {"clown"}
 objective.Static = function ()
     local replacement = [[
         <overwrite>

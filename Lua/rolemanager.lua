@@ -47,6 +47,11 @@ local function MatchesAny(value, filterValue)
         return false
     end
     
+    -- If filterValue is true, match everything
+    if filterValue == true then
+        return true
+    end
+    
     if type(filterValue) == "string" then
         return value == filterValue
     elseif type(filterValue) == "table" then

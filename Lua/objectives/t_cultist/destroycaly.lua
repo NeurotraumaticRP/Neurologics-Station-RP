@@ -2,7 +2,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "DestroyCaly"
 objective.AmountPoints = 500
-
+objective.Role = {"cultist"}
 function objective:Start(target)
     self.Items = {}
     for key, value in pairs(Submarine.MainSub.GetItems(false)) do

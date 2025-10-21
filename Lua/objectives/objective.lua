@@ -5,8 +5,10 @@ objective.Text = "Complete the objective!"
 objective.AmountPoints = 100
 objective.EndRoundObjective = false
 objective.DontLooseLives = false
-objective.Job = nil -- Can be string or table of strings (e.g., "doctor" or {"doctor", "cmo"})
-objective.Role = nil -- Can be string or table of strings (e.g., "traitor" or {"traitor", "cultist"})
+objective.Job = nil -- Can be: string ("doctor"), table ({"doctor", "cmo"}), true (all jobs), or nil (not auto-assigned)
+objective.Role = nil -- Can be: string ("traitor"), table ({"traitor", "cultist"}), true (all roles), or nil (not auto-assigned)
+objective.ForceJob = nil -- If set, this objective is ALWAYS given to matching jobs (not randomly selected)
+objective.ForceRole = nil -- If set, this objective is ALWAYS given to matching roles (not randomly selected)
 
 objective.Awarded = false
 

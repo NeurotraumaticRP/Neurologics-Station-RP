@@ -5,6 +5,7 @@ objective.AmountPoints = 400
 objective.Amount = 5
 objective.ItemIdentifier = {"junctionbox"}
 objective.ItemText = "Junction Boxes"
+objective.Job = {"staff","crewmember"}
 
 function objective:Start(target)
     self.Progress = 0

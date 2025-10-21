@@ -63,25 +63,72 @@ function role:Start()
         end
     end
 
+    local jobId = self.Character.Info.Job.Prefab.Identifier.Value
+    local assignedNames = {}
+    
+    -- First pass: Assign AlwaysActive and Forced objectives
     local toRemove = {}
     for key, value in pairs(pool) do
         local objective = Neurologics.RoleManager.FindObjective(value)
-        if objective ~= nil and objective.AlwaysActive then
-            objective = objective:new()
-
-            local character = self.Character
-
-            objective:Init(character)
-            objective.OnAwarded = function ()
-                Neurologics.Stats.AddCharacterStat("TraitorSubObjectives", character, 1)
+        if objective ~= nil then
+            local shouldAssign = false
+            
+            -- Check if AlwaysActive
+            if objective.AlwaysActive then
+                shouldAssign = true
             end
+            
+            -- Check if ForceJob matches
+            if objective.ForceJob then
+                if objective.ForceJob == true then
+                    shouldAssign = true
+                elseif type(objective.ForceJob) == "string" and objective.ForceJob == jobId then
+                    shouldAssign = true
+                elseif type(objective.ForceJob) == "table" then
+                    for _, forcedJob in ipairs(objective.ForceJob) do
+                        if forcedJob == jobId then
+                            shouldAssign = true
+                            break
+                        end
+                    end
+                end
+            end
+            
+            -- Check if ForceRole matches
+            if objective.ForceRole then
+                if objective.ForceRole == true then
+                    shouldAssign = true
+                elseif type(objective.ForceRole) == "string" and objective.ForceRole == self.Name then
+                    shouldAssign = true
+                elseif type(objective.ForceRole) == "table" then
+                    for _, forcedRole in ipairs(objective.ForceRole) do
+                        if forcedRole == self.Name then
+                            shouldAssign = true
+                            break
+                        end
+                    end
+                end
+            end
+            
+            if shouldAssign then
+                objective = objective:new()
+                local character = self.Character
 
-            if objective:Start(character) then
-                self:AssignObjective(objective)
-                table.insert(toRemove, key)
+                objective:Init(character)
+                objective.OnAwarded = function ()
+                    Neurologics.Stats.AddCharacterStat("TraitorSubObjectives", character, 1)
+                end
+
+                if objective:Start(character) then
+                    self:AssignObjective(objective)
+                    assignedNames[value] = true
+                    table.insert(toRemove, key)
+                end
             end
         end
     end
+    
+    -- Remove assigned objectives from pool
     for key, value in pairs(toRemove) do table.remove(pool, value) end
 
     for i = 1, math.random(self.MinSubObjectives, self.MaxSubObjectives), 1 do

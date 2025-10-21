@@ -3,7 +3,7 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 objective.Name = "RepairHull"
 objective.AmountPoints = 400
 objective.Amount = 2000
-
+objective.Job = {"staff","crewmember"}
 function objective:Start(target)
     self.Progress = 0
 

@@ -5,7 +5,8 @@ objective.Text = Neurologics.Language.ObjectiveFinishAllObjectives
 objective.EndRoundObjective = false
 objective.AmountPoints = 0
 objective.AmountLives = 1
-
+objective.Job = true -- All jobs
+objective.Role = true -- All roles
 function objective:Start()
     return true
 end
