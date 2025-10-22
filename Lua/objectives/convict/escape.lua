@@ -130,7 +130,7 @@ function objective:ShowEscapeChoicePrompt(client)
             responseClient.SetClientCharacter(nil)
             
             Timer.Wait(function()
-                local newCharacter = NCS.SpawnCharacterWithClient("nukie", currentPos, CharacterTeamType.Team2, responseClient)
+                local newCharacter = NCS.SpawnCharacterWithClient("nukie", currentPos, CharacterTeamType.Team2, responseClient, nil)
                 
                 if newCharacter then
                     Neurologics.SendMessage(responseClient, "You have returned as a pirate! You are now hostile to the station crew.", "CrewWalletIconLarge")

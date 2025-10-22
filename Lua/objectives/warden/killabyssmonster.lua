@@ -1,7 +1,7 @@
 local objective = Neurologics.RoleManager.Objectives.KillMonsters:new()
 
 objective.Name = "KillAbyssMonsters"
-objective.AmountPoints = 1500
+objective.AmountPoints = 3000
 objective.Monster = {
     Identifiers = {"Charybdis", "Endworm", "Latcher"},
     Text = Neurologics.Language.AbyssCreature,

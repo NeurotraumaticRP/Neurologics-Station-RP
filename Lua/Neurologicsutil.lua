@@ -663,3 +663,27 @@ end
             value.Character.GiveTalent("")
     end
 end]]--
+
+function Neurologics.FindRandomSpawnPosition()
+    local waypoints = Submarine.MainSub.GetWaypoints(true)
+
+    if LuaUserData.IsTargetType(Game.GameSession.GameMode, "Barotrauma.PvPMode") then
+        waypoints = Submarine.MainSubs[math.random(2)].GetWaypoints(true)
+    end
+
+    local spawnPositions = {}
+    for key, value in pairs(waypoints) do
+        if value.CurrentHull == nil then
+            local walls = Level.Loaded.GetTooCloseCells(value.WorldPosition, 250)
+            if #walls == 0 then
+                table.insert(spawnPositions, value.WorldPosition)
+            end
+        end
+    end
+
+    if #spawnPositions == 0 then
+        return nil
+    end
+
+    return spawnPositions[math.random(#spawnPositions)]
+end

@@ -18,17 +18,17 @@ end
 
 category.Products = {
     {
-        Name = "Beanie",
-        Price = 1,
-        Limit = 1,
+        Name = "Hat",
+        Price = 10,
+        Limit = 10,
         IsLimitGlobal = false,
-        Items = {"touque"},
+        Items = {"captainsseparatistcap1"},
     },
 
     {
         Price = 100,
         Limit = 2,
-        Items = {"cigaretteDJL"}
+        Items = {"cigarette"}
     },
 
     {

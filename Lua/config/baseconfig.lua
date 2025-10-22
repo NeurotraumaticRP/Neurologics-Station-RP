@@ -102,7 +102,7 @@ end
 ----- GAMEMODE -----
 config.GamemodeConfig = {
     Secret = {
-        PointshopCategories = {"clown", "traitor", "cultist", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships"},
+        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships"},
         EndOnComplete = true,           -- end round everyone but traitors are dead
         EnableRandomEvents = true,
         EndGameDelaySeconds = 15,
@@ -190,7 +190,7 @@ config.GamemodeConfig = {
     },
 
     PvP = {
-        PointshopCategories = {"clown", "traitor", "cultist", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships"},
+        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships"},
         EnableRandomEvents = false, -- most events are coded to only affect the main submarine
         WinningPoints = 1000,
         WinningDeadPoints = 500,
@@ -359,6 +359,7 @@ config.PointShopConfig = {
         dofile(Neurologics.Path .. "/Lua/config/pointshop/clown.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/cultist.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/traitor.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/convict.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/security.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/maintenance.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/materials.lua"),

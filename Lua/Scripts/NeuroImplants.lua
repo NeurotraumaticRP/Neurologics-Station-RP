@@ -683,7 +683,7 @@ Networking.Receive("ImplantNetworkEvent", function(message, client)
     
     -- Read implant name from message
     local implantName = message.ReadString()
-    if not implantName then implantName = "fists" end
+    if not implantName then implantName = "Fists" end
     
     -- Read optional action (default to "toggle")
     local action = "toggle"

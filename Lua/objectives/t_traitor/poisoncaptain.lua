@@ -4,15 +4,11 @@ objective.Name = "PoisonCaptain"
 objective.RoleFilter = { ["captain"] = true }
 objective.AmountPoints = 1600
 objective.Role = {"traitor","clown"}
+objective.Job = {"doctor"}
 function objective:Start(target)
     self.Target = target
 
     if self.Target == nil then
-        return false
-    end
-
-    if not self.Character.IsMedic then
-        Neurologics.Debug("PoisonCaptain is only available for medics.")
         return false
     end
 

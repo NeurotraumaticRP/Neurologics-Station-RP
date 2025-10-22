@@ -5,11 +5,13 @@ objective.AmountPoints = 400
 objective.Monster = {
     Identifiers = {"Crawler"},
     Text = "Crawlers",
-    Amount = 20,
+    Amount = math.random(1, 5),
 }
+
 objective.Job = {"guard","warden","captain"}
 function objective:Start(target)
     self.Progress = 0
+    self.AmountPoints = self.Monster.Amount * 400
     self.Text = string.format(Neurologics.Language.ObjectiveKillMonsters, self.Progress, self.Monster.Amount, self.Monster.Text)
 
     return true

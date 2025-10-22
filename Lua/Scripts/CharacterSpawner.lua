@@ -9,8 +9,15 @@ if not NCS.Char then -- this should fix overwriting the original CharacterSpawne
     NCS.Char = {}
 end
 
+-- Track NCS-spawned characters for role assignment
+NCS.SpawnedCharacters = {}
+
+-- Track characters with permanent afflictions
+NCS.PermaAfflictionCharacters = {}
+NCS.PermaAfflictionFrameCounter = 0
+
 -- Spawns a character from a prefab
-NCS.SpawnCharacter = function(prefabKey, position, team)
+NCS.SpawnCharacter = function(prefabKey, position, team, objectives)
     prefabKey = string.lower(prefabKey)
     local charPrefab = NCS.Char[prefabKey]
     if not charPrefab then
@@ -28,13 +35,19 @@ NCS.SpawnCharacter = function(prefabKey, position, team)
         team = charPrefab.Team
     end
 
-    local info = CharacterInfo(Identifier("human"))
+    -- Get species from prefab or default to human
+    local species = charPrefab.Species or "human"
+    local info = CharacterInfo(Identifier(species))
 
     info.TeamID = team
     info.Name = charPrefab.Prefix .. " " .. info.Name
     info.Job = Job(JobPrefab.Get(charPrefab.BaseJob), true)
 
     local character = Character.Create(info, position, info.Name, 0, false, true)
+    
+    -- Track this as an NCS-spawned character
+    NCS.SpawnedCharacters[character] = true
+    
     -- Remove the character's inventory
     NCS.RemoveCharacterInventory(character)
 
@@ -45,16 +58,29 @@ NCS.SpawnCharacter = function(prefabKey, position, team)
             item.id,
             item.count,
             item.subItems,
-            item.slot -- this is adding the items to the inventory but not the sub inventory
+            item.slot
         )
+    end
+
+    -- Apply character template (talents, skills, perma afflictions)
+    NCS.ApplyCharacterTemplate(character, charPrefab)
+    
+    -- Assign role based on team (for NCS-spawned characters)
+    NCS.AssignRoleByTeam(character, team)
+    
+    -- Attach objectives if provided
+    if objectives then
+        NCS.AttachObjectives(character, objectives)
     end
 
     return character
 end
 
-NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client)
-    local character = NCS.SpawnCharacter(prefabKey, position, team)
-    client.SetClientCharacter(character)
+NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client, objectives)
+    local character = NCS.SpawnCharacter(prefabKey, position, team, objectives)
+    if character then
+        client.SetClientCharacter(character)
+    end
     return character
 end
 
@@ -119,6 +145,164 @@ NCS.RemoveCharacterInventory = function(character)
         end
     end
 end
+
+-- Apply character template properties (talents, skills, afflictions, perma afflictions)
+NCS.ApplyCharacterTemplate = function(character, charPrefab)
+    if not character then return end
+    
+    -- Apply talents
+    if charPrefab.Talents then
+        for _, talentId in ipairs(charPrefab.Talents) do
+            character.GiveTalent(Identifier(talentId), true)
+            print("[Neurologics/CharacterSpawner] Gave talent: " .. talentId)
+        end
+    end
+    
+    -- Apply skills
+    if charPrefab.Skills and character.Info then
+        for skillName, level in pairs(charPrefab.Skills) do
+            character.Info.SetSkillLevel(Identifier(skillName), level, false)
+            print("[Neurologics/CharacterSpawner] Set skill " .. skillName .. " to " .. level)
+        end
+    end
+    
+    -- Apply one-time afflictions
+    if charPrefab.Afflictions then
+        for _, afflictionData in ipairs(charPrefab.Afflictions) do
+            local afflictionId = afflictionData[1]
+            local strength = afflictionData[2] or 100
+            
+            local afflictionPrefab = AfflictionPrefab.Prefabs[afflictionId]
+            if afflictionPrefab then
+                character.CharacterHealth.ApplyAffliction(
+                    character.AnimController.MainLimb,
+                    afflictionPrefab.Instantiate(strength)
+                )
+                print("[Neurologics/CharacterSpawner] Applied affliction: " .. afflictionId .. " (" .. strength .. ")")
+            end
+        end
+    end
+    
+    -- Register permanent afflictions
+    if charPrefab.PermaAfflictions then
+        NCS.RegisterPermaAfflictions(character, charPrefab.PermaAfflictions)
+    end
+end
+
+-- Register a character for permanent affliction tracking
+NCS.RegisterPermaAfflictions = function(character, afflictions)
+    if not character or not afflictions then return end
+    
+    NCS.PermaAfflictionCharacters[character] = afflictions
+    print("[Neurologics/CharacterSpawner] Registered perma afflictions for " .. character.Name)
+end
+
+-- Assign role based on team for NCS-spawned characters
+NCS.AssignRoleByTeam = function(character, team)
+    if not character or not Game.RoundStarted then return end
+    
+    -- Check if character already has a role
+    local existingRole = Neurologics.RoleManager.GetRole(character)
+    if existingRole then return end
+    
+    -- Assign role based on team
+    local role = nil
+    if team == CharacterTeamType.Team1 then
+        role = Neurologics.RoleManager.Roles["Crew"]
+    else
+        -- Team2, Team3, or other teams get Antagonist role
+        role = Neurologics.RoleManager.Roles["Antagonist"]
+    end
+    
+    if role then
+        Neurologics.RoleManager.AssignRole(character, role:new())
+        print("[Neurologics/CharacterSpawner] Assigned " .. role.Name .. " role to " .. character.Name)
+    end
+end
+
+-- Attach objectives to a character
+NCS.AttachObjectives = function(character, objectiveNames)
+    if not character or not objectiveNames or #objectiveNames == 0 then return end
+    
+    -- Get or create role for character
+    local role = Neurologics.RoleManager.GetRole(character)
+    if not role then
+        -- Create a basic Crew role if none exists
+        role = Neurologics.RoleManager.Roles["Crew"]
+        if role then
+            Neurologics.RoleManager.AssignRole(character, role:new())
+            role = Neurologics.RoleManager.GetRole(character)
+        end
+    end
+    
+    if not role then
+        print("[Neurologics/CharacterSpawner] Failed to get/create role for objective attachment")
+        return
+    end
+    
+    -- Attach each objective
+    for _, objName in ipairs(objectiveNames) do
+        local objectiveTemplate = Neurologics.RoleManager.FindObjective(objName)
+        if objectiveTemplate then
+            local objective = objectiveTemplate:new()
+            objective:Init(character)
+            
+            -- Try to find valid target if needed
+            local target = nil
+            if role.FindValidTarget then
+                target = role:FindValidTarget(objective)
+            end
+            
+            if objective:Start(target) then
+                role:AssignObjective(objective)
+                print("[Neurologics/CharacterSpawner] Attached objective: " .. objName .. " to " .. character.Name)
+            else
+                print("[Neurologics/CharacterSpawner] Failed to start objective: " .. objName)
+            end
+        else
+            print("[Neurologics/CharacterSpawner] Objective not found: " .. objName)
+        end
+    end
+end
+
+-- Think hook for permanent afflictions (runs 60 times per second)
+Hook.Add("think", "NCS.PermaAfflictions", function()
+    NCS.PermaAfflictionFrameCounter = NCS.PermaAfflictionFrameCounter + 1
+    
+    -- Apply afflictions every 10 frames (1/6th of a second at 60fps)
+    if NCS.PermaAfflictionFrameCounter >= 10 then
+        NCS.PermaAfflictionFrameCounter = 0
+        
+        for character, afflictions in pairs(NCS.PermaAfflictionCharacters) do
+            -- Check if character is still valid and alive
+            if character and not character.Removed and not character.IsDead then
+                for _, afflictionData in ipairs(afflictions) do
+                    local afflictionId = afflictionData[1]
+                    local strength = afflictionData[2] or 100
+                    
+                    local afflictionPrefab = AfflictionPrefab.Prefabs[afflictionId]
+                    if afflictionPrefab then
+                        character.CharacterHealth.ApplyAffliction(
+                            character.AnimController.MainLimb,
+                            afflictionPrefab.Instantiate(strength)
+                        )
+                    end
+                end
+            else
+                -- Clean up dead/removed characters
+                NCS.PermaAfflictionCharacters[character] = nil
+            end
+        end
+    end
+end)
+
+-- Clean up on character death
+Hook.Add("characterDeath", "NCS.Cleanup", function(character)
+    if character then
+        NCS.PermaAfflictionCharacters[character] = nil
+        NCS.SpawnedCharacters[character] = nil
+    end
+end)
 
 return NCS
 

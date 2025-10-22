@@ -28,14 +28,8 @@ event.Start = function(count)
     -- Spawn the specified number of nukies
     for i = 1, nukieCount do
         local deadCharacter = deadCharacters[i]
-        local submarine = Submarine.MainSub
-        local subPosition = submarine.WorldPosition
-        local angle = math.random() * 2 * math.pi
-        local distance = math.random(3000, 4000)
-        local offsetX = math.cos(angle) * distance
-        local offsetY = math.sin(angle) * distance
-        local position = Vector2(subPosition.X + offsetX, subPosition.Y + offsetY)
-        NCS.SpawnCharacterWithClient("nukie", position, CharacterTeamType.Team2, deadCharacter)
+        local position = Neurologics.FindRandomSpawnPosition()
+        NCS.SpawnCharacterWithClient("nukie", position, CharacterTeamType.Team2, deadCharacter, nil)
         Neurologics.SendMessageCharacter(deadCharacter.Character, "You are the Nuclear Operatives, you are not aligned with anyone but yourselves, your only goal is to destroy the nuclear reactor, kill all who stand in your way, good luck.", "CrewWalletIconLarge")
     end
 

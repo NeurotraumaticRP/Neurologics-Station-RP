@@ -835,6 +835,51 @@ Neurologics.AddCommand("!forceselecttraitors", function (client, args)
     return true
 end)
 
+Neurologics.AddCommand("!spawntest", function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+    
+    if client.Character == nil then
+        Neurologics.SendMessage(client, "You must have a character to use this command.")
+        return true
+    end
+    
+    if #args < 1 then
+        Neurologics.SendMessage(client, "Usage: !spawntest <testname>")
+        Neurologics.SendMessage(client, "Available tests: superhuman, burnvictim, wounded, crawler, crawlerobjective")
+        return true
+    end
+    
+    local testName = args[1]
+    local pos = client.Character.WorldPosition
+    
+    if testName == "superhuman" then
+        local char = NCS.SpawnCharacter("superhuman", pos, CharacterTeamType.Team1, nil)
+        Neurologics.SendMessage(client, "Spawned superhuman with maxed skills and talents")
+        
+    elseif testName == "burnvictim" then
+        local char = NCS.SpawnCharacter("burnvictim", pos, CharacterTeamType.Team1, nil)
+        Neurologics.SendMessage(client, "Spawned burn victim with permanent burn and pain afflictions")
+        
+    elseif testName == "wounded" then
+        local char = NCS.SpawnCharacter("wounded", pos, CharacterTeamType.Team1, nil)
+        Neurologics.SendMessage(client, "Spawned wounded survivor with one-time afflictions (bloodloss, gunshot)")
+        
+    elseif testName == "crawler" then
+        local char = NCS.SpawnCharacter("testcrawler", pos, CharacterTeamType.Team2, nil)
+        Neurologics.SendMessage(client, "Spawned test crawler (no objectives)")
+        
+    elseif testName == "crawlerobjective" then
+        local char = NCS.SpawnCharacter("testcrawler", pos, CharacterTeamType.Team2, {"KillMonsters"})
+        Neurologics.SendMessage(client, "Spawned test crawler with KillMonsters objective")
+        
+    else
+        Neurologics.SendMessage(client, "Unknown test: " .. testName)
+        Neurologics.SendMessage(client, "Available tests: superhuman, burnvictim, wounded, crawler, crawlerobjective")
+    end
+    
+    return true
+end)
+
 local preventSpam = {}
 Neurologics.AddCommand({"!droppoints", "!droppoint", "!dropoint", "!dropoints"}, function (client, args)
     if preventSpam[client] ~= nil and Timer.GetTime() < preventSpam[client] then
@@ -908,7 +953,7 @@ Neurologics.AddCommand({"!SpawnAs"}, function(client, args)
     -- Store current character to remove after spawning new one
     local oldCharacter = client.Character
     
-    local newCharacter = NCS.SpawnCharacter(characterName, currentPos)
+    local newCharacter = NCS.SpawnCharacter(characterName, currentPos, nil, nil)
     if not newCharacter then
         Neurologics.SendMessage(client, "Failed to spawn as " .. characterName .. ". Check logs for details.")
         return true
