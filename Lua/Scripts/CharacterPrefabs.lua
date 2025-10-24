@@ -8,6 +8,7 @@ print("[Neurologics] Test") -- for debug
 -- Make sure all Char names are lowercase, otherwise it will not spawn.
 --
 -- NEW FEATURES:
+-- Name = "Static Name" -- Static character name (overrides Prefix + generated name)
 -- Species = "human" (default) or "crawler", "mudraptor", etc.
 -- Talents = {"talentid1", "talentid2"} -- List of talent identifiers
 -- Skills = {weapons = 50, medical = 75} -- Skill name and level
@@ -107,8 +108,163 @@ NCS.Char["infiltrator"] = {
     }
 }
 
+NCS.Char["traumateam"] = {
+    Team = CharacterTeamType.Team1,
+    Prefix = "Trauma Agent",
+    BaseJob = "assistant",
+    Species = "human",
+    Skills = {
+        weapons = 100,
+        medical = 100,
+        mechanical = math.random(1, 50),
+        electrical = math.random(1, 50),
+        helm = math.random(1, 50)
+    },
+    Talents = {
+        "itbelongsinamuseum", "alienhoarder", "deliverysystem", "genetampering",
+        "bigbrain", "genesplicer", "uncoveringtheold", "foreignflora",
+        "boldandbrash", "frontlineaid", "labcontacts", "medicalassistance",
+        "grantmoney", "bloodybusiness", "artificialintelligence", "fieldresearch",
+        "whatastench", "tombraider", "blackmarketgenes", "fontofhealth",
+        "downrightarchimedean", "dissertation", "sorceroussnack", "drsubmarine",
+        "macrodosing", "vitaminsupplements", "geneharvester", "supersoldiers",
+        "madscience", "medicalexpertise", "laresistance", "crewmeninblack",
+        "fastlearner", "medicalschooldropout", "plaguedoctor",
+        "emergencyresponse", "containmentprotocol", "weneedtocook", "companionplants",
+        "battlemedic", "nobodyimportantdies", "geneticgenious", "healthinsurance",
+        "labanimal", "nopressure", "reverseengineer", "armoredcore",
+        "delayedfuse", "tourofduty", "warstories", "buff",
+        "munitionsexpertise", "beatcop", "dontpushit", "manthecannons",
+        "powdermonkey", "bythebook", "pacificationkit", "killconfirmed",
+        "merfolk", "daringdolphin", "firstaidtraining", "scavenger",
+        "wetbehindtheears", "marksman", "policeacademy", "boardingparty",
+        "tandemfire", "riotcontrol", "gunlugger", "destroyer",
+        "warlord", "easyturtle", "cannoneer", "infantryman",
+        "crustyseaman", "inordinateexsanguination", "protectandserve", "physicalconditioning",
+        "specops", "slayer", "rescueoperation", "implacable",
+        "swole", "operator", "commando", "accuracythroughvolume",
+        "stonewall", "rifleman", "bootcamp", "firingsquad",
+        "choppyseas", "killquota", "extrapowder", "onthemove"
+    },
+    Inventory = {
+        { id = "idcard", count = 1, slot = InvSlotType.Card },
+        { id = "autoinjectorheadset", count = 1, slot = InvSlotType.Headset, subItems = {
+            { id = "combatstimulantsyringe", count = 1 }
+        }},
+        { id = "scp_cbrnhelmet", count = 1, slot = InvSlotType.Head, subItems = {
+            { id = "oxygenitetank", count = 1 }
+        }},
+        { id = "scp_cbrnsuit", count = 1, slot = InvSlotType.InnerClothes },
+        { id = "coalitionbodyarmor", count = 1, slot = InvSlotType.Any },
+        { id = "pucs", count = 1, slot = InvSlotType.OuterClothes, subItems = {
+            { id = "oxygenitetank", count = 1 },
+            { id = "combatstimulantsyringe", count = 1 }
+        }},
+        { id = "scp_m35a2", count = 1, subItems = {
+            { id = "scp_556duramag", count = 1 }
+        }},
+        { id = "scp_556duramag", count = 3 },
+        { id = "thglightbodyarmor_belt", count = 1, slot = InvSlotType.Bag, subItems = {
+            { id = "combatstimulantsyringe", count = 4 },
+            { id = "scp_556duramag", count = 3, }
+        }},
+        { id = "boardingaxe", count = 1 },
+        { id = "medtoolbox", count = 1, subItems = {
+            { id = "scp_armykit", count = 2 },
+            { id = "scp_surgicalkit", count = 2 },
+            { id = "antibloodloss2", count = 8 },
+            { id = "antidama1", count = 8 },
+            { id = "antibleeding2", count = 8 }
+        }},
+        { id = "medtoolbox", count = 1, subItems = {
+            { id = "antibleeding3", count = 2 },
+            { id = "scp_condenseddeusizine", count = 1 },
+            { id = "ointment", count = 2 },
+            { id = "scp_adrenaline", count = 1 },
+            { id = "deusizine", count = 1 },
+            { id = "antinarc", count = 4 },
+            { id = "scp_condensedstabilozine", count = 1 }
+        }},
+        { id = "medtoolbox", count = 1, subItems = {
+            { id = "rapidrecoveryserum", count = 2 },
+            { id = "ringerssolution", count = 4 },
+            { id = "tourniquet", count = 4 },
+            { id = "autocpr", count = 1, subItems = {
+                { id = "fulguriumbatterycell", count = 1 }
+            }},
+            { id = "bvm", count = 1, subItems = {
+                { id = "oxygenitetank", count = 1 }
+            }},
+            { id = "genestabilizer", count = 2 },
+            { id = "liquidoxygenite", count = 4 },
+            { id = "mannitol", count = 4 },
+            { id = "thiamine", count = 4 }
+        }},
+        { id = "medtoolbox", count = 1, subItems = {
+            { id = "antibiotics", count = 4 },
+            { id = "bloodanalyzer", count = 1 },
+            { id = "healthscanner", count = 1, subItems = {
+                { id = "fulguriumbatterycell", count = 1 }
+            }}
+        }},
+        { id = "surgerytoolbox", count = 1, subItems = {
+            { id = "drainage", count = 4 },
+            { id = "endovascballoon", count = 4 },
+            { id = "needle", count = 4 },
+            { id = "medstent", count = 4 }
+        }},
+        { id = "surgerytoolbox", count = 1, subItems = {
+            { id = "advscalpel", count = 1 },
+            { id = "advhemostat", count = 1 },
+            { id = "advretractors", count = 1 },
+            { id = "tweezers", count = 1 },
+            { id = "traumashears", count = 1 },
+            { id = "surgicaldrill", count = 1 },
+            { id = "surgerysaw", count = 1 },
+            { id = "suture", count = 32 },
+            { id = "osteosynthesisimplants", count = 1 },
+            { id = "spinalimplant", count = 1 },
+            { id = "multiscalpel", count = 1 }
+        }},
+        { id = "advancedgenesplicer", count = 1, slot = InvSlotType.HealthInterface, subItems = {
+            { id = "geneticmaterialmoloch", count = 1 },
+            { id = "geneticmaterialhammerheadmatriarch", count = 1 }
+        }}
+    }
+}
+
+NCS.Char["god"] = {
+    Team = CharacterTeamType.Team1,
+    BaseJob = "guard",
+    Species = "human",
+    Name = "God",
+    Skills = {
+        weapons = 100,
+        medical = 100,
+        mechanical = 100,
+        electrical = 100,
+        helm = 100
+    },
+    Inventory = {
+        { id = "idcard", count = 1, slot = InvSlotType.Card },
+    }
+}
+
+
+
 
 --[[ Examples:
+
+-- Character with static name
+NCS.Char["staticname"] = {
+    Team = CharacterTeamType.Team1,
+    Name = "John Doe",  -- Static name instead of Prefix + generated
+    BaseJob = "assistant",
+    Species = "human",
+    Inventory = {
+        { id = "divingsuit", count = 1, slot = InvSlotType.OuterClothes }
+    }
+}
 
 -- Super human with maxed skills and talents
 NCS.Char["superhuman"] = {

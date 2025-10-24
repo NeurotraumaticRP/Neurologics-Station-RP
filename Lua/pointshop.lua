@@ -218,7 +218,7 @@ ps.SpawnItem = function(client, item, onSpawned)
         end
     else
         if client.Character.LockHands then
-            Entity.Spawner.AddItemToSpawnQueue(prefab, client.Character.WorldPosition, condition, nil, OnSpawn)
+            Entity.Spawner.AddItemToSpawnQueue(prefab, client.Character.Inventory, condition, nil, OnSpawn)
         else
             Entity.Spawner.AddItemToSpawnQueue(prefab, client.Character.Inventory, condition, nil, OnSpawn)
         end

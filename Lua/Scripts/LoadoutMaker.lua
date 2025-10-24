@@ -16,6 +16,57 @@ local slotTypeNames = {
     [512] = "InvSlotType.HealthInterface"
 }
 
+-- Recursive function to scan items at any depth
+local function scanItemRecursive(item, maxDepth, currentDepth)
+    if not item or currentDepth > maxDepth then
+        return nil
+    end
+    
+    local itemData = {
+        id = item.Prefab.Identifier.Value,
+        count = 1
+    }
+    
+    -- Scan for sub-items if this item has an inventory
+    if item.OwnInventory and currentDepth < maxDepth then
+        local subItems = {}
+        for subSlot = 0, item.OwnInventory.Capacity - 1 do
+            local subItem = item.OwnInventory.GetItemAt(subSlot)
+            if subItem then
+                local subItemData = scanItemRecursive(subItem, maxDepth, currentDepth + 1)
+                if subItemData then
+                    table.insert(subItems, subItemData)
+                end
+            end
+        end
+        if #subItems > 0 then
+            itemData.subItems = subItems
+        end
+    end
+    
+    return itemData
+end
+
+-- Recursive function to format items with proper indentation
+local function formatItemRecursive(itemData, indentLevel)
+    local indent = string.rep("    ", indentLevel)
+    local line = indent .. "{ id = \"" .. itemData.id .. "\", count = " .. itemData.count
+    
+    -- Add slot if present (only for top-level items)
+    if itemData.slot and indentLevel == 1 then
+        line = line .. ", slot = " .. itemData.slot
+    end
+    
+    -- Add sub-items if present
+    if itemData.subItems and #itemData.subItems > 0 then
+        line = line .. ", subItems = {"
+        return {line, itemData.subItems, indentLevel + 1}
+    else
+        line = line .. " }"
+        return {line}
+    end
+end
+
 Neurologics.AddCommand("!saveloadout", function(client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
     
@@ -35,45 +86,46 @@ Neurologics.AddCommand("!saveloadout", function(client, args)
     -- Build inventory list
     local inventoryData = {}
     
+    -- Capture skills
+    local skillsData = {}
+    local skillIdentifiers = {"weapons", "medical", "mechanical", "electrical", "helm"}
+    for _, skillId in ipairs(skillIdentifiers) do
+        local skillLevel = character.GetSkillLevel(skillId)
+        if skillLevel and skillLevel > 0 then
+            skillsData[skillId] = skillLevel
+        end
+    end
+    
+    -- Capture talents
+    local talentsData = {}
+    if character and character.CharacterTalents then
+        for _,talent in pairs(character.CharacterTalents) do
+            table.insert(talentsData, talent.DebugIdentifier)
+        end
+    end
+    
     for slot = 0, character.Inventory.Capacity - 1 do
         local item = character.Inventory.GetItemAt(slot)
         if item then
-            local itemData = {
-                id = item.Prefab.Identifier.Value,
-                count = 1
-            }
+            -- Use recursive scanning with max depth of 3 (item -> sub-item -> sub-sub-item)
+            local itemData = scanItemRecursive(item, 3, 0)
             
-            -- Detect slot type
-            local slotTypes = character.Inventory.SlotTypes
-            if slotTypes and slotTypes[slot] then
-                local slotType = slotTypes[slot]
-                local slotValue = tonumber(slotType)
-                
-                -- Only add slot if it's a specific equipment slot (not Any)
-                if slotValue and slotValue ~= 1 then
-                    -- Convert to proper name if we have a mapping, otherwise use the number
-                    itemData.slot = slotTypeNames[slotValue] or slotValue
-                end
-            end
-            
-            -- Scan for sub-items
-            if item.OwnInventory then
-                local subItems = {}
-                for subSlot = 0, item.OwnInventory.Capacity - 1 do
-                    local subItem = item.OwnInventory.GetItemAt(subSlot)
-                    if subItem then
-                        table.insert(subItems, {
-                            id = subItem.Prefab.Identifier.Value,
-                            count = 1
-                        })
+            if itemData then
+                -- Detect slot type for the main item
+                local slotTypes = character.Inventory.SlotTypes
+                if slotTypes and slotTypes[slot] then
+                    local slotType = slotTypes[slot]
+                    local slotValue = tonumber(slotType)
+                    
+                    -- Only add slot if it's a specific equipment slot (not Any)
+                    if slotValue and slotValue ~= 1 then
+                        -- Convert to proper name if we have a mapping, otherwise use the number
+                        itemData.slot = slotTypeNames[slotValue] or slotValue
                     end
                 end
-                if #subItems > 0 then
-                    itemData.subItems = subItems
-                end
+                
+                table.insert(inventoryData, itemData)
             end
-            
-            table.insert(inventoryData, itemData)
         end
     end
     
@@ -87,36 +139,78 @@ Neurologics.AddCommand("!saveloadout", function(client, args)
     table.insert(output, "    Prefix = \"" .. loadoutName:gsub("^%l", string.upper) .. "\",")
     table.insert(output, "    BaseJob = \"assistant\",")
     table.insert(output, "    Species = \"human\",")
+    
+    -- Add skills if any
+    if next(skillsData) then
+        table.insert(output, "    Skills = {")
+        local skillCount = 0
+        local totalSkills = 0
+        for _ in pairs(skillsData) do totalSkills = totalSkills + 1 end
+        for skillId, level in pairs(skillsData) do
+            skillCount = skillCount + 1
+            local skillLine = "        " .. skillId .. " = " .. level
+            if skillCount < totalSkills then
+                skillLine = skillLine .. ","
+            end
+            table.insert(output, skillLine)
+        end
+        table.insert(output, "    },")
+    end
+    
+    -- Add talents if any
+    if #talentsData > 0 then
+        table.insert(output, "    Talents = {")
+        for i, talent in ipairs(talentsData) do
+            local talentLine = "        \"" .. talent .. "\""
+            if i < #talentsData then
+                talentLine = talentLine .. ","
+            end
+            table.insert(output, talentLine)
+        end
+        table.insert(output, "    },")
+    end
+    
     table.insert(output, "    Inventory = {")
     
-    -- Add each item
+    -- Add each item with recursive formatting
     for i, itemData in ipairs(inventoryData) do
-        local itemLine = "        {"
-        itemLine = itemLine .. " id = \"" .. itemData.id .. "\", count = " .. itemData.count
-        
-        -- Add sub-items if present
-        if itemData.subItems then
-            itemLine = itemLine .. ", subItems = {"
-            for j, subItem in ipairs(itemData.subItems) do
-                itemLine = itemLine .. " { id = \"" .. subItem.id .. "\", count = " .. subItem.count .. " }"
-                if j < #itemData.subItems then
-                    itemLine = itemLine .. ","
+        local function addItemRecursive(data, indentLevel, isLast)
+            local result = formatItemRecursive(data, indentLevel)
+            local line = result[1]
+            
+            table.insert(output, line)
+            
+            -- Handle sub-items if present
+            if result[2] then
+                local subItems = result[2]
+                local subIndentLevel = result[3]
+                
+                for j, subItem in ipairs(subItems) do
+                    local isLastSub = (j == #subItems)
+                    addItemRecursive(subItem, subIndentLevel, isLastSub)
+                end
+                
+                -- Close sub-items block
+                local closeIndent = string.rep("    ", subIndentLevel - 1)
+                local closeLine = closeIndent .. "}"
+                table.insert(output, closeLine)
+                
+                -- Add comma to the main item if not the last item
+                if not isLast then
+                    local lastLine = output[#output]
+                    output[#output] = lastLine .. ","
+                end
+            else
+                -- Add comma if no sub-items and not the last item
+                if not isLast then
+                    local lastLine = output[#output]
+                    output[#output] = lastLine .. ","
                 end
             end
-            itemLine = itemLine .. " }"
         end
         
-        -- Add slot if present
-        if itemData.slot then
-            itemLine = itemLine .. ", slot = " .. itemData.slot
-        end
-        
-        itemLine = itemLine .. " }"
-        if i < #inventoryData then
-            itemLine = itemLine .. ","
-        end
-        
-        table.insert(output, itemLine)
+        local isLastItem = (i == #inventoryData)
+        addItemRecursive(itemData, 1, isLastItem)
     end
     
     table.insert(output, "    }")
@@ -134,6 +228,31 @@ Neurologics.AddCommand("!saveloadout", function(client, args)
     
     Neurologics.SendMessage(client, "Loadout saved to: Lua/Loadouts/" .. loadoutName .. ".txt")
     Neurologics.SendMessage(client, "Items scanned: " .. #inventoryData)
+    
+    -- Debug skills
+    if next(skillsData) then
+        local skillCount = 0
+        for _ in pairs(skillsData) do skillCount = skillCount + 1 end
+        Neurologics.SendMessage(client, "Skills captured: " .. skillCount)
+        local skillNames = {}
+        for skillId, _ in pairs(skillsData) do
+            table.insert(skillNames, skillId)
+        end
+        print("[Neurologics/LoadoutMaker] Skills found: " .. table.concat(skillNames, ", "))
+    else
+        Neurologics.SendMessage(client, "No skills found (all at 0)")
+        print("[Neurologics/LoadoutMaker] No skills found for character")
+    end
+    
+    -- Debug talents
+    if #talentsData > 0 then
+        Neurologics.SendMessage(client, "Talents captured: " .. #talentsData)
+        print("[Neurologics/LoadoutMaker] Talents found: " .. table.concat(talentsData, ", "))
+    else
+        Neurologics.SendMessage(client, "No talents found")
+        print("[Neurologics/LoadoutMaker] No talents found for character")
+    end
+    
     print("[Neurologics/LoadoutMaker] Saved loadout: " .. loadoutName .. " for " .. client.Name)
     
     return true

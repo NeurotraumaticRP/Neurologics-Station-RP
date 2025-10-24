@@ -40,7 +40,12 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives)
     local info = CharacterInfo(Identifier(species))
 
     info.TeamID = team
-    info.Name = charPrefab.Prefix .. " " .. info.Name
+    -- Use static Name if provided, otherwise use Prefix + generated name
+    if charPrefab.Name then
+        info.Name = charPrefab.Name
+    else
+        info.Name = charPrefab.Prefix .. " " .. info.Name
+    end
     info.Job = Job(JobPrefab.Get(charPrefab.BaseJob), true)
 
     local character = Character.Create(info, position, info.Name, 0, false, true)
