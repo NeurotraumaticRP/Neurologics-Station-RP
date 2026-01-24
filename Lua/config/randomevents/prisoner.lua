@@ -1,4 +1,6 @@
-local event = {}
+return false
+
+--[[local event = {}
 
 event.Name = "Prisoner"
 event.MinRoundTime = 0
@@ -113,4 +115,4 @@ event.End = function (isEndRound)
     end
 end
 
-return event
+return event]]

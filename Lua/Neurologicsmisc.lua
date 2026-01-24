@@ -6,6 +6,11 @@ Neurologics.AddHuskBeacon = function (item, time)
     huskBeacons[item] = time
 end
 
+-- Main death handler hook - calls processor defined in Neurologicsutil.lua
+Hook.Add("character.death", "Neurologics.DeathHandler", function(character)
+    Neurologics.ProcessDeathHandlers(character)
+end)
+
 
 local peopleInOutpost = 0
 local ghostRoleNumber = 1

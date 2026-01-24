@@ -1,5 +1,3 @@
-print("[Neurologics] Test") -- for debug
-
 -- -------------------------------
 -- ATTENTION:
 -- This file is for character prefabs.
@@ -110,8 +108,8 @@ NCS.Char["infiltrator"] = {
 
 NCS.Char["traumateam"] = {
     Team = CharacterTeamType.Team1,
-    Prefix = "Trauma Agent",
-    BaseJob = "assistant",
+    Prefix = "ETC Agent", -- Europan Trauma Corps
+    BaseJob = "medicaldoctor",
     Species = "human",
     Skills = {
         weapons = 100,

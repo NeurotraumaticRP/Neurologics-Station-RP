@@ -6,7 +6,7 @@
 -- in case of specific scenarios regarding the choice of a job, that code will be put in jobmanager.lua for clarity.
 
 Neurologics.JobManager = {}
-Neurologics.JobManager.ValidJobs = { "doctor","clown", "guard", "warden", "staff", "janitor", "convict", "he-chef", "cmo","crewmember","scientist","priest","captain" }
+Neurologics.JobManager.ValidJobs = { "doctor","clownotrauma_clown", "guard", "warden", "staff", "janitor", "convict", "he-chef", "cmo","crewmember","scientist","priest","captain" }
 
 -- Load banned jobs at the beginning
 local bannedJobs = Neurologics.JSON.loadBannedJobs()
@@ -272,8 +272,8 @@ local jobConfig = {
     ["scientist"] = { max = 2, min = 0 },
     ["janitor"] = { max = 2, min = 0 },
     ["convict"] = { max = 4, min = 0 },
-    ["priest"] = { max = 1, min = 0, minPlayers = 5 }, -- Available at 5+ players, max 1
-    ["clown"] = { max = 1, min = 0, minPlayers = 5 }, -- Available at 5+ players, max 1
+    ["priest"] = { max = 1, min = 0, minPlayers = 5 }, -- Available at 3+ players, max 1
+    ["clownotrauma_clown"] = { max = 1, min = 0, minPlayers = 5 }, -- Available at 3+ players, max 1
     ["crewmember"] = { max = -1, min = 0 } -- Unlimited
 }
 
@@ -384,7 +384,7 @@ local forcemaxamounts_debug = {
     ["scientist"] = 0,
     ["priest"] = 0,
     ["captain"] = 1,
-    ["clown"] = 0
+    ["clownotrauma_clown"] = 0
 }
     
 

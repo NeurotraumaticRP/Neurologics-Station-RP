@@ -107,6 +107,7 @@ Neurologics.SetData = function (client, name, amount)
     end
 
     Neurologics.ClientData[client.SteamID][name] = amount
+    --print(string.format("[SetData] %s: %s = %s", client.Name, name, tostring(amount)))
 end
 
 Neurologics.GetData = function (client, name)
@@ -114,12 +115,87 @@ Neurologics.GetData = function (client, name)
         Neurologics.NewClientData(client)
     end
 
-    return Neurologics.ClientData[client.SteamID][name]
+    local value = Neurologics.ClientData[client.SteamID][name]
+    --print(string.format("[GetData] %s: %s = %s", client.Name, name, tostring(value)))
+    return value
 end
 
 Neurologics.AddData = function(client, name, amount)
     Neurologics.SetData(client, name, math.max((Neurologics.GetData(client, name) or 0) + amount, 0))
 end
+
+-- Centralized Round Cleanup System
+-- Allows any module/system to register cleanup callbacks
+-- NOTE: Defined early so other systems can register during initialization
+Neurologics.CleanupCallbacks = {}
+
+-- Register a cleanup callback that runs on round end
+-- id: Unique identifier for this cleanup handler
+-- callback: function() - called when round ends
+Neurologics.RegisterCleanup = function(id, callback)
+    Neurologics.CleanupCallbacks[id] = callback
+end
+
+-- Unregister a cleanup handler
+Neurologics.UnregisterCleanup = function(id)
+    Neurologics.CleanupCallbacks[id] = nil
+end
+
+-- Execute all registered cleanup callbacks
+Neurologics.ExecuteCleanup = function()
+    for id, callback in pairs(Neurologics.CleanupCallbacks) do
+        local success, err = pcall(callback)
+        if not success then
+            Neurologics.Error(string.format("Cleanup handler '%s' error: %s", id, tostring(err)))
+        end
+    end
+end
+
+-- Character-based data storage (resets every round, uses character.ID)
+-- Use this for data that should be attached to a specific character instance
+Neurologics.CharacterData = {}
+
+Neurologics.SetCharacterData = function(character, name, value)
+    if not character or not character.ID then return end
+    
+    local charID = character.ID
+    if Neurologics.CharacterData[charID] == nil then
+        Neurologics.CharacterData[charID] = {}
+    end
+    
+    Neurologics.CharacterData[charID][name] = value
+end
+
+Neurologics.GetCharacterData = function(character, name)
+    if not character or not character.ID then return nil end
+    
+    local charID = character.ID
+    if Neurologics.CharacterData[charID] == nil then
+        return nil
+    end
+    
+    return Neurologics.CharacterData[charID][name]
+end
+
+Neurologics.AddCharacterData = function(character, name, amount)
+    local current = Neurologics.GetCharacterData(character, name) or 0
+    Neurologics.SetCharacterData(character, name, math.max(current + amount, 0))
+end
+
+Neurologics.ClearCharacterData = function(character)
+    if not character or not character.ID then return end
+    Neurologics.CharacterData[character.ID] = nil
+end
+
+Neurologics.ClearAllCharacterData = function()
+    Neurologics.CharacterData = {}
+end
+
+-- Register cleanup for character data (clears every round)
+Neurologics.RegisterCleanup("CharacterData", function()
+    Neurologics.ClearAllCharacterData()
+    print("[CharacterData] Cleared all character data")
+end)
 
 Neurologics.FindClient = function (name)
     for key, value in pairs(Client.ClientList) do
@@ -315,6 +391,51 @@ Neurologics.Error = function (message, ...)
     
     if Neurologics.Config.DebugLogs then
         printerror(string.format(message, ...))
+    end
+end
+
+-- Centralized Death Handler System
+-- Allows events/systems to register callbacks for character deaths
+Neurologics.DeathHandlers = {}
+Neurologics.DeathHandlerCallbacks = {}
+
+-- Register a callback for character deaths
+-- id: Unique identifier for this handler
+-- callback: function(character, killer) - called when character dies
+Neurologics.RegisterDeathHandler = function(id, callback)
+    Neurologics.DeathHandlerCallbacks[id] = callback
+end
+
+-- Unregister a death handler
+Neurologics.UnregisterDeathHandler = function(id)
+    Neurologics.DeathHandlerCallbacks[id] = nil
+end
+
+-- Clear all death handler callbacks (used on round end)
+Neurologics.ClearDeathHandlers = function()
+    Neurologics.DeathHandlerCallbacks = {}
+    Neurologics.DeathHandlers.LastDeath = nil
+end
+
+-- Main death handler hook (registered in Neurologicsmisc.lua after Hook is available)
+Neurologics.ProcessDeathHandlers = function(character)
+    if not Game.RoundStarted then return end
+    
+    local killer = character.CauseOfDeath and character.CauseOfDeath.Killer or nil
+    
+    -- Store death info for helper functions
+    Neurologics.DeathHandlers.LastDeath = {
+        character = character,
+        killer = killer,
+        time = Timer.GetTime()
+    }
+    
+    -- Call all registered callbacks
+    for id, callback in pairs(Neurologics.DeathHandlerCallbacks) do
+        local success, err = pcall(callback, character, killer)
+        if not success then
+            Neurologics.Error(string.format("Death handler '%s' error: %s", id, tostring(err)))
+        end
     end
 end
 
@@ -657,12 +778,14 @@ Neurologics.Deepcopy = function(orig) -- copies tables and their metatables
     return copy
 end
 
---[[Neurologics.GiveHungryEuropan = function()
+Neurologics.GiveHungryEuropan = function()
     for key, value in pairs(Client.ClientList) do
         if value.Character then
-            value.Character.GiveTalent("")
+            value.Character.GiveTalent("he-hungryeuropan")
+            value.Character.GiveTalent("he-filthyeuropan")
+        end
     end
-end]]--
+end
 
 function Neurologics.FindRandomSpawnPosition()
     local waypoints = Submarine.MainSub.GetWaypoints(true)
@@ -687,3 +810,8 @@ function Neurologics.FindRandomSpawnPosition()
 
     return spawnPositions[math.random(#spawnPositions)]
 end
+
+-- Register cleanup for death handler callbacks
+Neurologics.RegisterCleanup("DeathHandler", function()
+    Neurologics.ClearDeathHandlers()
+end)

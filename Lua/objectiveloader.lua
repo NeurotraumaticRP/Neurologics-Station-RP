@@ -21,23 +21,19 @@ local function LoadObjectiveFile(filePath)
     local fileName = GetFileName(filePath)
     
     if not ok then
-        print(string.format(" - %s ERROR: %s", fileName, tostring(result)))
         return false
     end
     
     -- If objective returns false, it's disabled
     if result == false then
-        print(string.format(" - %s (Disabled)", fileName))
         return false
     end
     
     -- Valid objective loaded
     if result and result.Name then
         Neurologics.RoleManager.AddObjective(result)
-        print(string.format(" - %s (Took %.5fms)", fileName, diff))
         return true
     else
-        print(string.format(" - %s WARNING: No valid objective returned", fileName))
         return false
     end
 end
@@ -68,6 +64,5 @@ local function LoadObjectivesRecursive(folder)
     end
 end
 
-print("Loading objectives from " .. objectivepath)
 LoadObjectivesRecursive(objectivepath)
 

@@ -7,6 +7,32 @@ event.MaxIntensity = 0.3
 event.ChancePerMinute = 0.018
 event.OnlyOncePerRound = true
 
+-- Example of Conditions function - only trigger randomly if there are enough crew members and pumps
+event.Conditions = function()
+    -- Check if there's at least one pump
+    local hasPump = false
+    for key, value in pairs(Submarine.MainSub.GetItems(true)) do
+        if value.Prefab.Identifier == "pump" then
+            hasPump = true
+            break
+        end
+    end
+    
+    if not hasPump then
+        return false
+    end
+    
+    -- Check if there are at least 3 crew members alive
+    local crewCount = 0
+    for client in Client.ClientList do
+        if client.Character and not client.Character.IsDead then
+            crewCount = crewCount + 1
+        end
+    end
+    
+    return crewCount >= 3
+end
+
 event.Start = function ()
     local areas = {}
     

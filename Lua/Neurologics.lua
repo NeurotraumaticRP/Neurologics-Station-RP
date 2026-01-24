@@ -172,6 +172,9 @@ Hook.Add("missionsEnded", "Neurologics.MissionsEnded", function(missions)
     Neurologics.RoleManager.EndRound()
     Neurologics.RoundEvents.EndRound()
 
+    -- Execute all registered cleanup callbacks
+    Neurologics.ExecuteCleanup()
+
     Neurologics.SelectedGamemode = nil
 
     Neurologics.SaveData()
@@ -412,6 +415,15 @@ Neurologics.StringBuilder = dofile(Neurologics.Path .. "/Lua/stringbuilder.lua")
 Neurologics.Voting = dofile(Neurologics.Path .. "/Lua/voting.lua")
 Neurologics.RoleManager = dofile(Neurologics.Path .. "/Lua/rolemanager.lua")
 Neurologics.Pointshop = dofile(Neurologics.Path .. "/Lua/pointshop.lua")
+
+-- Load core systems BEFORE events (events need these in their Init functions)
+dofile(Neurologics.Path .. "/Lua/Scripts/attacktracker.lua")
+dofile(Neurologics.Path .. "/Lua/Scripts/statusmonitor.lua")
+dofile(Neurologics.Path .. "/Lua/Scripts/traits.lua")
+
+-- Load all random events automatically
+dofile(Neurologics.Path .. "/Lua/eventloader.lua")
+
 Neurologics.RoundEvents = dofile(Neurologics.Path .. "/Lua/roundevents.lua")
 Neurologics.GhostRoles = dofile(Neurologics.Path .. "/Lua/ghostroles.lua")
 

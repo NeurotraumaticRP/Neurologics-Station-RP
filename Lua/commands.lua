@@ -535,11 +535,18 @@ Neurologics.AddCommand("!triggerevent", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
 
     if #args < 1 then
-        Neurologics.SendMessage(client, "Usage: !triggerevent <event name> [parameters...]")
+        Neurologics.SendMessage(client, "Usage: !triggerevent <event name> [--check-conditions] [parameters...]")
         return true
     end
 
     local eventName = table.remove(args, 1)
+    
+    -- Check for --check-conditions flag
+    local checkConditions = false
+    if #args > 0 and args[1] == "--check-conditions" then
+        checkConditions = true
+        table.remove(args, 1)
+    end
     
     local event = nil
     for _, value in pairs(Neurologics.RoundEvents.EventConfigs.Events) do
@@ -564,15 +571,16 @@ Neurologics.AddCommand("!triggerevent", function (client, args)
         end
     end
 
-    -- Trigger event with parameters
-    local success, result = Neurologics.RoundEvents.TriggerEvent(event.Name, table.unpack(params))
+    -- Trigger event with parameters using RunEvent API
+    local success, result = Neurologics.RunEvent(event.Name, #params > 0 and params or nil, checkConditions)
     
     if success then
         local paramStr = ""
         if #params > 0 then
             paramStr = " with parameters: " .. table.concat(args, ", ")
         end
-        Neurologics.SendMessage(client, "Triggered event " .. event.Name .. paramStr)
+        local condStr = checkConditions and " (conditions checked)" or ""
+        Neurologics.SendMessage(client, "Triggered event " .. event.Name .. paramStr .. condStr)
     else
         local errorMsg = "Failed to trigger event " .. event.Name .. ": " .. tostring(result)
         
@@ -1233,6 +1241,105 @@ Neurologics.AddCommand("!listrealplayers", function (sender, args)
     end
     
     Neurologics.SendMessage(sender, message)
+    
+    return true
+end)
+
+-- DEBUG COMMAND - Toggle StatusMonitor debug logging
+Neurologics.AddCommand({"!statusmonitordebug", "!smdebug"}, function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if not Neurologics.StatusMonitor then
+        Neurologics.SendMessage(sender, "StatusMonitor not loaded")
+        return true
+    end
+    
+    if #args > 0 then
+        local toggle = string.lower(args[1])
+        if toggle == "on" or toggle == "true" or toggle == "1" then
+            Neurologics.StatusMonitor.SetDebugMode(true)
+        elseif toggle == "off" or toggle == "false" or toggle == "0" then
+            Neurologics.StatusMonitor.SetDebugMode(false)
+        else
+            Neurologics.SendMessage(sender, "Usage: !statusmonitordebug [on/off]")
+            return true
+        end
+    else
+        Neurologics.StatusMonitor.ToggleDebugMode()
+    end
+    
+    local status = Neurologics.StatusMonitor.DebugMode and "ON" or "OFF"
+    Neurologics.SendMessage(sender, "StatusMonitor debug logging: " .. status)
+    
+    return true
+end)
+
+-- DEBUG COMMAND - Grant Trauma Team membership to another player or bot
+Neurologics.AddCommand({"!givetraumateam", "!gtt"}, function (sender, args)
+    if not sender.HasPermission(ClientPermissions.Kick) then return end
+    
+    if #args < 1 then
+        Neurologics.SendMessage(sender, "Usage: !givetraumateam <character name>")
+        return true
+    end
+    
+    local targetName = args[1]
+    local targetCharacter = nil
+    local targetClient = nil
+    
+    -- First try to find by character name (works for bots and players)
+    for key, character in pairs(Character.CharacterList) do
+        if character.Name == targetName and not character.IsDead then
+            targetCharacter = character
+            break
+        end
+    end
+    
+    -- If not found by exact name, try partial match
+    if not targetCharacter then
+        local targetNameLower = string.lower(targetName)
+        for key, character in pairs(Character.CharacterList) do
+            if string.find(string.lower(character.Name), targetNameLower, 1, true) and not character.IsDead then
+                targetCharacter = character
+                break
+            end
+        end
+    end
+    
+    if not targetCharacter then
+        Neurologics.SendMessage(sender, "Character not found: " .. targetName)
+        return true
+    end
+    
+    -- Try to find the associated client (for non-bots)
+    if not targetCharacter.IsBot then
+        targetClient = Neurologics.FindClientCharacter(targetCharacter)
+    end
+    
+    -- Grant membership to the CHARACTER (not client!)
+    print(string.format("[TraumaTeam] DEBUG: %s granting membership to character %s (isBot: %s)", 
+        sender.Name, targetCharacter.Name, tostring(targetCharacter.IsBot)))
+    
+    Neurologics.SetCharacterData(targetCharacter, "TraumaTeamMember", true)
+    Neurologics.SetCharacterData(targetCharacter, "TraumaTeamUsed", false)
+    
+    -- Register character for monitoring (same as pointshop purchase)
+    if not Neurologics.TraumaTeamMembers then
+        Neurologics.TraumaTeamMembers = {}
+    end
+    Neurologics.TraumaTeamMembers[targetCharacter] = true
+    
+    local memberType = targetCharacter.IsBot and "Bot" or "Player"
+    Neurologics.SendMessage(sender, string.format("Granted Trauma Team membership to %s (%s)", targetCharacter.Name, memberType))
+    
+    if targetClient then
+        Neurologics.SendMessage(targetClient, "You are now a Platinum Member of the Europan Trauma Corps! If you are knocked unconscious for 10+ seconds, an emergency team will be dispatched to rescue you.")
+    end
+    
+    print(string.format("[TraumaTeam] DEBUG: Membership granted to character %s - TraumaTeamMember=%s, TraumaTeamUsed=%s", 
+        targetCharacter.Name,
+        tostring(Neurologics.GetCharacterData(targetCharacter, "TraumaTeamMember")),
+        tostring(Neurologics.GetCharacterData(targetCharacter, "TraumaTeamUsed"))))
     
     return true
 end)

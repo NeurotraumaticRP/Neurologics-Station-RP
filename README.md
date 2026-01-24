@@ -1,3 +1,7 @@
+__**Neurologics Station Gamemode**__
+> Neurologics is a fork of evil factories traitor mod mentioned below, the key differences in this is that it is specifically built to be played on a station, there are many custom events, objectives, scripts, roles ect added to this.
+>If you have any bugs or questions do not ask evil factory, instead make a bug report on discord or here on github
+
 __**The Traitor Mode**__
 
 > Evil Factory's Traitor Mod is a server-sided mod that overrides the vanilla traitor mode. If a round starts with enough players, some crew members may be selected as traitor and receive new objectives to prevent the rest of the crew from achieving their mission. The traitors are selected by a weight system, assuring that players who have not been traitors so often will be more likely to be chosen. 

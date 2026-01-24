@@ -92,6 +92,11 @@ re.CheckRandomEvent = function (event)
         return
     end
 
+    -- Check custom conditions if they exist
+    if event.Conditions and not event.Conditions() then
+        return
+    end
+
     if math.random() > event.ChancePerMinute then
         return
     end
@@ -118,6 +123,13 @@ local lastRandomEventCheck = 0
 Hook.Add("think", "Neurologics.RoundEvents.Think", function ()
     if not Game.RoundStarted then return end
 
+    -- Call Think() on ongoing events
+    for eventName, event in pairs(re.OnGoingEvents) do
+        if event.Think then
+            event.Think()
+        end
+    end
+
     if Timer.GetTime() > lastRandomEventCheck then
         for _, event in pairs(re.EventConfigs.Events) do
             if re.OnGoingEvents[event.Name] == nil and re.AllowedEvents[event.Name] then
@@ -129,6 +141,43 @@ Hook.Add("think", "Neurologics.RoundEvents.Think", function ()
         lastRandomEventCheck = Timer.GetTime() + 60
     end
 end)
+
+re.RunEvent = function (eventName, params, checkConditions)
+    if not Game.RoundStarted then
+        Neurologics.Error("Tried to run event " .. eventName .. ", but round is not started.")
+        return false, "Round not started"
+    end
+
+    if re.OnGoingEvents[eventName] then
+        Neurologics.Error("Event " .. eventName .. " is already running.")
+        return false, "Event already running"
+    end
+
+    local event = nil
+    for _, value in pairs(re.EventConfigs.Events) do
+        if value.Name == eventName then
+            event = value
+        end
+    end
+
+    if event == nil then
+        Neurologics.Error("Tried to run event " .. eventName .. " but it doesnt exist or is disabled.")
+        return false, "Event doesn't exist"
+    end
+
+    -- Check conditions if checkConditions is true
+    if checkConditions and event.Conditions and not event.Conditions() then
+        Neurologics.Error("Event " .. eventName .. " conditions not met.")
+        return false, "Conditions not met"
+    end
+
+    -- Convert params table to varargs if provided
+    if params then
+        return re.TriggerEvent(eventName, table.unpack(params))
+    else
+        return re.TriggerEvent(eventName)
+    end
+end
 
 re.Initialize = function (allowedEvents)
     re.AllowedEvents = {}
@@ -154,8 +203,7 @@ re.EndRound = function ()
     re.AllowedEvents = {}
 end
 
-for _, value in pairs(re.EventConfigs.Events) do
-    if value.Init then value.Init() end
-end
+-- Expose RunEvent to global Neurologics namespace for easy access
+Neurologics.RunEvent = re.RunEvent
 
 return re

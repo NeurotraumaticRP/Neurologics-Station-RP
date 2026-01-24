@@ -485,9 +485,9 @@ category.Products = {
 
     {
         Identifier = "spawnaspeanut",
-        Price = 50,
-        Limit = 2,
-        IsLimitGlobal = false,
+        Price = 500,
+        Limit = 1,
+        IsLimitGlobal = true,
 
         Action = function (client, product, items, paidPrice)
             SpawnCreature("peanut", client, product, paidPrice, true)
@@ -496,9 +496,9 @@ category.Products = {
 
     {
         Identifier = "spawnasorangeboy",
-        Price = 50,
-        Limit = 2,
-        IsLimitGlobal = false,
+        Price = 500,
+        Limit = 1,
+        IsLimitGlobal = true,
 
         Action = function (client, product, items, paidPrice)
             SpawnCreature("orangeboy", client, product, paidPrice, true)
@@ -507,9 +507,9 @@ category.Products = {
 
     {
         Identifier = "spawnascthulhu",
-        Price = 50,
-        Limit = 2,
-        IsLimitGlobal = false,
+        Price = 500,
+        Limit = 1,
+        IsLimitGlobal = true,
 
         Action = function (client, product, items, paidPrice)
             SpawnCreature("balloon", client, product, paidPrice, true)
@@ -518,9 +518,9 @@ category.Products = {
 
     {
         Identifier = "spawnaspsilotoad",
-        Price = 50,
-        Limit = 2,
-        IsLimitGlobal = false,
+        Price = 500,
+        Limit = 1,
+        IsLimitGlobal = true,
 
         Action = function (client, product, items, paidPrice)
             SpawnCreature("psilotoad", client, product, paidPrice, true)

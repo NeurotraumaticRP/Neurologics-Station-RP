@@ -17,7 +17,8 @@ NCS.PermaAfflictionCharacters = {}
 NCS.PermaAfflictionFrameCounter = 0
 
 -- Spawns a character from a prefab
-NCS.SpawnCharacter = function(prefabKey, position, team, objectives)
+-- traits: optional array of trait names to apply in addition to prefab traits
+NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     prefabKey = string.lower(prefabKey)
     local charPrefab = NCS.Char[prefabKey]
     if not charPrefab then
@@ -67,8 +68,16 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives)
         )
     end
 
-    -- Apply character template (talents, skills, perma afflictions)
+    -- Apply character template (talents, skills, perma afflictions, prefab traits)
     NCS.ApplyCharacterTemplate(character, charPrefab)
+    
+    -- Apply additional traits passed as parameter
+    if traits and Neurologics.ApplyTrait then
+        for _, traitName in ipairs(traits) do
+            Neurologics.ApplyTrait(character, traitName)
+            print("[Neurologics/CharacterSpawner] Applied trait (param): " .. traitName)
+        end
+    end
     
     -- Assign role based on team (for NCS-spawned characters)
     NCS.AssignRoleByTeam(character, team)
@@ -81,8 +90,8 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives)
     return character
 end
 
-NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client, objectives)
-    local character = NCS.SpawnCharacter(prefabKey, position, team, objectives)
+NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client, objectives, traits)
+    local character = NCS.SpawnCharacter(prefabKey, position, team, objectives, traits)
     if character then
         client.SetClientCharacter(character)
     end
@@ -151,7 +160,7 @@ NCS.RemoveCharacterInventory = function(character)
     end
 end
 
--- Apply character template properties (talents, skills, afflictions, perma afflictions)
+-- Apply character template properties (talents, skills, afflictions, perma afflictions, traits)
 NCS.ApplyCharacterTemplate = function(character, charPrefab)
     if not character then return end
     
@@ -191,6 +200,14 @@ NCS.ApplyCharacterTemplate = function(character, charPrefab)
     -- Register permanent afflictions
     if charPrefab.PermaAfflictions then
         NCS.RegisterPermaAfflictions(character, charPrefab.PermaAfflictions)
+    end
+    
+    -- Apply traits from prefab
+    if charPrefab.Traits and Neurologics.ApplyTrait then
+        for _, traitName in ipairs(charPrefab.Traits) do
+            Neurologics.ApplyTrait(character, traitName)
+            print("[Neurologics/CharacterSpawner] Applied trait: " .. traitName)
+        end
     end
 end
 

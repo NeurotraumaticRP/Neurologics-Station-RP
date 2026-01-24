@@ -10,13 +10,26 @@ event.OnlyOncePerRound = false
 
 local items = {"coilgunammoboxexplosive", "coilgunammoboxexplosive", "coilgunammoboxexplosive", "railgunshell", "railgunshell", "railgunshell", "railgunshell", "railgunshell"}
 
-event.Start = function ()
-    local position = nil
-
+-- Example of Conditions function - only trigger randomly if there's a security officer present
+event.Conditions = function()
     for key, value in pairs(Submarine.MainSub.GetWaypoints(true)) do
         if value.AssignedJob and value.AssignedJob.Identifier == "securityofficer" then
-            position = value.WorldPosition
-            break
+            return true
+        end
+    end
+    return false
+end
+
+-- Example of parameter support - can override position via Neurologics.RunEvent
+event.Start = function (customPosition)
+    local position = customPosition
+
+    if position == nil then
+        for key, value in pairs(Submarine.MainSub.GetWaypoints(true)) do
+            if value.AssignedJob and value.AssignedJob.Identifier == "securityofficer" then
+                position = value.WorldPosition
+                break
+            end
         end
     end
 

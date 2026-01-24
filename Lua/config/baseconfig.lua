@@ -102,7 +102,7 @@ end
 ----- GAMEMODE -----
 config.GamemodeConfig = {
     Secret = {
-        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships"},
+        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships","services"},
         EndOnComplete = true,           -- end round everyone but traitors are dead
         EnableRandomEvents = true,
         EndGameDelaySeconds = 15,
@@ -190,7 +190,7 @@ config.GamemodeConfig = {
     },
 
     PvP = {
-        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships"},
+        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships","services"},
         EnableRandomEvents = false, -- most events are coded to only affect the main submarine
         WinningPoints = 1000,
         WinningDeadPoints = 500,
@@ -202,7 +202,7 @@ config.GamemodeConfig = {
     },
 
     AttackDefend = {
-        PointshopCategories = {"maintenance", "materials", "medical", "ores", "other", "wiring"},
+        PointshopCategories = {"maintenance", "materials", "medical", "ores", "other", "wiring","services"},
         DefendTime = 15,
         DefendRespawn = 60,
         AttackRespawn = 70,
@@ -326,29 +326,7 @@ config.ObjectiveConfig = {
 
 ----- EVENTS -----
 config.RandomEventConfig = {
-    Events = {
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/communicationsoffline.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/superballastflora.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/maintenancetoolsdelivery.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/medicaldelivery.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/ammodelivery.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/hiddenpirate.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/electricalfixdischarge.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/wreckpirate.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/beaconpirate.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/abysshelp.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/lightsoff.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/emergencyteam.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/piratecrew.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/outpostpirateattack.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/shadymission.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/oxygengenpoison.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/oxygengenhusk.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/prisoner.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/randomlights.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/clownmagic.lua"),
-        dofile(Neurologics.Path .. "/Lua/config/randomevents/nukieraid.lua"),
-    }
+    Events = {} -- Auto-loaded from config/randomevents/ by eventloader.lua
 }
 
 config.PointShopConfig = {
@@ -356,6 +334,7 @@ config.PointShopConfig = {
     DeathTimeoutTime = 60,
     DeathSpawnRefundAtEndRound = true,
     ItemCategories = {
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/services.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/clown.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/cultist.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/traitor.lua"),
@@ -381,6 +360,18 @@ config.GhostRoleConfig = {
         ["Fractalguardian2"] = true,
         ["Fractalguardian3"] = true,
     }
+}
+
+----- TRAITS -----
+config.TraitConfig = {
+    Enabled = true,
+    BaseChance = 0.15,  -- 15% chance per roll, rerolls on success
+    TypeWeights = {     -- Category selection weights (reserved for future use)
+        positive = 30,
+        negative = 50,
+        neutral = 20,
+    },
+    DisabledTraits = {}, -- Trait names to disable, e.g. {"MissingLeftLeg", "AngerIssues"}
 }
 
 return config

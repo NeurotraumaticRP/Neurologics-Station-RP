@@ -15,7 +15,7 @@ function gm:PreStart()
 end
 
 function gm:Start()
-    --Neurologics.GiveHungryEuropan()
+
 end
 
 function gm:Think()
