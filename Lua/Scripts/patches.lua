@@ -38,5 +38,41 @@ end)
 
 Hook.Add("roundstart", "HungryEuropan", function()
     Neurologics.GiveHungryEuropan()
-    print("!!!!!!!!!!! Hungry Europan given to all players !!!!!!!!!!!")
 end)
+
+Hook.Patch("Barotrauma.Items.Components.Terminal", "ServerEventRead", function(instance, ptable) -- Captain PA system
+    local msg = ptable["msg"]
+    local client = ptable["c"]
+    if client == nil or msg == nil then
+        return nil
+    end
+    
+    local rewindBit = msg.BitPosition
+    local text = msg.ReadString()
+    msg.BitPosition = rewindBit
+
+    local item = instance.Item
+    local terminal = item.GetComponentString("Terminal")
+
+    if item.HasTag("captainpa") then
+        local id = client.Character.Inventory.GetItemInLimbSlot(InvSlotType.Card)
+        
+        -- Check if player has captain ID
+        if id and id.HasTag("cpt") then
+            local paText = "Captains PA: << " .. text .. " >>"
+            Neurologics.RoundEvents.SendEventMessage(paText, nil, Color.Aqua)
+            return nil
+        end
+        
+        -- No captain ID - show error message in terminal
+        if terminal then
+            terminal.messageHistory.Clear()
+            terminal.SyncHistory()
+            terminal.ShowMessage = ">> You are not a captain! You cannot use the captain's PA."
+            terminal.SyncHistory()
+        end
+    end
+
+    return nil
+end, Hook.HookMethodType.Before)
+

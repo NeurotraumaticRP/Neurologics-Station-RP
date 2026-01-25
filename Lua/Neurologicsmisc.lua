@@ -56,7 +56,7 @@ Hook.Add("think", "Neurologics.MiscThink", function ()
     if Neurologics.SelectedGamemode == nil or Neurologics.SelectedGamemode.Name ~= "Secret" then return end
 
     local targets = {}
-    local outpost = Level.Loaded.EndOutpost.WorldPosition
+    local outpost = Level.Loaded.EndOutpost.WorldPosition or Vector2(10000, 10000) -- if no outpost, set to arbitrary position to avoid errors
 
     for key, character in pairs(Character.CharacterList) do
         if character.IsRemotePlayer and character.IsHuman and not character.IsDead and Vector2.Distance(character.WorldPosition, outpost) < 5000 then

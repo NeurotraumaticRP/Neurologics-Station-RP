@@ -787,6 +787,13 @@ Neurologics.GiveHungryEuropan = function()
     end
 end
 
+Neurologics.GiveHungryEuropanToClient = function(client)
+    if client.Character then
+        client.Character.GiveTalent("he-hungryeuropan")
+        client.Character.GiveTalent("he-filthyeuropan")
+    end
+end
+
 function Neurologics.FindRandomSpawnPosition()
     local waypoints = Submarine.MainSub.GetWaypoints(true)
 

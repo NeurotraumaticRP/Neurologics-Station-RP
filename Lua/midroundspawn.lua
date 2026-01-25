@@ -28,6 +28,7 @@ m.SpawnClientCharacterOnSub = function(submarine, client)
 
     local spawned = m.TryCreateClientCharacter(submarine, client)
     hasBeenSpawned[client.SteamID] = spawned
+    Neurologics.GiveHungryEuropanToClient(client)
 
     return spawned
 end
