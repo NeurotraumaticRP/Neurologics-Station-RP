@@ -678,7 +678,7 @@ end
     Networking.Send(message)
 ]]
 
-Networking.Receive("ImplantNetworkEvent", function(message, client)
+--[[Networking.Receive("ImplantNetworkEvent", function(message, client)
     if not client or not client.Character then return end
     
     -- Read implant name from message
@@ -728,7 +728,7 @@ Networking.Receive("ImplantNetworkEvent", function(message, client)
     elseif action == "deactivate" then
         Activator.Deactivate(client, implantName, "manual")
     end
-end)
+end)]]--
 
 -- Initialize conflict groups on load
 BuildConflictGroups()
