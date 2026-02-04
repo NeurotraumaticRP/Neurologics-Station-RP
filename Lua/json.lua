@@ -384,36 +384,33 @@ function json.decode(str)
   return res
 end
 
--- Load banned jobs from file
+-- Load banned jobs from file (stored in ServerInfo directory)
 function json.loadBannedJobs()
-  local jsonDir = Neurologics.Path .. "/Lua/Json"
-  local jsonFile = jsonDir .. "/banned_jobs.json"
-
-  -- Check if directory exists, if not create it
-  if not File.Exists(jsonDir) then
-    -- Create the Json directory
-    File.CreateDirectory(jsonDir)
-  end
+  local jsonFile = Neurologics.ServerInfoPath .. "/rolebans.json"
 
   -- Check if file exists
   if not File.Exists(jsonFile) then
     File.Write(jsonFile, "{}")
+    return {}
   end
 
   -- Read the content of the file
   local content = File.Read(jsonFile)
-  return json.decode(content)
+  
+  -- Safely decode JSON with error handling
+  local success, result = pcall(json.decode, content)
+  if not success or result == nil then
+    print("[Neurologics] Warning: Failed to parse rolebans.json, resetting to empty")
+    File.Write(jsonFile, "{}")
+    return {}
+  end
+  
+  return result
 end
 
--- Save banned jobs to file
+-- Save banned jobs to file (stored in ServerInfo directory)
 function json.saveBannedJobs(bannedJobs)
-    local jsonDir = Neurologics.Path .. "/Lua/Json"
-    local jsonFile = jsonDir .. "/banned_jobs.json"
-
-    -- Ensure directory exists
-    if not File.Exists(jsonDir) then
-        File.CreateDirectory(jsonDir)
-    end
+    local jsonFile = Neurologics.ServerInfoPath .. "/rolebans.json"
 
     -- Write the JSON data to the file
     File.Write(jsonFile, json.encode(bannedJobs))

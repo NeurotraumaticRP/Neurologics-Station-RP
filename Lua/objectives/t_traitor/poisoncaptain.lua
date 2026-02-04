@@ -3,8 +3,8 @@ local objective = Neurologics.RoleManager.Objectives.Objective:new()
 objective.Name = "PoisonCaptain"
 objective.RoleFilter = { ["captain"] = true }
 objective.AmountPoints = 1600
-objective.Role = {"traitor","clown"}
-objective.Job = {"doctor"}
+objective.Role = {"Traitor", "Clown", "EvilDoctor"}
+objective.Job = {"doctor", "cmo"}
 function objective:Start(target)
     self.Target = target
 

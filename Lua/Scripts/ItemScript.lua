@@ -182,6 +182,17 @@ itemScript.AddItem("priestsyringe", {
     end
 })
 
+itemScript.AddItem("raptorbaneextract", {
+    OnHit = function(item, character, ishuman)
+        if not ishuman then return end
+        HF.SetAffliction(character, "mudraptorvirus", 0)
+    end,
+    OnMedical = function(item, usingCharacter, targetCharacter, limb)
+        if not targetCharacter.IsHuman then return end
+        HF.SetAffliction(targetCharacter, "mudraptorvirus", 0)
+    end
+})
+
 -- Alternative: Direct assignment (still works)
 --[[
 itemScript.item["priestsyringe"] = {

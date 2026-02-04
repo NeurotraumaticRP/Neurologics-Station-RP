@@ -18,5 +18,4 @@ Neurologics.Path = path
 
 dofile(Neurologics.Path .. "/Lua/Neurologics.lua")
 
-print("Loading Scriptloader...")
 dofile(Neurologics.Path .. "/Lua/Scriptloader.lua")

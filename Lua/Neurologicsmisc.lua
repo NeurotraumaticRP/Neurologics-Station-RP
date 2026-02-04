@@ -56,11 +56,9 @@ Hook.Add("think", "Neurologics.MiscThink", function ()
     if Neurologics.SelectedGamemode == nil or Neurologics.SelectedGamemode.Name ~= "Secret" then return end
 
     local targets = {}
-    if not Level.Loaded.EndOutpost then 
-        Neurologics.Log("No outpost found, skipping outpost pirate attack")
-        return
-    else
-        local outpost = Level.Loaded.EndOutpost.WorldPosition
+    local outpost = Vector2(10000, 10000)
+    if Level.Loaded.EndOutpost then 
+        outpost = Level.Loaded.EndOutpost.WorldPosition
     end
 
     for key, character in pairs(Character.CharacterList) do

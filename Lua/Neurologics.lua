@@ -24,9 +24,7 @@ Neurologics.AddGamemode = function(gamemode)
     end
 end
 
-if not File.Exists(Neurologics.Path .. "/Lua/data.json") then
-    File.Write(Neurologics.Path .. "/Lua/data.json", "{}")
-end
+-- Player data is now stored in ServerInfo directory (initialized in LoadData)
 
 Neurologics.RoundNumber = 0
 Neurologics.RoundTime = 0
@@ -334,6 +332,12 @@ Hook.Add("chatMessage", "Neurologics.ChatMessage", function(message, client)
         Neurologics.Log(Neurologics.ClientLogName(client) .. " used command: " .. message)
         return Neurologics.Commands[command].Callback(client, split)
     end
+
+    -- If message starts with ! but no command was found, block it and notify the user
+    if string.sub(command, 1, 1) == "!" then
+        Neurologics.SendMessage(client, "Unknown command: " .. command)
+        return true
+    end
 end)
 
 
@@ -445,10 +449,17 @@ dofile(Neurologics.Path .. "/Lua/objectiveloader.lua")
 Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/role.lua"))
 Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/antagonist.lua"))
 Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/traitor.lua"))
+-- Specialized traitor roles (must load after traitor.lua since they inherit from Traitor)
+Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/evilscientist.lua"))
+Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/evildoctor.lua"))
 Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/cultist.lua"))
 Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/huskservant.lua"))
+Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/mudraptorservant.lua"))
 Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/crew.lua"))
 Neurologics.RoleManager.AddRole(dofile(Neurologics.Path .. "/Lua/roles/clown.lua"))
+
+-- Load RoleResolver system
+Neurologics.RoleResolver = dofile(Neurologics.Path .. "/Lua/Scripts/RoleResolver.lua")
 
 if Neurologics.Config.Extensions then
     for key, extension in pairs(Neurologics.Config.Extensions) do

@@ -1,4 +1,37 @@
 print("[Neurologicsutil] loaded")
+
+-- External server data directory (outside of mod path for persistence)
+-- This path is used for data that should persist across mod updates
+-- On Linux containers: /home/container/LocalMods/ServerInfo
+-- On Windows/local testing: falls back to mod path/ServerInfo
+local function initServerInfoPath()
+    local containerPath = "/home/container/LocalMods/ServerInfo"
+    
+    -- Try to use the container path first (Linux server)
+    -- Check if we're on a Linux container by checking if the path structure exists
+    local success, _ = pcall(function()
+        return File.Exists("/home/container")
+    end)
+    
+    if success and File.Exists("/home/container") then
+        if not File.Exists(containerPath) then
+            File.CreateDirectory(containerPath)
+        end
+        print("[Neurologics] Using container ServerInfo path: " .. containerPath)
+        return containerPath
+    end
+    
+    -- Fallback to mod path for local testing (Windows)
+    local fallbackPath = Neurologics.Path .. "/ServerInfo"
+    if not File.Exists(fallbackPath) then
+        File.CreateDirectory(fallbackPath)
+    end
+    print("[Neurologics] Using local ServerInfo path: " .. fallbackPath)
+    return fallbackPath
+end
+
+Neurologics.ServerInfoPath = initServerInfoPath()
+
 Neurologics.Config = dofile(Neurologics.Path .. "/Lua/config/baseconfig.lua")
 
 if not File.Exists(Neurologics.Path .. "/Lua/config/config.lua") then
@@ -81,7 +114,22 @@ end
 
 Neurologics.LoadData = function ()
     if Neurologics.Config.PermanentPoints then
-        Neurologics.ClientData = json.decode(File.Read(Neurologics.Path .. "/Lua/data.json")) or {}
+        local path = Neurologics.ServerInfoPath .. "/playerdata.json"
+        if not File.Exists(path) then
+            File.Write(path, "{}")
+            Neurologics.ClientData = {}
+            return
+        end
+        
+        local content = File.Read(path)
+        local success, result = pcall(json.decode, content)
+        if not success or result == nil then
+            print("[Neurologics] Warning: Failed to parse playerdata.json, resetting to empty")
+            File.Write(path, "{}")
+            Neurologics.ClientData = {}
+            return
+        end
+        Neurologics.ClientData = result
     else
         Neurologics.ClientData = {}
     end
@@ -89,7 +137,8 @@ end
 
 Neurologics.SaveData = function ()
     if Neurologics.Config.PermanentPoints then
-        File.Write(Neurologics.Path .. "/Lua/data.json", json.encode(Neurologics.ClientData))
+        local path = Neurologics.ServerInfoPath .. "/playerdata.json"
+        File.Write(path, json.encode(Neurologics.ClientData))
     end
 end
 
@@ -736,18 +785,34 @@ Neurologics.GetTargetClient = function(sender, targetClientInput)
     return targetClient, steamID
 end
 
--- Utility functions to load API keys from a JSON file
+-- Utility functions to load API keys from a JSON file in ServerInfo directory
 
 Neurologics.LoadAPIKeys = function()
-    local path = Neurologics.Path .. "/Lua/Json/apikeys.json"
+    local path = Neurologics.ServerInfoPath .. "/apikeys.json"
+    
+    -- Create default apikeys.json with placeholder structure if it doesn't exist
+    local defaultKeys = {
+        discordWebhook = "",
+        discordRoundLogger = "",
+        javierbotApi = "",
+        javierbotApiKey = ""
+    }
+    
     if not File.Exists(path) then
-        File.Write(path, "{}")
+        File.Write(path, Neurologics.JSON.encode(defaultKeys))
+        return defaultKeys
     end
+    
     local content = File.Read(path)
-    local keys = Neurologics.JSON.decode(content)
+    local success, keys = pcall(Neurologics.JSON.decode, content)
+    if not success or keys == nil then
+        print("[Neurologics] Warning: Failed to parse apikeys.json, using defaults")
+        File.Write(path, Neurologics.JSON.encode(defaultKeys))
+        return defaultKeys
+    end
+    
     return keys
 end
-
 
 Neurologics.GetAPIKey = function(keyName)
     local keys = Neurologics.LoadAPIKeys()
@@ -822,3 +887,22 @@ end
 Neurologics.RegisterCleanup("DeathHandler", function()
     Neurologics.ClearDeathHandlers()
 end)
+
+Neurologics.AssignMudraptorServantRole = function(client, mudraptor, originalCharacterName)
+    -- Check if there's an EvilScientist who turned this person
+    local scientists = Neurologics.RoleManager.FindCharactersByRole("EvilScientist")
+    if #scientists > 0 then
+        -- Assign the MudraptorServant role
+        Neurologics.RoleManager.AssignRole(mudraptor, Neurologics.RoleManager.Roles.MudraptorServant:new())
+        
+        -- Notify the evil scientist(s)
+        for _, scientist in pairs(scientists) do
+            local scientistClient = Neurologics.FindClientCharacter(scientist)
+            if scientistClient then
+                Neurologics.SendMessage(scientistClient, 
+                    string.format("%s has been transformed into a mudraptor and will serve you!", originalCharacterName),
+                    "GameModeIcon.pvp")
+            end
+        end
+    end
+end

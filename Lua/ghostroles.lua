@@ -111,8 +111,70 @@ Neurologics.AddCommand({"!ghostrole", "!ghostroles"}, function(client, args)
 end)
 
 
+-- Scan for Team2 humans without controlling clients and add them as ghost roles
+gr.ScanTeam2Humans = function()
+    if not config.Enabled then return end
+    if not config.Team2HumansEnabled then return end
+    
+    for _, character in pairs(Character.CharacterList) do
+        -- Check if character is valid, alive, human, and on Team2
+        if character and not character.IsDead and not character.Removed 
+           and character.IsHuman 
+           and character.TeamID == CharacterTeamType.Team2 then
+            
+            -- Check if already registered as a ghost role
+            if not gr.Characters[character] then
+                -- Check if any client is controlling this character
+                local hasClient = false
+                for _, client in pairs(Client.ClientList) do
+                    if client.Character == character then
+                        hasClient = true
+                        break
+                    end
+                end
+                
+                -- If no client is controlling, add as ghost role
+                if not hasClient then
+                    local roleName = character.Name:lower()
+                    
+                    -- Make sure name is unique
+                    local baseName = roleName
+                    local counter = 1
+                    while gr.Roles[roleName] do
+                        roleName = baseName .. "_" .. counter
+                        counter = counter + 1
+                    end
+                    
+                    print("[GhostRoles] Adding Team2 human as ghost role: " .. roleName)
+                    
+                    gr.Roles[roleName] = {
+                        Callback = function(client)
+                            client.SetClientCharacter(character)
+                            Neurologics.SendMessage(client, "You are now controlling " .. character.Name .. "!")
+                        end,
+                        Taken = false,
+                        Character = character,
+                        IsTeam2 = true,
+                    }
+                    gr.Characters[character] = roleName
+                end
+            end
+        end
+    end
+end
+
+-- Periodic scan for new Team2 humans
+local team2ScanTimer = 0
+
 Hook.Add("think", "Neurologics.GhostRoles.Think", function (...)
     if not config.Enabled then return end
+    
+    -- Periodically scan for Team2 humans
+    if Timer.GetTime() >= team2ScanTimer then
+        team2ScanTimer = Timer.GetTime() + (config.Team2ScanInterval or 10)
+        gr.ScanTeam2Humans()
+    end
+    
     if Timer.GetTime() < ghostRolesAnnounceTimer then return end
     ghostRolesAnnounceTimer = Timer.GetTime() + 200
 

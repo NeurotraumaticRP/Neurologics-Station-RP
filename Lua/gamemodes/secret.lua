@@ -41,6 +41,11 @@ function gm:Start()
         this:CharacterDeath(character)
     end)
 
+    -- Roll for special round types (Nukie, AllCultist, etc.)
+    if Neurologics.RoleResolver then
+        Neurologics.RoleResolver.RollSpecialRound()
+    end
+
     self:SelectAntagonists()
 end
 
@@ -66,20 +71,58 @@ function gm:AssignAntagonists(antagonists)
     end
 
     local function Assign(roles)
-        for key, role in pairs(roles) do
-            if role.Name == "Cultist" then
-                self.RoundEndIcon = "oneofus"
-                Game.EnableControlHusk(true)
+        -- Use RoleResolver to get final roles for each antagonist
+        local resolvedRoles
+        if Neurologics.RoleResolver and #antagonists > 0 then
+            -- Pass the base role (first role in the list) to the resolver
+            local baseRole = roles[1]
+            resolvedRoles = Neurologics.RoleResolver.ResolveRoles(antagonists, baseRole)
+        end
+        
+        -- Check for Cultist to enable husk control
+        local hasCultist = false
+        if resolvedRoles then
+            for _, role in pairs(resolvedRoles) do
+                if role.Name == "Cultist" then
+                    hasCultist = true
+                    break
+                end
+            end
+        else
+            for _, role in pairs(roles) do
+                if role.Name == "Cultist" then
+                    hasCultist = true
+                    break
+                end
+            end
+        end
+        
+        if hasCultist then
+            self.RoundEndIcon = "oneofus"
+            Game.EnableControlHusk(true)
+        end
+
+        -- Build role instances
+        local newRoles = {}
+        local characters = {}
+        
+        if resolvedRoles then
+            -- Use resolved roles from RoleResolver
+            for character, role in pairs(resolvedRoles) do
+                table.insert(characters, character)
+                table.insert(newRoles, role:new())
+            end
+        else
+            -- Fallback to original behavior if RoleResolver not available
+            for key, value in pairs(antagonists) do
+                table.insert(characters, value)
+                table.insert(newRoles, roles[key]:new())
             end
         end
 
-        local newRoles = {}
-
-        for key, value in pairs(antagonists) do
-            table.insert(newRoles, roles[key]:new())
+        if #characters > 0 then
+            Neurologics.RoleManager.AssignRoles(characters, newRoles)
         end
-
-        Neurologics.RoleManager.AssignRoles(antagonists, newRoles)
 
         AssignCrew()
     end
@@ -338,6 +381,11 @@ function gm:End()
 
     Hook.Remove("characterDeath", "Neurologics.Secret.CharacterDeath")
     Hook.Remove("Neurologics.midroundspawn", "Neurologics.Secret.MidRoundSpawn")
+    
+    -- Reset RoleResolver state for next round
+    if Neurologics.RoleResolver then
+        Neurologics.RoleResolver.Reset()
+    end
 end
 
 function gm:Think()

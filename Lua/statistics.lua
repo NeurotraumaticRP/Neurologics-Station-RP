@@ -4,14 +4,27 @@ local textPromptUtils = require("textpromptutils")
 
 local ItemsShown = 30 -- Sets how many lines will be shown. Should not be much more than 50
 
-if Neurologics.Config.PermanentStatistics and not File.Exists(Neurologics.Path .. "/Lua/stats.json") then
-    File.Write(Neurologics.Path .. "/Lua/stats.json", "{}")
-end 
-
 local json = dofile(Neurologics.Path .. "/Lua/json.lua")
+
+-- Stats are stored in ServerInfo directory for persistence
 statistics.LoadData = function ()
     if Neurologics.Config.PermanentStatistics then
-        statistics.stats = json.decode(File.Read(Neurologics.Path .. "/Lua/stats.json")) or {}
+        local path = Neurologics.ServerInfoPath .. "/stats.json"
+        if not File.Exists(path) then
+            File.Write(path, "{}")
+            statistics.stats = {}
+            return
+        end
+        
+        local content = File.Read(path)
+        local success, result = pcall(json.decode, content)
+        if not success or result == nil then
+            print("[Neurologics] Warning: Failed to parse stats.json, resetting to empty")
+            File.Write(path, "{}")
+            statistics.stats = {}
+            return
+        end
+        statistics.stats = result
     else
         statistics.stats = {}
     end
@@ -19,7 +32,8 @@ end
 
 statistics.SaveData = function ()
     if Neurologics.Config.PermanentStatistics then
-        File.Write(Neurologics.Path .. "/Lua/stats.json", json.encode(statistics.stats))
+        local path = Neurologics.ServerInfoPath .. "/stats.json"
+        File.Write(path, json.encode(statistics.stats))
     end
 end
 

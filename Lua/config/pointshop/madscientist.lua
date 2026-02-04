@@ -1,12 +1,12 @@
 local category = {}
 
-category.Identifier = "traitor"
+category.Identifier = "madscientist"
 category.Decoration = "clown"
 category.FadeToBlack = true
 
 category.CanAccess = function(client)
     if not client.Character then return false end
-    return client.Character and not client.Character.IsDead and Neurologics.RoleManager.HasRole(client.Character, "Traitor") and not Neurologics.RoleManager.HasRole(client.Character, "EvilScientist") and not Neurologics.RoleManager.HasRole(client.Character, "EvilDoctor")
+    return client.Character and not client.Character.IsDead and Neurologics.RoleManager.HasRole(client.Character, "EvilScientist") and client.Character.HasJob("scientist")
 end
 
 category.Init = function ()
@@ -72,6 +72,26 @@ category.Init = function ()
 end
 
 category.Products = {
+
+    {
+        Price = 300,
+        Limit = 3,
+        IsLimitGlobal = false,
+        Items = {"alienblood", "alienblood", "alienblood"},
+    },
+
+    {
+        Price = 500,
+        Limit = 3,
+        IsLimitGlobal = false,
+        Items = {"mudraptorvirussyringe"},
+    },
+    {
+        Price = 500,
+        Limit = 3,
+        IsLimitGlobal = false,
+        Items = {"cancersyringe"},
+    },
     {
         Identifier = "explosiveautoinjector",
         Price = 1700,

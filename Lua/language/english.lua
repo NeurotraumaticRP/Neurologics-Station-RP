@@ -162,6 +162,8 @@ language.ObjectiveKillMonsters = "Kill (%s/%s) %s."
 language.ObjectiveRepair = "Repair (%s/%s) %s"
 language.ObjectiveRepairHull = "Repair (%s/%s) damage from the hull."
 language.ObjectiveSecurityTeamSurvival = "Make sure at least one member of the security team survives."
+language.ObjectiveTurnMudraptor = "Turn %s into a mudraptor."
+language.ObjectiveAssassinateCancer = "Assassinate %s %s by giving them cancer."
 
 language.ObjectiveText = "Assassinate the crew in order to complete your mission."
 

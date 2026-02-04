@@ -1024,6 +1024,8 @@ Neurologics.AddCommand({"!roleban", "!banrole", "!jobban", "!banjob"}, function 
         Neurologics.SendMessage(sender, (targetClient and targetClient.Name or steamID) .. " is already banned from the specified roles: " .. table.concat(jobList, ", "))
     end
 
+    Neurologics.DiscordLogger.RecieveRoleBan(targetClient, jobList, reason, sender)
+
     return true
 end)
 
@@ -1066,6 +1068,8 @@ Neurologics.AddCommand({"!unroleban", "!unbanrole", "!roleunban", "!jobunban", "
     if #unbannedJobs == 0 then
         Neurologics.SendMessage(sender, (targetClient and targetClient.Name or steamID) .. " is not banned from the specified roles.")
     end
+
+    Neurologics.DiscordLogger.RecieveRoleUnban(targetClient, jobList, "Unbanned by " .. Neurologics.ClientLogName(sender))
 
     return true
 end)
@@ -1344,4 +1348,71 @@ Neurologics.AddCommand({"!givetraumateam", "!gtt"}, function (sender, args)
     return true
 end)
 
+Neurologics.AddCommand("!discord", function (client, args)
+    Neurologics.SendMessage(client, "https://discord.gg/25XruhXasp")
+end)
+
+-- Force a special round type for the next antagonist selection
+-- Usage: !forceround <roundtype> or !forceround clear
+Neurologics.AddCommand("!forceround", function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+    
+    if not Neurologics.RoleResolver then
+        Neurologics.SendMessage(client, "RoleResolver not loaded.")
+        return true
+    end
+    
+    if #args < 1 then
+        local current = Neurologics.RoleResolver.GetSpecialRound()
+        if current then
+            Neurologics.SendMessage(client, "Current special round: " .. current)
+        else
+            Neurologics.SendMessage(client, "No special round set. Usage: !forceround <roundtype|clear>")
+        end
+        
+        -- List available round types
+        local config = Neurologics.Config.RoleResolverConfig or {}
+        local rounds = config.SpecialRounds or {}
+        local roundNames = {}
+        for name, _ in pairs(rounds) do
+            table.insert(roundNames, name)
+        end
+        if #roundNames > 0 then
+            Neurologics.SendMessage(client, "Available: " .. table.concat(roundNames, ", "))
+        end
+        return true
+    end
+    
+    local roundType = args[1]
+    if roundType:lower() == "clear" then
+        Neurologics.RoleResolver.SetSpecialRound(nil)
+        Neurologics.SendMessage(client, "Special round cleared.")
+    else
+        -- Check if round type exists in config
+        local config = Neurologics.Config.RoleResolverConfig or {}
+        local rounds = config.SpecialRounds or {}
+        if not rounds[roundType] then
+            Neurologics.SendMessage(client, "Unknown round type: " .. roundType)
+            return true
+        end
+        
+        Neurologics.RoleResolver.SetSpecialRound(roundType)
+        Neurologics.SendMessage(client, "Next antagonist selection will use: " .. roundType)
+    end
+    return true
+end)
+
+-- List all registered role resolvers
+Neurologics.AddCommand("!listresolvers", function (client, args)
+    if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
+    
+    if not Neurologics.RoleResolver then
+        Neurologics.SendMessage(client, "RoleResolver not loaded.")
+        return true
+    end
+    
+    Neurologics.RoleResolver.ListResolvers()
+    Neurologics.SendMessage(client, "Resolver list printed to console.")
+    return true
+end)
 

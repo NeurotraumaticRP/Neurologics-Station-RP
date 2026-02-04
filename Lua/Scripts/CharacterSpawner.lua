@@ -44,10 +44,15 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     -- Use static Name if provided, otherwise use Prefix + generated name
     if charPrefab.Name then
         info.Name = charPrefab.Name
-    else
+    elseif charPrefab.Prefix and info.Name then
         info.Name = charPrefab.Prefix .. " " .. info.Name
+    elseif info.Name then
+        info.Name = info.Name
     end
-    info.Job = Job(JobPrefab.Get(charPrefab.BaseJob), true)
+    -- Only assign jobs to humans - creatures like mudraptors don't have jobs
+    if species == "human" and charPrefab.BaseJob then
+        info.Job = Job(JobPrefab.Get(charPrefab.BaseJob), true)
+    end
 
     local character = Character.Create(info, position, info.Name, 0, false, true)
     

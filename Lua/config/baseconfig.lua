@@ -102,7 +102,7 @@ end
 ----- GAMEMODE -----
 config.GamemodeConfig = {
     Secret = {
-        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships","services"},
+        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships","services","traitormedic","madscientist","scientist"},
         EndOnComplete = true,           -- end round everyone but traitors are dead
         EnableRandomEvents = true,
         EndGameDelaySeconds = 15,
@@ -173,8 +173,8 @@ config.GamemodeConfig = {
                 ["he-chef"] = 1,
                 ["cmo"] = 0,
                 ["crewmember"] = 1,
-                ["scientist"] = 0.8,
-                ["priest"] = 0.8,
+                ["scientist"] = 1,
+                ["priest"] = 0.5,
                 ["captain"] = 0,
                 ["clown"] = 1
             }
@@ -190,7 +190,7 @@ config.GamemodeConfig = {
     },
 
     PvP = {
-        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships","services"},
+        PointshopCategories = {"clown", "traitor", "cultist", "prisoner", "deathspawn", "maintenance", "materials", "medical", "ores", "other", "security", "wiring", "ships","services","traitormedic"},
         EnableRandomEvents = false, -- most events are coded to only affect the main submarine
         WinningPoints = 1000,
         WinningDeadPoints = 500,
@@ -202,11 +202,68 @@ config.GamemodeConfig = {
     },
 
     AttackDefend = {
-        PointshopCategories = {"maintenance", "materials", "medical", "ores", "other", "wiring","services"},
+        PointshopCategories = {"maintenance", "materials", "medical", "ores", "other", "wiring","services","traitormedic"},
         DefendTime = 15,
         DefendRespawn = 60,
         AttackRespawn = 70,
         WinningPoints = 1000,
+    },
+}
+
+-- Role Resolver Configuration
+-- Controls how antagonist roles are assigned based on various conditions
+config.RoleResolverConfig = {
+    -- Special round types with random trigger chances (0-1)
+    -- Set to 0 or comment out to disable
+    SpecialRoundChances = {
+        -- ["Nukie"] = 0.05,      -- 5% chance of Nukie round
+        -- ["AllCultist"] = 0.02, -- 2% chance everyone becomes Cultist
+    },
+    
+    -- Special round configurations
+    -- Each entry defines a role and optional announcement
+    SpecialRounds = {
+        Nukie = {
+            role = "Nukie",
+            announcement = "Nuclear operatives have infiltrated the station!",
+        },
+        AllCultist = {
+            role = "Cultist",
+            announcement = "The cult has risen...",
+        },
+        AllClown = {
+            role = "Clown",
+            announcement = "Honk.",
+        },
+    },
+    
+    -- Username-based role overrides (checked before job overrides)
+    -- Pattern matching is case-insensitive
+    UsernameOverrides = {
+        -- ["josh"] = "JoshRole",
+        -- ["streamer"] = "Traitor",
+    },
+    
+    -- Universal job overrides - these jobs ALWAYS get their special roles
+    -- regardless of what the base antagonist role would be (Traitor, Cultist, Clown)
+    -- These are SKIPPED when a special round is active (e.g., AllCultist, AllClown)
+    UniversalJobOverrides = {
+        ["scientist"] = "EvilScientist",
+        ["doctor"] = "EvilDoctor", -- just doctor, cmo cant be an antagonist
+    },
+    
+    -- Job-based role overrides per base role type (legacy, lower priority)
+    -- Only checked if UniversalJobOverrides doesn't match
+    JobOverrides = {
+        Traitor = {
+            -- Additional traitor-specific overrides can go here
+        },
+        Cultist = {
+            -- Cultist-specific overrides
+        },
+        Clown = {
+            -- Clown-specific overrides
+        },
     },
 }
 
@@ -220,6 +277,44 @@ config.RoleConfig = {
             ["medicaldoctor"] = {"HealCharacters", "KillSmallMonsters"},
             ["assistant"] = {"RepairElectrical", "RepairMechanical", "KillPets"},
         }
+    },
+
+    EvilScientist = {
+        SubObjectives = {"GrowMudraptors", "Survive", "PoisonCaptain", "AssassinateCancer"},
+        MinSubObjectives = 2,
+        MaxSubObjectives = 3,
+
+        NextObjectiveDelayMin = 30,
+        NextObjectiveDelayMax = 60,
+
+        TraitorBroadcast = true,           -- traitors can broadcast to other traitors using !tc
+        TraitorBroadcastHearable = false,  -- if true, !tc will be hearable in the vicinity via local chat
+        TraitorDm = true,
+        -- Names, None
+        TraitorMethodCommunication = "Names",
+        SelectBotsAsTargets = true,
+        SelectPiratesAsTargets = false,
+        SelectUniqueTargets = true,
+        PointsPerAssassination = 100,
+    },
+
+    EvilDoctor = {
+        SubObjectives = {"PoisonCaptain", "Decapitate", "RemoveHeart", "RemoveLungs", "SurgicalBombAssassination", "Survive"},
+        MinSubObjectives = 2,
+        MaxSubObjectives = 3,
+
+        NextObjectiveDelayMin = 30,
+        NextObjectiveDelayMax = 60,
+
+        TraitorBroadcast = true,           -- traitors can broadcast to other traitors using !tc
+        TraitorBroadcastHearable = false,  -- if true, !tc will be hearable in the vicinity via local chat
+        TraitorDm = true,
+        -- Names, None
+        TraitorMethodCommunication = "Names",
+        SelectBotsAsTargets = true,
+        SelectPiratesAsTargets = false,
+        SelectUniqueTargets = true,
+        PointsPerAssassination = 100,
     },
 
     Cultist = {
@@ -348,11 +443,18 @@ config.PointShopConfig = {
         dofile(Neurologics.Path .. "/Lua/config/pointshop/wiring.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/deathspawn.lua"),
         dofile(Neurologics.Path .. "/Lua/config/pointshop/ships.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/traitormedic.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/madscientist.lua"),
+        dofile(Neurologics.Path .. "/Lua/config/pointshop/scientist.lua"),
     }
 }
 
 config.GhostRoleConfig = {
     Enabled = true,
+    -- Automatically add Team2 humans (pirates, etc.) without clients as ghost roles
+    Team2HumansEnabled = true,
+    -- How often to scan for new Team2 humans (in seconds)
+    Team2ScanInterval = 10,
     MiscGhostRoles = {
         ["Watcher"] = true,
         ["Mudraptor_pet"] = true,

@@ -57,7 +57,7 @@ function Neurologics.JobManager.ProcessJobBans(ptable)
                 if #substituteRoles > 0 then
                     local newJobName = substituteRoles[math.random(1, #substituteRoles)]
                     
-                    client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJobName)
+                    client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJobName, client)
                     
                     -- Update CharacterInfo.Job to ensure proper spawning with clothes
                     if client.CharacterInfo then
@@ -206,11 +206,12 @@ function Neurologics.JobManager.PreStart()
                     local jobPrefab = JobPrefab.Get(client.PreferredJob)
                     if jobPrefab then
 
-                        local jobVariant = JobVariant.__new(jobPrefab, 0)
+                        local preferredVariant = Neurologics.JobManager.GetPreferredVariant(client, client.PreferredJob)
+                        local jobVariant = JobVariant.__new(jobPrefab, preferredVariant)
                         client.AssignedJob = jobVariant
                         
                         if client.CharacterInfo then
-                            client.CharacterInfo.Job = Job(jobPrefab, false, 0, jobVariant)
+                            client.CharacterInfo.Job = Job(jobPrefab, false, 0, preferredVariant)
                         end
                         
                     else
@@ -483,11 +484,11 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
 
             -- Assign the job to keepers
             for _, client in pairs(keepers) do
-                client.AssignedJob = Neurologics.JobManager.GetJobVariant(jobName)
+                client.AssignedJob = Neurologics.JobManager.GetJobVariant(jobName, client)
                 if client.CharacterInfo then
                     local jobPrefab = JobPrefab.Get(jobName)
                     if jobPrefab then
-                        client.CharacterInfo.Job = Job(jobPrefab, false, 0, 0)
+                        client.CharacterInfo.Job = Job(jobPrefab, false, 0, client.AssignedJob.Variant)
                     end
                 end
             end
@@ -495,11 +496,11 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
             -- Reassign overflowers
             for _, client in pairs(overflowers) do
                 local newJob = Neurologics.JobManager.ReassignPlayer(client, jobName, maxAmounts, jobCounts)
-                client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJob)
+                client.AssignedJob = Neurologics.JobManager.GetJobVariant(newJob, client)
                 if client.CharacterInfo then
                     local jobPrefab = JobPrefab.Get(newJob)
                     if jobPrefab then
-                        client.CharacterInfo.Job = Job(jobPrefab, false, 0, 0)
+                        client.CharacterInfo.Job = Job(jobPrefab, false, 0, client.AssignedJob.Variant)
                     end
                 end
                 -- Update jobCounts for the new job
@@ -514,9 +515,27 @@ function Neurologics.JobManager.HandleJobOverflow(ptable)
     return updated
 end
 
-function Neurologics.JobManager.GetJobVariant(jobId)
+-- Gets the preferred variant for a job from a client's preferences
+-- If no preference is found, returns variant 0
+function Neurologics.JobManager.GetPreferredVariant(client, jobId)
+    if not client or not client.JobPreferences then
+        return 0
+    end
+    
+    local jobIdLower = tostring(jobId):lower()
+    for _, pref in ipairs(client.JobPreferences) do
+        if pref.Prefab and tostring(pref.Prefab.Identifier):lower() == jobIdLower then
+            return pref.Variant
+        end
+    end
+    
+    return 0
+end
+
+function Neurologics.JobManager.GetJobVariant(jobId, client)
     local prefab = JobPrefab.Get(jobId)
-    return JobVariant.__new(prefab, 0)
+    local variant = Neurologics.JobManager.GetPreferredVariant(client, jobId)
+    return JobVariant.__new(prefab, variant)
 end
 
 Neurologics.MidRoundSpawn = dofile(Neurologics.Path .. "/Lua/midroundspawn.lua") -- we load here to avoid circular dependency and ensure it's loaded after jobmanager

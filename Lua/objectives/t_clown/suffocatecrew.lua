@@ -1,4 +1,4 @@
-local objective = Neurologics.RoleManager.Objectives.Objective:new()
+--[[local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "SuffocateCrew"
 objective.AmountPoints = 900
@@ -49,3 +49,4 @@ function objective:IsFailed()
 end
 
 return objective
+]]

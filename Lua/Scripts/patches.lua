@@ -76,3 +76,68 @@ Hook.Patch("Barotrauma.Items.Components.Terminal", "ServerEventRead", function(i
     return nil
 end, Hook.HookMethodType.Before)
 
+Hook.Patch(
+  "Barotrauma.Inventory",
+  "TryPutItem",
+  {
+    "Barotrauma.Item",
+    "System.Int32",
+    "System.Boolean",
+    "System.Boolean",
+    "Barotrauma.Character",
+    "System.Boolean",
+    "System.Boolean"
+  },
+  function(instance, ptable)
+    local inventory = instance
+    local item = ptable["item"]
+    local user = ptable["user"]
+
+    if not inventory or not user or not item then return end
+
+    local targetOwner = inventory.Owner
+    -- Ensure targetOwner is not an Item before checking IsPlayer
+    if tostring(type(targetOwner)) == "userdata" then return end
+    if targetOwner and targetOwner.IsPlayer and targetOwner ~= user then
+      local distance = Vector2.Distance(user.WorldPosition, targetOwner.WorldPosition)
+      local canInteract = user.CanInteractWith(targetOwner, 75)
+      if distance > 75 or not canInteract then
+        ptable.PreventExecution = true
+        return false
+      end
+    end
+end, Hook.HookMethodType.Before)
+
+Hook.Add("think", "Neurologics.think", function()
+    for character in Character.CharacterList do
+        character.CanSpeak = true
+    end
+end)
+
+-- 3-minute timer that runs during rounds
+local threeMinuteTimer = 0
+local THREE_MINUTES = 180 -- seconds
+
+Hook.Add("think", "Neurologics.LevelUpTimer", function()
+    if not Game.RoundStarted then return end
+    
+    local currentTime = Timer.GetTime()
+    if currentTime >= threeMinuteTimer then
+        threeMinuteTimer = currentTime + THREE_MINUTES
+        
+        for character in Character.CharacterList do
+            if character.IsPlayer and not character.IsDead and character.IsHuman then
+                local client = Neurologics.FindClientCharacter(character)
+                if client then
+                    local xp = character.Info.GetExperienceRequiredToLevelUp()
+                    character.Info.GiveExperience(xp)
+                end
+            end
+        end
+    end
+end)
+
+-- Reset timer on round start
+Hook.Add("roundStart", "Neurologics.ThreeMinuteTimer.Reset", function()
+    threeMinuteTimer = Timer.GetTime() + THREE_MINUTES
+end)

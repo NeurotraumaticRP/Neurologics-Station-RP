@@ -51,11 +51,11 @@ function role:CompletedObjectives(name)
     return num
 end
 
-function role:FindValidTarget(objective)
+function role:FindValidTarget(objective, noPrisoners)
     local targets = {}
     local debug = ""
     for key, value in pairs(Character.CharacterList) do
-        if self:FilterTarget(objective, value) and objective:TargetPreference(value) and Vector2.Distance(value.WorldPosition, self.Character.WorldPosition) < 8000 then
+        if self:FilterTarget(objective, value) and objective:TargetPreference(value) and Vector2.Distance(value.WorldPosition, self.Character.WorldPosition) < 8000 and (not noPrisoners or not value.HasJob("prisoner")) then
             table.insert(targets, value)
             debug = debug .. " | " .. value.Name .. " (" .. tostring(value.Info.Job.Prefab.Identifier) .. value.TeamID .. ")"
         end

@@ -88,11 +88,11 @@ m.TryCreateClientCharacter = function(submarine, client)
         else
             -- Use JobManager's reassignPlayer to get the next best job
             local nextJobName = Neurologics.JobManager.ReassignPlayer(client, originalJobName, maxAmounts, jobCounts)
-            assignedJob = Neurologics.JobManager.GetJobVariant(nextJobName)
+            assignedJob = Neurologics.JobManager.GetJobVariant(nextJobName, client)
         end
     else
-        -- No preference, assign assistant
-        assignedJob = Neurologics.JobManager.GetJobVariant("assistant")
+        -- No options, assign assistant
+        assignedJob = Neurologics.JobManager.GetJobVariant("assistant", client)
     end
 
     client.AssignedJob = assignedJob

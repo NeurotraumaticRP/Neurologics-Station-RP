@@ -6,6 +6,7 @@ objective.EndRoundObjective = true
 objective.AlwaysActive = true
 objective.AmountPoints = 500
 objective.AmountLives = 1
+objective.Role = true -- Available to all roles
 
 
 function objective:Start()

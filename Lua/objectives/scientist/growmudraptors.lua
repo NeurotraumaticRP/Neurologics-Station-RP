@@ -1,9 +1,10 @@
 local objective = Neurologics.RoleManager.Objectives.Objective:new()
 
 objective.Name = "GrowMudraptors"
-objective.AmountPoints = 900
+objective.AmountPoints = 2000
 objective.Times = 3
 objective.Job = {"scientist"}
+objective.Role = {"Clown", "EvilScientist"} -- Clowns and evil scientists can grow mudraptors
 objective.Static = function ()
     Hook.Add("character.created", "Neurologics.GrowMudraptor", function (character)
         Timer.NextFrame(function ()
