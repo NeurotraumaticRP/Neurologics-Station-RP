@@ -341,7 +341,8 @@ afflictionScript.AddAffliction("mudraptorvirus", {
                 mudraptor.TeamID = character.TeamID
                 client.SetClientCharacter(mudraptor)
                 HF.SetAffliction(mudraptor, "mudraptorgrowthhatchling", 1, nil, nil) -- this will make sure the mudraptor hatchling grows into a mudraptor
-                character.Kill(nil, "mudraptorvirus", true, true)
+                local prefab = AfflictionPrefab.Prefabs["mudraptorvirus"]
+                character.Kill(CauseOfDeathType.Unknown, affliction)
                 
                 -- Assign MudraptorServant role to the newly transformed player
                 Neurologics.AssignMudraptorServantRole(client, mudraptor, originalName)

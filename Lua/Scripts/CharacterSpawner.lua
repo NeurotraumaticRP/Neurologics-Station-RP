@@ -22,14 +22,12 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     prefabKey = string.lower(prefabKey)
     local charPrefab = NCS.Char[prefabKey]
     if not charPrefab then
-        print("[Neurologics/CharacterSpawner] Character not found")
-        print("[Neurologics/CharacterSpawner] Prefab key: " .. prefabKey)
-        print("[Neurologics/CharacterSpawner] Prefab keys: " .. table.concat(NCS.Char, ", "))
-        return
-    end
-
-    if not charPrefab.Prefix then
-        return
+        local keys = {}
+        for k in pairs(NCS.Char or {}) do keys[#keys + 1] = tostring(k) end
+        table.sort(keys)
+        local err = "Character prefab '" .. prefabKey .. "' not found. Available: " .. table.concat(keys, ", ")
+        print("[Neurologics/CharacterSpawner] " .. err)
+        return nil, err
     end
 
     if not team then
@@ -52,6 +50,66 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     -- Only assign jobs to humans - creatures like mudraptors don't have jobs
     if species == "human" and charPrefab.BaseJob then
         info.Job = Job(JobPrefab.Get(charPrefab.BaseJob), true)
+    end
+
+    -- Apply appearance overrides from prefab (HairIndex, BeardIndex, etc.; nil = keep random)
+    if species == "human" and info.Head and charPrefab.Appearance then
+        local app = charPrefab.Appearance
+        -- Gender/HeadId: find matching HeadPreset and use RecreateHead(HeadInfo)
+        if app.Gender ~= nil or app.HeadId ~= nil then
+            local headId, gender
+            if app.HeadId ~= nil then
+                headId = (type(app.HeadId) == "string" and app.HeadId:lower():match("^head") and app.HeadId) or ("head" .. tostring(app.HeadId))
+            end
+            if app.Gender ~= nil then
+                gender = (type(app.Gender) == "string" and app.Gender:lower()) or tostring(app.Gender):lower()
+            end
+            -- Get current values from TagSet if not specified
+            if not headId or not gender then
+                for tag in info.Head.Preset.TagSet do
+                    local s = tostring(tag):lower()
+                    if not headId and s:match("^head%d+") then headId = s end
+                    if not gender and (s == "male" or s == "female") then gender = s end
+                end
+            end
+            if headId and gender and info.Prefab and info.Prefab.Heads then
+                local matchedPreset = nil
+                for hp in info.Prefab.Heads do
+                    if hp and hp.TagSet then
+                        local hasHead, hasGender = false, false
+                        for tag in hp.TagSet do
+                            local t = tostring(tag):lower()
+                            if t == headId:lower() then hasHead = true end
+                            if t == gender then hasGender = true end
+                        end
+                        if hasHead and hasGender then matchedPreset = hp break end
+                    end
+                end
+                if matchedPreset then
+                    local hi = app.HairIndex ~= nil and app.HairIndex or info.Head.HairIndex
+                    local bi = app.BeardIndex ~= nil and app.BeardIndex or info.Head.BeardIndex
+                    local mi = app.MoustacheIndex ~= nil and app.MoustacheIndex or info.Head.MoustacheIndex
+                    local fi = app.FaceAttachmentIndex ~= nil and app.FaceAttachmentIndex or info.Head.FaceAttachmentIndex
+                    local headInfo = CharacterInfo.HeadInfo(info, matchedPreset, hi, bi, mi, fi)
+                    info.RecreateHead(headInfo)
+                end
+            end
+        else
+            if app.HairIndex ~= nil then info.Head.HairIndex = app.HairIndex end
+            if app.BeardIndex ~= nil then info.Head.BeardIndex = app.BeardIndex end
+            if app.MoustacheIndex ~= nil then info.Head.MoustacheIndex = app.MoustacheIndex end
+            if app.FaceAttachmentIndex ~= nil then info.Head.FaceAttachmentIndex = app.FaceAttachmentIndex end
+        end
+        -- Colors: RGBA as table {r,g,b,a} or {r,g,b} (alpha defaults to 255)
+        if app.SkinColor ~= nil then
+            info.Head.SkinColor = type(app.SkinColor) == "table" and Color(app.SkinColor[1], app.SkinColor[2], app.SkinColor[3], app.SkinColor[4] or 255) or app.SkinColor
+        end
+        if app.HairColor ~= nil then
+            info.Head.HairColor = type(app.HairColor) == "table" and Color(app.HairColor[1], app.HairColor[2], app.HairColor[3], app.HairColor[4] or 255) or app.HairColor
+        end
+        if app.FacialHairColor ~= nil then
+            info.Head.FacialHairColor = type(app.FacialHairColor) == "table" and Color(app.FacialHairColor[1], app.FacialHairColor[2], app.FacialHairColor[3], app.FacialHairColor[4] or 255) or app.FacialHairColor
+        end
     end
 
     local character = Character.Create(info, position, info.Name, 0, false, true)
@@ -84,12 +142,13 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
         end
     end
     
-    -- Assign role based on team (for NCS-spawned characters)
-    NCS.AssignRoleByTeam(character, team)
+    -- Assign role: use charPrefab.Role if set, otherwise team-based (Team1=Crew, others=Antagonist)
+    NCS.AssignRoleForCharacter(character, team, charPrefab)
     
-    -- Attach objectives if provided
-    if objectives then
-        NCS.AttachObjectives(character, objectives)
+    -- Attach objectives: use param, or prefab's default Objectives
+    local objList = objectives or (charPrefab and charPrefab.Objectives)
+    if objList then
+        NCS.AttachObjectives(character, objList)
     end
 
     return character
@@ -101,6 +160,33 @@ NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client, objec
         client.SetClientCharacter(character)
     end
     return character
+end
+
+NCS.GetSpawnPositionOutsideSub = function()
+    local waypoints = Submarine.MainSub.GetWaypoints(true)
+
+    if LuaUserData.IsTargetType(Game.GameSession.GameMode, "Barotrauma.PvPMode") then
+        waypoints = Submarine.MainSubs[math.random(2)].GetWaypoints(true)
+    end
+
+    local spawnPositions = {}
+
+    for key, value in pairs(waypoints) do
+        if value.CurrentHull == nil then
+            table.insert(spawnPositions, value.WorldPosition)
+        end
+    end
+
+    local spawnPosition
+
+    if #spawnPositions == 0 then
+        spawnPosition = Submarine.MainSub.WorldPosition -- spawn it in the middle of the sub
+        Neurologics.Log("Couldnt find any good waypoints, spawning in the middle of the sub.")
+    else
+        spawnPosition = spawnPositions[math.random(#spawnPositions)]
+    end
+
+    return spawnPosition
 end
 
 -- Helper: Recursively spawn sub-items (max 3 nested levels)
@@ -169,11 +255,21 @@ end
 NCS.ApplyCharacterTemplate = function(character, charPrefab)
     if not character then return end
     
-    -- Apply talents
+    -- Apply individual talents
     if charPrefab.Talents then
         for _, talentId in ipairs(charPrefab.Talents) do
             character.GiveTalent(Identifier(talentId), true)
             print("[Neurologics/CharacterSpawner] Gave talent: " .. talentId)
+        end
+    end
+    
+    -- Apply talent trees (unlocks all talents in specified trees)
+    if charPrefab.TalentTrees then
+        for _, treeName in ipairs(charPrefab.TalentTrees) do
+            -- Character name needs to be quoted for the command
+            local charName = '"' .. character.Name .. '"'
+            local command = "unlocktalents " .. treeName .. " " .. charName
+            Game.ExecuteCommand(command)
         end
     end
     
@@ -185,11 +281,11 @@ NCS.ApplyCharacterTemplate = function(character, charPrefab)
         end
     end
     
-    -- Apply one-time afflictions
+    -- Apply one-time afflictions (format: {"burn", "bleeding"} or {{"burn", 100}, {"bleeding", 50}})
     if charPrefab.Afflictions then
         for _, afflictionData in ipairs(charPrefab.Afflictions) do
-            local afflictionId = afflictionData[1]
-            local strength = afflictionData[2] or 100
+            local afflictionId = type(afflictionData) == "string" and afflictionData or afflictionData[1]
+            local strength = type(afflictionData) == "table" and afflictionData[2] or 100
             
             local afflictionPrefab = AfflictionPrefab.Prefabs[afflictionId]
             if afflictionPrefab then
@@ -197,7 +293,7 @@ NCS.ApplyCharacterTemplate = function(character, charPrefab)
                     character.AnimController.MainLimb,
                     afflictionPrefab.Instantiate(strength)
                 )
-                print("[Neurologics/CharacterSpawner] Applied affliction: " .. afflictionId .. " (" .. strength .. ")")
+                print("[Neurologics/CharacterSpawner] Applied affliction: " .. tostring(afflictionId) .. " (" .. strength .. ")")
             end
         end
     end
@@ -224,27 +320,34 @@ NCS.RegisterPermaAfflictions = function(character, afflictions)
     print("[Neurologics/CharacterSpawner] Registered perma afflictions for " .. character.Name)
 end
 
--- Assign role based on team for NCS-spawned characters
-NCS.AssignRoleByTeam = function(character, team)
+-- Assign role for NCS-spawned characters: use charPrefab.Role if set, otherwise team-based
+NCS.AssignRoleForCharacter = function(character, team, charPrefab)
     if not character or not Game.RoundStarted then return end
     
-    -- Check if character already has a role
     local existingRole = Neurologics.RoleManager.GetRole(character)
     if existingRole then return end
     
-    -- Assign role based on team
     local role = nil
-    if team == CharacterTeamType.Team1 then
-        role = Neurologics.RoleManager.Roles["Crew"]
-    else
-        -- Team2, Team3, or other teams get Antagonist role
-        role = Neurologics.RoleManager.Roles["Antagonist"]
+    if charPrefab and charPrefab.Role and Neurologics.RoleManager.Roles[charPrefab.Role] then
+        role = Neurologics.RoleManager.Roles[charPrefab.Role]
+    end
+    if not role then
+        -- Fallback: team-based (default Crew for Team1, Antagonist for others)
+        if team == CharacterTeamType.Team1 then
+            role = Neurologics.RoleManager.Roles["Crew"]
+        else
+            role = Neurologics.RoleManager.Roles["Antagonist"]
+        end
     end
     
     if role then
         Neurologics.RoleManager.AssignRole(character, role:new())
         print("[Neurologics/CharacterSpawner] Assigned " .. role.Name .. " role to " .. character.Name)
     end
+end
+
+NCS.AssignRoleByTeam = function(character, team)
+    NCS.AssignRoleForCharacter(character, team, nil)
 end
 
 -- Attach objectives to a character
@@ -290,6 +393,29 @@ NCS.AttachObjectives = function(character, objectiveNames)
             print("[Neurologics/CharacterSpawner] Objective not found: " .. objName)
         end
     end
+
+    -- Send greet to client after objectives are attached. Defer so client is linked first
+    -- (for !SpawnAs, SetClientCharacter runs after SpawnCharacter returns)
+    local charRef = character
+    local roleRef = role
+    Timer.Wait(function()
+        if not charRef or charRef.Removed then return end
+        local client = Neurologics.FindClientCharacter and Neurologics.FindClientCharacter(charRef)
+        if not client or not roleRef or not roleRef.Objectives or #roleRef.Objectives == 0 then return end
+        local text = roleRef:Greet()
+        if text and text ~= "" then
+            if roleRef.IsAntagonist then
+                if Neurologics.SendTraitorMessageBox then
+                    Neurologics.SendTraitorMessageBox(client, text)
+                end
+                if Neurologics.UpdateVanillaTraitor then
+                    Neurologics.UpdateVanillaTraitor(client, true, text)
+                end
+            else
+                Neurologics.SendChatMessage(client, text, Color.Green)
+            end
+        end
+    end, 100)
 end
 
 -- Think hook for permanent afflictions (runs 60 times per second)

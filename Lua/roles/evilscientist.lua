@@ -62,13 +62,8 @@ function role:Start()
     -- Use the EvilScientist main objective loop (TurnMudraptor)
     self:EvilScientistLoop(true)
 
-    -- Debug: Print SubObjectives
-    print("[EvilScientist] Starting for " .. self.Character.Name)
-    print("[EvilScientist] SubObjectives: " .. (self.SubObjectives and table.concat(self.SubObjectives, ", ") or "NIL"))
-
     -- Get objectives valid for this character
     local availableObjectives = Neurologics.RoleManager.GetObjectivesForCharacter(self.Character, self)
-    print("[EvilScientist] Available objectives: " .. table.concat(availableObjectives, ", "))
     
     -- Build pool from SubObjectives config, but only include those that match job/role
     local pool = {}
@@ -83,13 +78,11 @@ function role:Start()
             end
         end
     end
-    print("[EvilScientist] Pool after filtering: " .. table.concat(pool, ", "))
 
     local jobId = self.Character.Info.Job.Prefab.Identifier.Value
     local assignedNames = {}
     
     -- First pass: Assign AlwaysActive and Forced objectives
-    print("[EvilScientist] First pass - checking for AlwaysActive/Forced objectives")
     local toRemove = {}
     for key, value in pairs(pool) do
         local objective = Neurologics.RoleManager.FindObjective(value)
@@ -98,7 +91,6 @@ function role:Start()
             
             -- Check if AlwaysActive
             if objective.AlwaysActive then
-                print("[EvilScientist] " .. value .. " has AlwaysActive=true")
                 shouldAssign = true
             end
             
@@ -135,7 +127,6 @@ function role:Start()
             end
             
             if shouldAssign then
-                print("[EvilScientist] Attempting to assign forced/always-active: " .. value)
                 objective = objective:new()
                 local character = self.Character
 
@@ -146,11 +137,8 @@ function role:Start()
 
                 if objective:Start(character) then
                     self:AssignObjective(objective)
-                    print("[EvilScientist] Successfully assigned: " .. value)
                     assignedNames[value] = true
                     table.insert(toRemove, key)
-                else
-                    print("[EvilScientist] Start() returned false for: " .. value)
                 end
             end
         end
@@ -163,16 +151,13 @@ function role:Start()
     -- Randomly assign remaining objectives up to max
     local minObj = self.MinSubObjectives or 1
     local maxObj = self.MaxSubObjectives or 2
-    print("[EvilScientist] Assigning " .. minObj .. " to " .. maxObj .. " objectives from pool of " .. #pool)
     
     for i = 1, math.random(minObj, maxObj), 1 do
         local objective = Neurologics.RoleManager.RandomObjective(pool)
         if objective == nil then 
-            print("[EvilScientist] RandomObjective returned nil, breaking")
             break 
         end
 
-        print("[EvilScientist] Trying to assign: " .. objective.Name)
         objective = objective:new()
 
         local character = self.Character
@@ -186,27 +171,31 @@ function role:Start()
 
         if objective:Start(target) then
             self:AssignObjective(objective)
-            print("[EvilScientist] Assigned objective: " .. objective.Name)
             for key, value in pairs(pool) do
                 if value == objective.Name then
                     table.remove(pool, key)
                 end
             end
-        else
-            print("[EvilScientist] objective:Start() returned false for " .. objective.Name)
         end
     end
     
-    print("[EvilScientist] Total objectives assigned: " .. #self.Objectives)
-
-    -- Greet the traitor
-    local client = Neurologics.FindClientCharacter(self.Character)
-    if client then
-        if self.TraitorBroadcast then
-            Neurologics.UpdateVanillaTraitor(client, true, self:Greet())
-        else
-            Neurologics.UpdateVanillaTraitor(client, true, Neurologics.Language.TraitorWelcome)
+    -- Greet the traitor (defer if client not linked yet, e.g. NCS spawn)
+    local function doGreet()
+        local client = Neurologics.FindClientCharacter(self.Character)
+        if client then
+            local text = self:Greet()
+            if text and text ~= "" then
+                if Neurologics.SendTraitorMessageBox then Neurologics.SendTraitorMessageBox(client, text) end
+                if Neurologics.UpdateVanillaTraitor then Neurologics.UpdateVanillaTraitor(client, true, text) end
+            end
+            return true
         end
+        return false
+    end
+    if not doGreet() then
+        Timer.Wait(function()
+            if self.Character and not self.Character.Removed then doGreet() end
+        end, 100)
     end
 end
 

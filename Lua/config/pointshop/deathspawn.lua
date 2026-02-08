@@ -51,6 +51,20 @@ local function SpawnCreature(species, client, product, paidPrice, insideHuman)
 end
 
 category.Products = {
+
+    {
+        Identifier = "spawnasarthurmorgan",
+        Price = 15000,
+        Limit = 1,
+        IsLimitGlobal = true,
+        PricePerLimit = 0,
+        Timeout = 60,
+        Action = function (client, product, items, paidPrice)
+            NCS.SpawnCharacterWithClient("arthurmorgan", NCS.GetSpawnPositionOutsideSub(), 3, client)
+            Neurologics.Pointshop.TrackRefund(client, product, paidPrice)
+        end
+    },
+
     {
         Identifier = "spawnascrawler",
         Price = 400,

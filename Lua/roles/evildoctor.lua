@@ -19,13 +19,8 @@ function role:Start()
     -- Use the parent's assassination loop
     self:AssasinationLoop(true)
 
-    -- Debug: Print SubObjectives
-    print("[EvilDoctor] Starting for " .. self.Character.Name)
-    print("[EvilDoctor] SubObjectives: " .. (self.SubObjectives and table.concat(self.SubObjectives, ", ") or "NIL"))
-
     -- Get objectives valid for this character
     local availableObjectives = Neurologics.RoleManager.GetObjectivesForCharacter(self.Character, self)
-    print("[EvilDoctor] Available objectives: " .. table.concat(availableObjectives, ", "))
     
     -- Build pool from SubObjectives config, but only include those that match job/role
     local pool = {}
@@ -40,7 +35,6 @@ function role:Start()
             end
         end
     end
-    print("[EvilDoctor] Pool after filtering: " .. table.concat(pool, ", "))
 
     local jobId = self.Character.Info.Job.Prefab.Identifier.Value
     local assignedNames = {}
@@ -137,14 +131,23 @@ function role:Start()
         end
     end
 
-    -- Greet the traitor
-    local client = Neurologics.FindClientCharacter(self.Character)
-    if client then
-        if self.TraitorBroadcast then
-            Neurologics.UpdateVanillaTraitor(client, true, self:Greet())
-        else
-            Neurologics.UpdateVanillaTraitor(client, true, Neurologics.Language.TraitorWelcome)
+    -- Greet the traitor (defer if client not linked yet, e.g. NCS spawn)
+    local function doGreet()
+        local client = Neurologics.FindClientCharacter(self.Character)
+        if client then
+            local text = self:Greet()
+            if text and text ~= "" then
+                if Neurologics.SendTraitorMessageBox then Neurologics.SendTraitorMessageBox(client, text) end
+                if Neurologics.UpdateVanillaTraitor then Neurologics.UpdateVanillaTraitor(client, true, text) end
+            end
+            return true
         end
+        return false
+    end
+    if not doGreet() then
+        Timer.Wait(function()
+            if self.Character and not self.Character.Removed then doGreet() end
+        end, 100)
     end
 end
 

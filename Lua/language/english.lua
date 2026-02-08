@@ -52,6 +52,8 @@ language.SecondaryObjectivesOther = "Their secondary objectives were:"
 
 language.CrewMember = "You are crew member of the submarine.\n\nYou have been assigned the following bonus objectives.\n\n"
 
+language.AntagonistYou = "You are an antagonist!\n\nYour objectives:\n\n"
+
 language.SoloAntagonist = "You are the only antagonist."
 language.Partners = "Partners: %s"
 language.TcTip = "Use !tc to communicate with your partners."
@@ -164,6 +166,7 @@ language.ObjectiveRepairHull = "Repair (%s/%s) damage from the hull."
 language.ObjectiveSecurityTeamSurvival = "Make sure at least one member of the security team survives."
 language.ObjectiveTurnMudraptor = "Turn %s into a mudraptor."
 language.ObjectiveAssassinateCancer = "Assassinate %s %s by giving them cancer."
+language.ObjectiveDuel = "you must have a fair duel with %s. They must have a gun and be within 7 meters, you win the duel by killing them while they have a gun (you can give one of yours)"
 
 language.ObjectiveText = "Assassinate the crew in order to complete your mission."
 
@@ -292,6 +295,7 @@ language.Pointshop = {
     poisonoxygensupply = "Poison Oxygen Supply",
     turnofflights = "Turn Off Lights For 3 Minutes",
     turnoffcommunications = "Turn Off Communications For 2 Minutes",
+    spawnasarthurmorgan = "Spawn as Arthur Morgan",
     spawnascrawler = "Spawn as Crawler",
     spawnascrawlerhusk = "Spawn as Crawler Husk",
     spawnaslegacycrawler = "Spawn as Legacy Crawler",
@@ -368,4 +372,42 @@ language.CMDRoundTime = "This round has been going for %s."
 language.CMDPlaytime = "Your playtime is %s."
 language.CMDMonsterBroadcast = "[%s %s]: %s"
 
+language.JobRulesCaptain = [[
+You are the captain of Avalon City Station.
+You are responsible for the safety of the crew and condition of the station.
+    - Keep the crew alive to the best of your ability.
+    - Ensure Security correctly follows their job in maintaining order and not causing chaos.
+    - Make sure Maintenance Technicians and doctors keep the station running.
+    - You are the final authority on the station, do not let the crew or security override your decisions.
+    - You are not a security officer, you are the captain, do not act like one unless necessary.
+Please be sure to follow these rules and report people to the discord, (!discord will give you the discord link)
+
+]]
+language.JobRulesSecurity = [[
+You are a security officer for Avalon City Station.
+You are responsible for maintaining order and safety of the station.
+    - Keep the crew alive to the best of your ability.
+    - Keep the prisoners alive, contained, fed and healthy.
+    - Use non-lethal force when possible, only use lethal force if necessary.
+    - attempt to capture and detain traitors/criminals, do not kill them unless necessary (execution will be punished the same as RDM).
+Please be sure to follow these rules and report people to the discord, (!discord will give you the discord link)
+]]
+language.JobRulesCMO = [[
+You are the Chief Medical Officer of Avalon City Station.
+You are responsible for the health and well-being of the crew.
+    - Keep the crew alive to the best of your ability.
+    - Help any and all crew members that are injured or need medical attention.
+    - Report any medical malpractice from other doctors to security.
+    - Keep in mind that improper medical treatment will be punished the same as RDM. (dont do stupid shit like brain removals, organ removals, etc)
+    - Keep people who are not injured and not important out of the medbay, force can be used but keep it non-lethal.
+Please be sure to follow these rules and report people to the discord, (!discord will give you the discord link)
+]]
+language.JobRulesStaff = [[
+You are a Maintenance Technician for Avalon City Station.
+You are responsible for the maintenance and repair of the station.
+    - Keep the reactor running and power on
+    - make sure the electrical/mechanical systems are working correctly
+    - craft useful items for the station
+Please be sure to follow these rules and report people to the discord, (!discord will give you the discord link)
+]]
 return language

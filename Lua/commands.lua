@@ -944,33 +944,57 @@ end)
 
 Neurologics.AddCommand({"!SpawnAs"}, function(client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end
-    
+
     if #args < 1 then
-        Neurologics.SendMessage(client, "Usage: !SpawnAs <character name>")
+        Neurologics.SendMessage(client, "Usage: !SpawnAs \"characterprefab\" [\"clientname\"|\"nil\"] [team] [\"obj1,obj2\"] [\"trait1,trait2\"]")
         return true
     end
 
-    if client.Character == nil then
-        Neurologics.SendMessage(client, "You must have a character to use this command.")
+    -- Need a character for position (sender's or target's)
+    local posSource = client.Character
+    local targetClient = client
+
+    local clientNameArg = args[2]
+    if clientNameArg and clientNameArg:lower() ~= "nil" and clientNameArg ~= "" then
+        targetClient = Neurologics.GetClientByName(client, clientNameArg)
+        if not targetClient then
+            Neurologics.SendMessage(client, "Client not found: " .. clientNameArg)
+            return true
+        end
+        if targetClient.Character then posSource = targetClient.Character end
+    end
+
+    if not posSource then
+        Neurologics.SendMessage(client, "No valid spawn position (sender or target must have a character).")
         return true
     end
 
     local characterName = args[1]
-    local currentPos = client.Character.WorldPosition
-    
-    -- Store current character to remove after spawning new one
-    local oldCharacter = client.Character
-    
-    local newCharacter = NCS.SpawnCharacter(characterName, currentPos, nil, nil)
+    local currentPos = posSource.WorldPosition
+    local team = args[3] and tonumber(args[3]) or nil
+    local objectives = nil
+    if args[4] and args[4] ~= "" then
+        objectives = {}
+        for s in string.gmatch(args[4], "[^,]+") do
+            objectives[#objectives + 1] = s:match("^%s*(.-)%s*$")
+        end
+    end
+    local traits = nil
+    if args[5] and args[5] ~= "" then
+        traits = {}
+        for s in string.gmatch(args[5], "[^,]+") do
+            traits[#traits + 1] = s:match("^%s*(.-)%s*$")
+        end
+    end
+
+    local oldCharacter = targetClient.Character
+    local newCharacter, err = NCS.SpawnCharacter(characterName, currentPos, team, objectives, traits)
     if not newCharacter then
-        Neurologics.SendMessage(client, "Failed to spawn as " .. characterName .. ". Check logs for details.")
+        Neurologics.SendMessage(client, "Failed to spawn as " .. characterName .. ": " .. (err or "Unknown error"))
         return true
     end
 
-    -- Set the new character as the client's character
-    client.SetClientCharacter(newCharacter)
-    
-    -- Remove the old character
+    targetClient.SetClientCharacter(newCharacter)
     if oldCharacter then
         Entity.Spawner.AddEntityToRemoveQueue(oldCharacter)
     end
@@ -1415,4 +1439,28 @@ Neurologics.AddCommand("!listresolvers", function (client, args)
     Neurologics.SendMessage(client, "Resolver list printed to console.")
     return true
 end)
+Neurologics.AddCommand("!appearance", function(client, args)
+    if not client.Character or not client.Character.Info or not client.Character.Info.Head then
+        Neurologics.SendMessage(client, "No valid character or appearance info found.")
+        return true
+    end
 
+    local info = client.Character.Info
+    local tagStrs = {}
+    if info.Head.Preset and info.Head.Preset.TagSet then
+        for tag in info.Head.Preset.TagSet do
+            tagStrs[#tagStrs + 1] = tostring(tag)
+        end
+    end
+    Neurologics.SendMessage(client,
+        "Name: " .. tostring(client.Character.Name) .. "\n" ..
+        "HairIndex: " .. tostring(info.Head.HairIndex) .. "\n" ..
+        "BeardIndex: " .. tostring(info.Head.BeardIndex) .. "\n" ..
+        "MoustacheIndex: " .. tostring(info.Head.MoustacheIndex) .. "\n" ..
+        "FaceAttachmentIndex: " .. tostring(info.Head.FaceAttachmentIndex) .. "\n" ..
+        "SkinColor: " .. tostring(info.Head.SkinColor) .. "\n" ..
+        "HairColor: " .. tostring(info.Head.HairColor) .. "\n" ..
+        "MoustacheColor: " .. tostring(info.Head.FacialHairColor) .. "\n" ..
+        "TagSet: " .. (next(tagStrs) and table.concat(tagStrs, ", ") or "none"))
+    return true
+end)

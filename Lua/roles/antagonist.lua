@@ -196,6 +196,31 @@ Neurologics.AddCommand("!tdm", function(client, args)
     return true
 end)
 
+---@return string objectives
+function role:ObjectivesToString()
+    local objs = Neurologics.StringBuilder:new()
+
+    for _, objective in pairs(self.Objectives) do
+        if objective:IsCompleted() then
+            objs:append(" > ", objective.Text, Neurologics.Language.Completed)
+        else
+            objs:append(" > ", objective.Text, string.format(Neurologics.Language.Points, objective.AmountPoints))
+        end
+    end
+
+    return objs:concat("\n")
+end
+
+function role:Greet()
+    local objectives = self:ObjectivesToString()
+
+    local sb = Neurologics.StringBuilder:new()
+    sb(Neurologics.Language.AntagonistYou)
+    sb(objectives)
+
+    return sb:concat()
+end
+
 function role:FilterTarget(objective, character)
     local targetRole = Neurologics.RoleManager.GetRole(character)
     if targetRole and targetRole.IsAntagonist then

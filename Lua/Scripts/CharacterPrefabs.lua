@@ -12,6 +12,9 @@
 -- Skills = {weapons = 50, medical = 75} -- Skill name and level
 -- Afflictions = {{"burn", 100}, {"bleeding", 50}} -- Applied once on spawn (strength defaults to 100)
 -- PermaAfflictions = {{"burn", 100}, {"bleeding", 50}} -- Applied continuously every 1/6 second (strength defaults to 100)
+-- Appearance = { HairIndex, BeardIndex, MoustacheIndex, FaceAttachmentIndex, HeadId, Gender, SkinColor, HairColor, FacialHairColor }
+--   Indexes are integers; nil = random. HeadId = "head1"-"head16", Gender = "male" or "female". Colors are RGBA: {r,g,b,a} 0-255 (alpha defaults to 255).
+-- Role = "Crew" (default when nil, team-based: Team1=Crew, others=Antagonist) or "Traitor", "Cultist", "Clown", etc.
 -- -------------------------------
 if not NCS then
     NCS = {}
@@ -232,19 +235,124 @@ NCS.Char["traumateam"] = {
 }
 
 NCS.Char["god"] = {
-    Team = CharacterTeamType.Team1,
+    Team = CharacterTeamType.Team2,
     BaseJob = "guard",
     Species = "human",
     Name = "God",
+    TalentTrees = {"All"},
     Skills = {
         weapons = 100,
         medical = 100,
         mechanical = 100,
         electrical = 100,
-        helm = 100
+        helm = 100,
+        surgical = 100
     },
     Inventory = {
         { id = "idcard", count = 1, slot = InvSlotType.Card },
+    }
+}
+
+NCS.Char["arthurmorgan"] = {
+    Team = CharacterTeamType.Team1,
+    Name = "Arthur Morgan",
+    BaseJob = "assistant",
+    Objectives = {"Duel"},
+    Species = "human",
+    Role = "Antagonist",
+    Appearance = {
+        HeadId = "head11",
+        Gender = "male",
+        HairIndex = 5,
+        BeardIndex = 1,
+        MoustacheIndex = 0,
+        FaceAttachmentIndex = 0,
+        SkinColor = {214, 164, 112, 255},
+        HairColor = {60, 49, 31, 255},
+        FacialHairColor = {60, 49, 31, 255}
+    },
+    Afflictions = {
+        {"tb_Tuberculosis", 1},
+        {"pressurestabilized", 100}
+    },
+    Skills = {
+        weapons = 100,
+        medical = 50,
+        mechanical = 0,
+        electrical = 0,
+        helm = 100
+    },
+    Talents = {
+        "he-hungryeuropan",
+        "he-filthyeuropan",
+        "emergencymaneuvers",
+        "inspiringpresence",
+        "prodigy",
+        "inspirationalleader",
+        "trophyhunter",
+        "quickdraw",
+        "travelingtradesman",
+        "leadingbyexample",
+        "family",
+        "deputy",
+        "shootout",
+        "sixshooter",
+        "brinepunk",
+        "rootintootinshootin",
+        "admiralty",
+        "camaraderie",
+        "trustbusting",
+        "fishinglure",
+        "treasurehunter",
+        "affiliation",
+        "saltyseadog",
+        "surfandturfwars",
+        "maidenvoyage",
+        "bountyhunter",
+        "drunkensailor",
+        "commendations",
+        "networking",
+        "lonewolf",
+        "trickledown",
+        "bigguns",
+        "huntersmark",
+        "veteran",
+        "roughandtumble",
+        "figurehead",
+        "sidearm",
+        "biggamehunter",
+        "helmsman",
+        "logisticsexpert",
+        "fishinabarrel",
+        "rallyingcry",
+        "wakeupcall",
+        "truegrit",
+        "sailorwithnoname",
+        "swimmingforoffice",
+        "downwiththeship",
+        "campaigning",
+        "bonvoyage",
+        "smallfry",
+        "iamtheship",
+        "goodman"
+    },
+    Inventory = {
+    { id = "idcard", count = 1, slot = InvSlotType.Card },
+    { id = "arthurhat", count = 1, slot = InvSlotType.Head },
+    { id = "banditduster", count = 1, slot = InvSlotType.InnerClothes },
+    { id = "frogssingleactionrevolver", count = 1, subItems = {
+        { id = "thg+P+revolverround", count = 6 }
+    }},
+    { id = "thg+P+revolverround", count = 6 },
+    { id = "scp_m29", count = 1, subItems = {
+        { id = "scp_44apround", count = 6 }
+    }},
+    { id = "scp_44apround", count = 6 },
+    { id = "frogslongdivingknife", count = 1 },
+    { id = "scp_r8", count = 1, subItems = {
+        { id = "scp_357apround", count = 8 }
+    }},
+    { id = "scp_357apround", count = 8 },
     }
 }
 
