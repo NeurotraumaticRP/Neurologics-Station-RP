@@ -68,7 +68,6 @@ event.Init = function()
         
         -- Trigger: Dispatch trauma team for this character
         onTrigger = function(character)
-            print(string.format("[TraumaTeam] TRIGGER CALLBACK for character %s", character.Name))
             event.DispatchTeamForCharacter(character)
         end
     })

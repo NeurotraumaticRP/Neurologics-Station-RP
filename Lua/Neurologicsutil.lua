@@ -243,7 +243,6 @@ end
 -- Register cleanup for character data (clears every round)
 Neurologics.RegisterCleanup("CharacterData", function()
     Neurologics.ClearAllCharacterData()
-    print("[CharacterData] Cleared all character data")
 end)
 
 Neurologics.FindClient = function (name)

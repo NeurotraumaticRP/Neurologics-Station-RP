@@ -7,11 +7,9 @@ function role:Start()
     local availableObjectives = Neurologics.RoleManager.GetObjectivesForCharacter(self.Character, self)
 
     if not availableObjectives or #availableObjectives == 0 then
-        print("WARNING: Crew role found NO objectives for " .. self.Character.Name .. " (Job: " .. self.Character.Info.Job.Prefab.Identifier.Value .. ")")
         return
     end
     
-    print("Crew role found " .. #availableObjectives .. " objectives for " .. self.Character.Name .. " (Job: " .. self.Character.Info.Job.Prefab.Identifier.Value .. ")")
 
     local jobId = self.Character.Info.Job.Prefab.Identifier.Value
     local assignedCount = 0
@@ -65,7 +63,6 @@ function role:Start()
                     self:AssignObjective(objective)
                     assignedCount = assignedCount + 1
                     assignedNames[objName] = true
-                    print("Force-assigned objective: " .. objName)
                 end
             end
         end

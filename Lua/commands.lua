@@ -1345,8 +1345,6 @@ Neurologics.AddCommand({"!givetraumateam", "!gtt"}, function (sender, args)
     end
     
     -- Grant membership to the CHARACTER (not client!)
-    print(string.format("[TraumaTeam] DEBUG: %s granting membership to character %s (isBot: %s)", 
-        sender.Name, targetCharacter.Name, tostring(targetCharacter.IsBot)))
     
     Neurologics.SetCharacterData(targetCharacter, "TraumaTeamMember", true)
     Neurologics.SetCharacterData(targetCharacter, "TraumaTeamUsed", false)
@@ -1363,11 +1361,6 @@ Neurologics.AddCommand({"!givetraumateam", "!gtt"}, function (sender, args)
     if targetClient then
         Neurologics.SendMessage(targetClient, "You are now a Platinum Member of the Europan Trauma Corps! If you are knocked unconscious for 10+ seconds, an emergency team will be dispatched to rescue you.")
     end
-    
-    print(string.format("[TraumaTeam] DEBUG: Membership granted to character %s - TraumaTeamMember=%s, TraumaTeamUsed=%s", 
-        targetCharacter.Name,
-        tostring(Neurologics.GetCharacterData(targetCharacter, "TraumaTeamMember")),
-        tostring(Neurologics.GetCharacterData(targetCharacter, "TraumaTeamUsed"))))
     
     return true
 end)

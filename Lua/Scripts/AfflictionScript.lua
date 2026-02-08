@@ -333,7 +333,6 @@ afflictionScript.AddAffliction("huskinfection", {
 afflictionScript.AddAffliction("mudraptorvirus", {
     OnPeriodic = function(affliction, character, characterHealth, limb)
         if affliction.Strength >= 99 and not character.IsDead then
-            print("Spawning mudraptor for " .. character.Name)
             local client = Neurologics.FindClientCharacter(character)
             if not client then return end
             local originalName = character.Name
@@ -358,7 +357,6 @@ afflictionScript.AddAffliction("mudraptorvirus", {
 afflictionScript.AddAffliction("mudraptorgrowthhatchling", {
     OnPeriodic = function(affliction, character, characterHealth, limb)
         if affliction.Strength >= 100 then
-            print("Mudraptor hatchling grew into a mudraptor for " .. character.Name)
             local client = Neurologics.FindClientCharacter(character)
             if not client then return end
             -- Get the existing role before transforming
@@ -386,7 +384,6 @@ afflictionScript.AddAffliction("mudraptorgrowthhatchling", {
 afflictionScript.AddAffliction("mudraptorgrowth", {
     OnPeriodic = function(affliction, character, characterHealth, limb)
         if affliction.Strength >= 100 then
-            print("Mudraptor grew into a veteran mudraptor for " .. character.Name)
             local client = Neurologics.FindClientCharacter(character)
             if not client then return end
             -- Get the existing role before transforming

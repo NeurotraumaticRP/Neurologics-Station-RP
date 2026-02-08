@@ -117,6 +117,16 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     -- Track this as an NCS-spawned character
     NCS.SpawnedCharacters[character] = true
     
+    -- Remove from crew list (human chars) - send now and deferred (client may be linked after SetClientCharacter)
+    if species == "human" then
+        Networking.CreateEntityEvent(character, Character.RemoveFromCrewEventData.__new(character.TeamID, {}))
+        Timer.Wait(function()
+            if character and not character.Removed then
+                Networking.CreateEntityEvent(character, Character.RemoveFromCrewEventData.__new(character.TeamID, {}))
+            end
+        end, 150)
+    end
+    
     -- Remove the character's inventory
     NCS.RemoveCharacterInventory(character)
 
@@ -138,7 +148,6 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     if traits and Neurologics.ApplyTrait then
         for _, traitName in ipairs(traits) do
             Neurologics.ApplyTrait(character, traitName)
-            print("[Neurologics/CharacterSpawner] Applied trait (param): " .. traitName)
         end
     end
     
@@ -259,7 +268,6 @@ NCS.ApplyCharacterTemplate = function(character, charPrefab)
     if charPrefab.Talents then
         for _, talentId in ipairs(charPrefab.Talents) do
             character.GiveTalent(Identifier(talentId), true)
-            print("[Neurologics/CharacterSpawner] Gave talent: " .. talentId)
         end
     end
     
@@ -277,7 +285,6 @@ NCS.ApplyCharacterTemplate = function(character, charPrefab)
     if charPrefab.Skills and character.Info then
         for skillName, level in pairs(charPrefab.Skills) do
             character.Info.SetSkillLevel(Identifier(skillName), level, false)
-            print("[Neurologics/CharacterSpawner] Set skill " .. skillName .. " to " .. level)
         end
     end
     
@@ -293,7 +300,6 @@ NCS.ApplyCharacterTemplate = function(character, charPrefab)
                     character.AnimController.MainLimb,
                     afflictionPrefab.Instantiate(strength)
                 )
-                print("[Neurologics/CharacterSpawner] Applied affliction: " .. tostring(afflictionId) .. " (" .. strength .. ")")
             end
         end
     end
@@ -307,7 +313,6 @@ NCS.ApplyCharacterTemplate = function(character, charPrefab)
     if charPrefab.Traits and Neurologics.ApplyTrait then
         for _, traitName in ipairs(charPrefab.Traits) do
             Neurologics.ApplyTrait(character, traitName)
-            print("[Neurologics/CharacterSpawner] Applied trait: " .. traitName)
         end
     end
 end
@@ -317,7 +322,6 @@ NCS.RegisterPermaAfflictions = function(character, afflictions)
     if not character or not afflictions then return end
     
     NCS.PermaAfflictionCharacters[character] = afflictions
-    print("[Neurologics/CharacterSpawner] Registered perma afflictions for " .. character.Name)
 end
 
 -- Assign role for NCS-spawned characters: use charPrefab.Role if set, otherwise team-based
@@ -342,7 +346,6 @@ NCS.AssignRoleForCharacter = function(character, team, charPrefab)
     
     if role then
         Neurologics.RoleManager.AssignRole(character, role:new())
-        print("[Neurologics/CharacterSpawner] Assigned " .. role.Name .. " role to " .. character.Name)
     end
 end
 
@@ -385,7 +388,6 @@ NCS.AttachObjectives = function(character, objectiveNames)
             
             if objective:Start(target) then
                 role:AssignObjective(objective)
-                print("[Neurologics/CharacterSpawner] Attached objective: " .. objName .. " to " .. character.Name)
             else
                 print("[Neurologics/CharacterSpawner] Failed to start objective: " .. objName)
             end
