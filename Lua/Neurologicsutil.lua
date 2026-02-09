@@ -253,11 +253,25 @@ Neurologics.FindClient = function (name)
     end
 end
 
-Neurologics.FindClientCharacter = function (character)
-    for key, value in pairs(Client.ClientList) do
-        if character == value.Character then return value end
-    end
+-- Cache: Character -> Client (weak keys so dead characters get GC'd)
+Neurologics.CharacterToClient = setmetatable({}, { __mode = "k" })
+Neurologics.RegisterCleanup("CharacterToClient", function()
+    Neurologics.CharacterToClient = setmetatable({}, { __mode = "k" })
+end)
 
+Neurologics.FindClientCharacter = function (character)
+    if not character then return nil end
+    local cached = Neurologics.CharacterToClient[character]
+    if cached and cached.Character == character then
+        return cached
+    end
+    Neurologics.CharacterToClient[character] = nil
+    for key, value in pairs(Client.ClientList) do
+        if character == value.Character then
+            Neurologics.CharacterToClient[character] = value
+            return value
+        end
+    end
     return nil
 end
 

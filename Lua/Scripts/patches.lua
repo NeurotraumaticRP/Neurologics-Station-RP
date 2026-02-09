@@ -108,12 +108,6 @@ Hook.Patch(
     end
 end, Hook.HookMethodType.Before)
 
-Hook.Add("think", "Neurologics.think", function()
-    for character in Character.CharacterList do
-        character.CanSpeak = true
-    end
-end)
-
 -- 3-minute timer that runs during rounds
 local threeMinuteTimer = 0
 local THREE_MINUTES = 180 -- seconds

@@ -18,7 +18,8 @@ NCS.PermaAfflictionFrameCounter = 0
 
 -- Spawns a character from a prefab
 -- traits: optional array of trait names to apply in addition to prefab traits
-NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
+-- transferFromCharacter: optional - if provided, transfer this character's inventory instead of prefab inventory
+NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits, transferFromCharacter)
     prefabKey = string.lower(prefabKey)
     local charPrefab = NCS.Char[prefabKey]
     if not charPrefab then
@@ -130,15 +131,20 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     -- Remove the character's inventory
     NCS.RemoveCharacterInventory(character)
 
-    -- Add each item from the prefab's inventory to the character
-    for _, item in pairs(charPrefab.Inventory or {}) do
-        NCS.AddItemToCharacter(
-            character,
-            item.id,
-            item.count,
-            item.subItems,
-            item.slot
-        )
+    -- Either transfer from source character or add prefab inventory
+    if transferFromCharacter and transferFromCharacter.Inventory and not transferFromCharacter.Removed then
+        NCS.TransferInventory(transferFromCharacter, character)
+    else
+        -- Add each item from the prefab's inventory to the character
+        for _, item in pairs(charPrefab.Inventory or {}) do
+            NCS.AddItemToCharacter(
+                character,
+                item.id,
+                item.count,
+                item.subItems,
+                item.slot
+            )
+        end
     end
 
     -- Apply character template (talents, skills, perma afflictions, prefab traits)
@@ -163,12 +169,36 @@ NCS.SpawnCharacter = function(prefabKey, position, team, objectives, traits)
     return character
 end
 
-NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client, objectives, traits)
-    local character = NCS.SpawnCharacter(prefabKey, position, team, objectives, traits)
+NCS.SpawnCharacterWithClient = function(prefabKey, position, team, client, objectives, traits, transferInventory)
+    local transferFrom = (transferInventory and client and client.Character and not client.Character.IsDead and not client.Character.Removed) and client.Character or nil
+    local character = NCS.SpawnCharacter(prefabKey, position, team, objectives, traits, transferFrom)
     if character then
         client.SetClientCharacter(character)
     end
     return character
+end
+
+-- Transfers all items from source character's inventory to target character
+NCS.TransferInventory = function(fromCharacter, toCharacter)
+    if not fromCharacter or not toCharacter or not fromCharacter.Inventory or not toCharacter.Inventory then return end
+    local itemsToTransfer = {}
+    for slot = 0, fromCharacter.Inventory.Capacity - 1 do
+        local item = fromCharacter.Inventory.GetItemAt(slot)
+        if item then
+            table.insert(itemsToTransfer, item)
+        end
+    end
+    for _, item in ipairs(itemsToTransfer) do
+        if item and not item.Removed then
+            fromCharacter.Inventory.RemoveItem(item)
+            -- Try each slot until one accepts the item
+            for slot = 0, toCharacter.Inventory.Capacity - 1 do
+                if toCharacter.Inventory.TryPutItem(item, slot, true, false, toCharacter) then
+                    break
+                end
+            end
+        end
+    end
 end
 
 NCS.GetSpawnPositionOutsideSub = function()

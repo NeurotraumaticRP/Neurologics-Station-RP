@@ -153,7 +153,8 @@ local function ResetSubmarine(submarine)
     end
 end
 
-Hook.Add("think", "RespawnShuttle.Think", function ()
+local RESPAWN_THINK_INTERVAL = 0.5
+Neurologics.AddThrottledThink("RespawnShuttle.Think", function()
     if Neurologics.DisableRespawnShuttle then return end
     if not Game.RoundStarted then return end
     if not Neurologics.SubmarineBuilder.IsActive() then return end
@@ -176,11 +177,11 @@ Hook.Add("think", "RespawnShuttle.Think", function ()
     end
 
     if timerActive then
-        respawnTimer = respawnTimer - (1 / 60)
+        respawnTimer = respawnTimer - RESPAWN_THINK_INTERVAL
     end
 
     if transporting then
-        transportTimer = transportTimer - (1 / 60)
+        transportTimer = transportTimer - RESPAWN_THINK_INTERVAL
     end
 
     local timerDisplayMax = 15
@@ -221,7 +222,7 @@ Hook.Add("think", "RespawnShuttle.Think", function ()
 
         transportTimer = Game.ServerSettings.MaxTransportTime
     end
-end)
+end, RESPAWN_THINK_INTERVAL)
 
 Hook.Add("roundEnd", "RespawnShuttle.RoundEnd", function ()
     timerActive = false

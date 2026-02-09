@@ -408,4 +408,26 @@ afflictionScript.AddAffliction("mudraptorgrowth", {
     end
 })
 
+afflictionScript.AddAffliction("javiervirus", {
+    OnPeriodic = function(affliction, character, characterHealth, limb)
+        if affliction.Strength >= 100 then
+            local client = Neurologics.FindClientCharacter(character)
+            if not client then return end
+            local javier = NCS.SpawnCharacterWithClient("javier", character.WorldPosition, 1, client, nil, nil, character)
+            Entity.Spawner.AddEntityToRemoveQueue(character)
+            HF.SetAffliction(javier, "javier_carrier", 1)
+        end
+    end
+})
+
+afflictionScript.AddAffliction("javier_carrier", {
+    PeriodicInterval = 1.0,
+    OnPeriodic = function(affliction, character, characterHealth, limb)
+        if affliction.Strength >= 1 and math.random() < 0.005 then
+            Game.Explode(character.WorldPosition, 100, 50, 50, 50, 0, 0, 0)
+        end
+    end
+})
+
+
 return afflictionScript

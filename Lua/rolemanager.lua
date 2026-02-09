@@ -278,10 +278,10 @@ rm.CallObjectiveFunction = function (functionName, ...)
     end
 end
 
-Hook.Add("think", "Neurologics.RoleManager.Think", function()
+Neurologics.AddThrottledThink("RoleManager.CheckObjectives", function()
     if not Game.RoundStarted then return end
     rm.CheckObjectives(false)
-end)
+end, 1.0)
 
 Hook.Add("characterDeath", "Neurologics.RoleManager.CharacterDeath", function(deadCharacter)
     rm.CallObjectiveFunction("CharacterDeath", deadCharacter)

@@ -1,4 +1,5 @@
 dofile(Neurologics.Path .. "/Lua/Neurologicsutil.lua")
+dofile(Neurologics.Path .. "/Lua/Scripts/ThrottledThink.lua")
 
 Game.OverrideTraitors(true)
 
@@ -225,18 +226,21 @@ end)
 
 local tipDelay = 0
 
--- register tick
+-- Lightweight think: RoundTime only (for UI accuracy)
 Hook.Add("think", "Neurologics.Think", function()
     if Timer.GetTime() > tipDelay then
         tipDelay = Timer.GetTime() + 500
         --Neurologics.SendTip() -- throws nil error
     end
 
-    if not Game.RoundStarted or Neurologics.SelectedGamemode == nil then
-        return
+    if Game.RoundStarted and Neurologics.SelectedGamemode then
+        Neurologics.RoundTime = Neurologics.RoundTime + 1 / 60
     end
+end)
 
-    Neurologics.RoundTime = Neurologics.RoundTime + 1 / 60
+-- Throttled think: gamemode, points, experience (1 second)
+Neurologics.AddThrottledThink("Neurologics.GamemodeThink", function()
+    if not Game.RoundStarted or Neurologics.SelectedGamemode == nil then return end
 
     if Neurologics.SelectedGamemode then
         Neurologics.SelectedGamemode:Think()
@@ -266,7 +270,7 @@ Hook.Add("think", "Neurologics.Think", function()
 
         pointsGiveTimer = Timer.GetTime() + Neurologics.Config.ExperienceTimer
     end
-end)
+end, 1.0)
 
 -- when a character gains skill level, add PointsToBeGiven according to config
 Neurologics.PointsToBeGiven = {}

@@ -402,24 +402,19 @@ end)
 
 TB = {}
 
-TB.UpdateCooldown = 0
-TB.UpdateInterval = 120
-TB.Deltatime = TB.UpdateInterval/60 -- Time in seconds that transpires between updates
+TB.UpdateInterval = 2.0  -- seconds between updates
 
 if NTC == nil then
     print("Tuberculosis requires neurotrauma to function.")
     return
 end
 
-Hook.Add("think", "Tuberculosis.update", function()
-    if HF.GameIsPaused() then return end
-
-    TB.UpdateCooldown = TB.UpdateCooldown-1
-    if (TB.UpdateCooldown <= 0) then
-        TB.UpdateCooldown = TB.UpdateInterval
+if Neurologics and Neurologics.AddThrottledThink then
+    Neurologics.AddThrottledThink("Tuberculosis.update", function()
+        if HF.GameIsPaused() then return end
         TB.Update()
-    end
-end)
+    end, TB.UpdateInterval)
+end
 
 TB.Update = function ()
     for key, human in pairs(Character.CharacterList) do

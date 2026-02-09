@@ -29,15 +29,15 @@ category.Products = {
     },
     {
         Identifier = "geneticmaterials",
-        Price = 300,
+        Price = 100,
         Limit = 3,
         IsLimitGlobal = false,
         Items = {"geneticmaterial_unresearched", "geneticmaterial_unresearched", "geneticmaterial_unresearched"},
     },
     {
         Identifier = "stabilozine",
-        Price = 300,
-        Limit = 1,
+        Price = 100,
+        Limit = 3,
         IsLimitGlobal = false,
         Items = {"stabilozine", "stabilozine", "stabilozine", "stabilozine", "stabilozine"},
     },

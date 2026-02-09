@@ -125,12 +125,12 @@ Hook.Add("characterDamage", "Neurologics.AttackTracker.Track", function(characte
     AT.RegisterAttack(attacker, character)
 end)
 
--- Periodic cleanup hook
-Hook.Add("think", "Neurologics.AttackTracker.Cleanup", function()
+-- Periodic cleanup hook (runs every 60 seconds; AT.Cleanup has internal gate)
+Neurologics.AddThrottledThink("AttackTracker.Cleanup", function()
     if Game.RoundStarted then
         AT.Cleanup()
     end
-end)
+end, 60)
 
 -- Register cleanup callback
 Neurologics.RegisterCleanup("AttackTracker", function()

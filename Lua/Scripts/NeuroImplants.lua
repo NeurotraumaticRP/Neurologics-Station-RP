@@ -738,7 +738,7 @@ BuildConflictGroups()
 -- ============================================================================
 
 -- Think hook for conditional implants
-Hook.Add("Think", "NeuroImplants.ConditionalCheck", function()
+--[[Hook.Add("Think", "NeuroImplants.ConditionalCheck", function()
     for steamID, clientImplants in pairs(ConditionalStates) do
         local client = nil
         
@@ -791,7 +791,7 @@ Hook.Add("Think", "NeuroImplants.ConditionalCheck", function()
             end
         end
     end
-end)
+end)]]
 
 -- Initialize conditional implants for clients
 Hook.Add("client.connected", "NeuroImplants.InitConditional", function(client)

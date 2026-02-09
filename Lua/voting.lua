@@ -50,7 +50,7 @@ vt.StartVote = function (text, options, time, completed, clients)
     end
 end
 
-Hook.Add("think", "Neurologics.Voting.Think", function ()
+Neurologics.AddThrottledThink("Voting.Think", function()
     for key, voteData in pairs(vt.Votes) do
         if Timer.GetTime() > voteData.Time then
             voteData.Completed = true
@@ -59,7 +59,7 @@ Hook.Add("think", "Neurologics.Voting.Think", function ()
             break
         end
     end
-end)
+end, 1.0)
 
 Neurologics.AddCommand("!vote", function (client, args)
     if not client.HasPermission(ClientPermissions.ConsoleCommands) then return end

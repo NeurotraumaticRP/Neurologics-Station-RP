@@ -1,8 +1,8 @@
-Hook.Add("think", "Neurologics.Playtime.think", function()
+Neurologics.AddThrottledThink("Playtime", function()
     for index, client in pairs(Client.ClientList) do
-        Neurologics.AddData(client, "Playtime", 1/60) -- throwing nil error
+        Neurologics.AddData(client, "Playtime", 1)
     end
-end)
+end, 1.0)
 
 Neurologics.AddCommand({"!playtime", "!pt"}, function (client, args)
     Neurologics.SendChatMessage(

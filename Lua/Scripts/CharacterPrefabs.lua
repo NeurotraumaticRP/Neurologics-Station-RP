@@ -355,6 +355,36 @@ NCS.Char["arthurmorgan"] = {
     { id = "scp_357apround", count = 8 },
     }
 }
+NCS.Char["javier"] = {
+    Team = CharacterTeamType.Team1,
+    BaseJob = "doctor",
+    Species = "human",
+    Name = "Dr. Javier",
+    TalentTrees = {"doctor"},
+    Role = "Crew",
+    Appearance = {
+        HeadId = "head2",
+        Gender = "male",
+        HairIndex = 13,
+        BeardIndex = 2,
+        MoustacheIndex = 0,
+        FaceAttachmentIndex = 0,
+        SkinColor = {171, 112, 70, 255},
+        HairColor = {52, 48, 48, 255},
+        FacialHairColor = {52, 48, 48, 255}
+    },
+    Skills = {
+        weapons = math.random(25,75),
+        medical = math.random(55,100),
+        mechanical = math.random(25,75),
+        electrical = math.random(25,75),
+        helm = math.random(15,25),
+        surgical = math.random(55,100)
+    },
+    Inventory = {
+        { id = "idcard", count = 1, slot = InvSlotType.Card },
+    }
+}
 
 
 

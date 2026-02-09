@@ -120,7 +120,7 @@ re.SendEventMessage = function (text, icon, color)
 end
 
 local lastRandomEventCheck = 0
-Hook.Add("think", "Neurologics.RoundEvents.Think", function ()
+Neurologics.AddThrottledThink("RoundEvents.Think", function()
     if not Game.RoundStarted then return end
 
     -- Call Think() on ongoing events
@@ -140,7 +140,7 @@ Hook.Add("think", "Neurologics.RoundEvents.Think", function ()
         end
         lastRandomEventCheck = Timer.GetTime() + 60
     end
-end)
+end, 0.5)
 
 re.RunEvent = function (eventName, params, checkConditions)
     if not Game.RoundStarted then

@@ -37,7 +37,7 @@ local function GetValidDuelTargets(character)
     return targets
 end
 
-Hook.Add("think", "ArthurMorganDuel.TrackGun", function()
+Neurologics.AddThrottledThink("ArthurMorganDuel.TrackGun", function()
     for obj, _ in pairs(activeDuelObjectives) do
         if obj.Target and not obj.Target.IsDead then
             local isConscious = not obj.Target.IsUnconscious
@@ -55,7 +55,7 @@ Hook.Add("think", "ArthurMorganDuel.TrackGun", function()
             end
         end
     end
-end)
+end, 0.5)
 
 Hook.Add("roundEnd", "ArthurMorganDuel.Cleanup", function()
     activeDuelObjectives = {}

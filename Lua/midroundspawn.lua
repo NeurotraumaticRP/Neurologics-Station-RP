@@ -92,7 +92,7 @@ m.TryCreateClientCharacter = function(submarine, client)
         end
     else
         -- No options, assign assistant
-        assignedJob = Neurologics.JobManager.GetJobVariant("assistant", client)
+        assignedJob = Neurologics.JobManager.GetJobVariant("crewmember", client)
     end
 
     client.AssignedJob = assignedJob

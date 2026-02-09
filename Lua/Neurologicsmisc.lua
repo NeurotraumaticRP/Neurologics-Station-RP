@@ -1,5 +1,3 @@
-local timer = Timer.GetTime()
-
 local huskBeacons = {}
 
 Neurologics.AddHuskBeacon = function (item, time)
@@ -14,8 +12,7 @@ end)
 
 local peopleInOutpost = 0
 local ghostRoleNumber = 1
-Hook.Add("think", "Neurologics.MiscThink", function ()
-    if timer > Timer.GetTime() then return end
+Neurologics.AddThrottledThink("MiscThink", function()
     if not Game.RoundStarted then return end
 
     for item, _ in pairs(huskBeacons) do
@@ -34,14 +31,25 @@ Hook.Add("think", "Neurologics.MiscThink", function ()
         end
     end
 
-    timer = Timer.GetTime() + 5
-    if not Neurologics.Config then print("[Neurologicsmisc] Neurologics.Config failed to load") return end
+    if not Neurologics.Config then return end
     
-    if Neurologics.Config.GhostRoleConfig.Enabled then
-        for key, character in pairs(Character.CharacterList) do
+    -- Single pass over Character.CharacterList for both ghost roles and outpost pirate check
+    local outpost = Vector2(10000, 10000)
+    if Level.Loaded and Level.Loaded.EndOutpost then 
+        outpost = Level.Loaded.EndOutpost.WorldPosition
+    end
+    
+    local outpostPirateCheck = Neurologics.RoundEvents and Neurologics.RoundEvents.EventExists("OutpostPirateAttack") 
+        and not Neurologics.RoundEvents.IsEventActive("OutpostPirateAttack") 
+        and Neurologics.SelectedGamemode and Neurologics.SelectedGamemode.Name == "Secret"
+    
+    local targetsNearOutpost = 0
+    
+    for key, character in pairs(Character.CharacterList) do
+        if Neurologics.Config.GhostRoleConfig and Neurologics.Config.GhostRoleConfig.Enabled then
             local client = Neurologics.FindClientCharacter(character)
             if not Neurologics.GhostRoles.IsGhostRole(character) and not client then
-                if Neurologics.Config.GhostRoleConfig.MiscGhostRoles[character.SpeciesName.Value] then
+                if Neurologics.Config.GhostRoleConfig.MiscGhostRoles and Neurologics.Config.GhostRoleConfig.MiscGhostRoles[character.SpeciesName.Value] then
                     Neurologics.GhostRoles.Ask(character.Name .. " " .. ghostRoleNumber, function (client)
                         client.SetClientCharacter(character)
                     end, character)
@@ -49,32 +57,20 @@ Hook.Add("think", "Neurologics.MiscThink", function ()
                 end
             end
         end
-    end
-
-    if not Neurologics.RoundEvents.EventExists("OutpostPirateAttack") then return end
-    if Neurologics.RoundEvents.IsEventActive("OutpostPirateAttack") then return end
-    if Neurologics.SelectedGamemode == nil or Neurologics.SelectedGamemode.Name ~= "Secret" then return end
-
-    local targets = {}
-    local outpost = Vector2(10000, 10000)
-    if Level.Loaded.EndOutpost then 
-        outpost = Level.Loaded.EndOutpost.WorldPosition
-    end
-
-    for key, character in pairs(Character.CharacterList) do
-        if character.IsRemotePlayer and character.IsHuman and not character.IsDead and Vector2.Distance(character.WorldPosition, outpost) < 5000 then
-            table.insert(targets, character)
+        
+        if outpostPirateCheck and character.IsRemotePlayer and character.IsHuman and not character.IsDead and Vector2.Distance(character.WorldPosition, outpost) < 5000 then
+            targetsNearOutpost = targetsNearOutpost + 1
         end
     end
 
-    if #targets > 0 then
+    if targetsNearOutpost > 0 then
         peopleInOutpost = peopleInOutpost + 1
     end
 
-    if peopleInOutpost > 30 then
+    if peopleInOutpost > 30 and Neurologics.RoundEvents then
         Neurologics.RoundEvents.TriggerEvent("OutpostPirateAttack")
     end
-end)
+end, 5.0)
 
 Hook.Add("roundEnd", "Neurologics.MiscEnd", function ()
     peopleInOutpost = 0

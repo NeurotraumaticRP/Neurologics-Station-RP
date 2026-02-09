@@ -1,6 +1,9 @@
 local scriptpath = Neurologics.Path .. "/Lua/Scripts"
 local luapath = Neurologics.Path .. "/Lua"
 
+-- Loaded by Neurologics.lua before other scripts; skip to avoid duplicate hooks
+local skipFiles = { ["ThrottledThink.lua"] = true }
+
 local loadorder = {
     "CharacterPrefabs", -- should load CharacterPrefabs first then load everything else as normal
     "CharacterSpawner", -- loads right after prefabs
@@ -28,7 +31,7 @@ local function RunFolder(folder, rootFolder, package)
     for i = 1, #loadorder do
         local fileName = loadorder[i] .. ".lua"
         local fullPath = folder .. "/" .. fileName
-        
+
         if File.Exists(fullPath) then
             local time = os.clock()
             local ok, result = pcall(ExecuteProtected, fullPath, rootFolder)
@@ -52,9 +55,9 @@ local function RunFolder(folder, rootFolder, package)
 
         if EndsWith(s, ".lua") then
             local fileName = GetFileName(s)
-            
-            -- Skip if this file was already loaded in loadorder
-            if not loadedFiles[fileName] then
+
+            -- Skip if loaded elsewhere or already loaded in loadorder
+            if not skipFiles[fileName] and not loadedFiles[fileName] then
                 local time = os.clock()
                 local ok, result = pcall(ExecuteProtected, s, rootFolder)
                 local diff = os.clock() - time

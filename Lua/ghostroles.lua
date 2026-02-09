@@ -166,7 +166,7 @@ end
 -- Periodic scan for new Team2 humans
 local team2ScanTimer = 0
 
-Hook.Add("think", "Neurologics.GhostRoles.Think", function (...)
+Neurologics.AddThrottledThink("GhostRoles.Think", function()
     if not config.Enabled then return end
     
     -- Periodically scan for Team2 humans
@@ -194,7 +194,7 @@ Hook.Add("think", "Neurologics.GhostRoles.Think", function (...)
             Game.SendDirectChatMessage(chatMessage, client)
         end
     end
-end)
+end, 1.0)
 
 Hook.Add("roundEnd", "Neurologics.GhostRoles.RoundEnd", function ()
     gr.Roles = {}
