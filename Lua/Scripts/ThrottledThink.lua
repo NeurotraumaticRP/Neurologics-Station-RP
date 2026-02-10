@@ -21,6 +21,7 @@ Neurologics.AddThrottledThink = function(name, callback, interval)
     Neurologics.ThrottledThinkCallbacks[name] = {
         callback = callback,
         interval = interval,
+        offset = offset,
         lastRun = now - (interval - offset)
     }
 end
@@ -33,8 +34,13 @@ Hook.Add("think", "Neurologics.ThrottledThink", function()
     local now = Timer.GetTime()
     for name, data in pairs(Neurologics.ThrottledThinkCallbacks) do
         if data and data.callback and (now - data.lastRun) >= data.interval then
-            data.lastRun = now
-            data.callback()
+            local offset = data.offset or 0
+            local cycleStart = math.floor((now - offset) / data.interval) * data.interval + offset
+            data.lastRun = cycleStart
+            local success, err = pcall(data.callback)
+            if not success then
+                Neurologics.Error("ThrottledThink callback '" .. tostring(name) .. "' failed: " .. tostring(err))
+            end
         end
     end
 end)
